@@ -1,0 +1,7 @@
+'use strict';
+const {test}=require('node:test'),assert=require('node:assert/strict');let search;try{search=require('../src/shared/campus-search.js');}catch(error){if(error.code!=='MODULE_NOT_FOUND')throw error;}
+test('búsqueda global encuentra clases, competencias, salas y prácticas con tildes o varios términos',()=>{
+ assert.equal(typeof search?.buildIndex,'function');const index=search.buildIndex({curriculum:require('../src/content/campus.json').curriculum,competencies:require('../src/content/competencies.json'),missions:require('../src/content/missions.json'),practices:{practices:[{id:'win-events',title:'Investigar eventos Windows',description:'Registro y correlación'}]},library:[]});
+ const result=search.search(index,'windows eventos');assert.ok(result.some(item=>item.kind==='practice'&&item.id==='win-events'));assert.ok(search.search(index,'autorizacion').length>0);assert.ok(search.search(index,'sql').some(item=>item.kind==='mission'));assert.equal(search.search(index,'zzzz-no-existe').length,0);
+});
+test('entradas y límites inválidos no construyen índices o respuestas enormes',()=>{const index=search.buildIndex({library:[{file:'a.txt',title:'Uno',description:'demo'}]});assert.equal(search.search(index,'').length,0);assert.ok(search.search(index,'uno',100000).length<=20);assert.equal(search.search(index,'x'.repeat(1000)).length,0);});

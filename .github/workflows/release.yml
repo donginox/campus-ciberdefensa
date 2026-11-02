@@ -59,6 +59,8 @@ jobs:
           cache: npm
       - run: npm ci
       - run: npm test
+      - name: Exercise read-only Windows or Linux host observations
+        run: node scripts/smoke-system-observer.cjs
       - name: Retrieve the verified bundled runtime
         shell: bash
         env:
