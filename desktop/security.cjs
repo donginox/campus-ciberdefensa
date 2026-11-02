@@ -17,9 +17,9 @@ function resourcePath(raw,root){
 }
 function keys(arg,allowed){if(!v.plain(arg)||Object.keys(arg).some(k=>!allowed.includes(k))||allowed.some(k=>!Object.hasOwn(arg,k)))throw new Error('Parámetros inválidos.');}
 function validateCall(method,arg){switch(method){
- case 'getAppInfo':case 'listProfiles':case 'getActiveProfile':case 'getSystemLabInfo':case 'checkForUpdates':case 'installUpdate':case 'readyToClose':if(arg!==undefined)throw new Error('La operación no acepta parámetros.');return;
+ case 'getAppInfo':case 'listProfiles':case 'getActiveProfile':case 'getSystemLabInfo':case 'checkForUpdates':case 'installUpdate':case 'readyToClose':case 'realLabDoctor':if(arg!==undefined)throw new Error('La operación no acepta parámetros.');return;
  case 'createProfile':return v.name(arg);
- case 'selectProfile':case 'exportBackup':case 'importBackup':return v.id(arg);
+ case 'selectProfile':case 'exportBackup':case 'importBackup':case 'realLabStatus':case 'startRealLab':case 'stopRealLab':case 'resetRealLab':case 'openRealLab':return v.id(arg);
  case 'renameProfile':keys(arg,['id','name']);return {id:v.id(arg.id),name:v.name(arg.name)};
  case 'saveProfile':keys(arg,['id','expectedRevision','study','labs']);v.id(arg.id);if(!Number.isSafeInteger(arg.expectedRevision)||arg.expectedRevision<1)throw new Error('Revisión inválida.');v.jsonData(arg.study,5*1024*1024);if(!v.plain(arg.labs))throw new Error('Laboratorios inválidos.');v.jsonData(arg.labs,1024*1024);return arg;
  case 'openMaterial':case 'exportMaterial':return material(arg);

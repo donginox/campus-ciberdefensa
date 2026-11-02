@@ -21,6 +21,8 @@ app.on('browser-window-created',(_event,window)=>{
    const ready=await main.webContents.executeJavaScript(`(async()=>{for(let i=0;i<100;i++){if(window.campusDesktop&&window.CAMPUS_CONTENT&&window.LabEngine&&document.getElementById('main').textContent.includes('perfil'))return true;await new Promise(r=>setTimeout(r,20));}return false;})()`);
    assert.equal(ready,true,'Renderer, contenido y preload cargan con CSP activo');
    const info=await main.webContents.executeJavaScript('window.campusDesktop.getAppInfo()');assert.ok(info.version);
+   assert.equal(await main.webContents.executeJavaScript('typeof window.RealEnvironments.create'),'function');
+   const realDoctor=await main.webContents.executeJavaScript('window.campusDesktop.realLabDoctor()');assert.equal(typeof realDoctor.ready,'boolean');assert.equal(typeof realDoctor.code,'string');
    const profile=await main.webContents.executeJavaScript(`window.campusDesktop.createProfile('Prueba técnica aislada')`);
    assert.equal(Object.keys(profile.study.lessons).length,24);
    const saved=await main.webContents.executeJavaScript(`(async()=>{const p=await window.campusDesktop.getActiveProfile();p.study.lessons[Object.keys(p.study.lessons)[0]].notes='Evidencia técnica aislada';return window.campusDesktop.saveProfile({id:p.id,expectedRevision:p.revision,study:p.study,labs:p.labs});})()`);
@@ -36,7 +38,7 @@ app.on('browser-window-created',(_event,window)=>{
    await child.loadURL('campus://app/assets/materials/windows.html');
    assert.match(await child.webContents.executeJavaScript('document.title'),/Windows/i);
    assert.equal(errors.length,0,errors.join('; '));
-   finish(null,{renderer:true,preload:true,profilePersistence:true,hashNavigation:true,sqlWorker:true,materialWindowIsolated:true,materialNavigation:true,visualCheck:false});
+   finish(null,{renderer:true,preload:true,profilePersistence:true,hashNavigation:true,sqlWorker:true,materialWindowIsolated:true,materialNavigation:true,realLabModule:true,dockerReady:realDoctor.ready,dockerCode:realDoctor.code,visualCheck:false});
   }catch(error){finish(error);}
  });
 });

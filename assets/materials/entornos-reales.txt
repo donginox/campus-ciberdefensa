@@ -1,0 +1,116 @@
+ENTORNOS REALES: DE LA EVIDENCIA WEB A DOS MÁQUINAS AISLADAS
+
+Itinerario docente propio, revisado el 2 de noviembre de 2026; no garantiza una certificación. Practicá solo en objetivos propios o autorizados, con cuentas y datos ficticios. Entregá evidencia sin contraseñas, cookies ni tokens completos.
+
+QUÉ ESTÁS EJECUTANDO
+
+- Simulador del campus: respuestas preparadas; no ejecuta Kali ni compromete máquinas.
+- Motor SQLite del campus: consultas reales sobre una base aislada de práctica.
+- Juice Shop local: aplicación HTTP real, deliberadamente vulnerable, dentro de un contenedor Linux. Requiere Docker local disponible. Un contenedor comparte un kernel; Docker Desktop administra una VM Linux en Windows, pero eso no convierte a Juice Shop en una VM de sistema operativo. [1][2]
+- VM propia: sistema operativo completo, con discos, servicios y kernel; se prepara por separado. El campus no inicia ni configura VMs. [2]
+- Plataforma externa: infraestructura y reglas del proveedor. TryHackMe distingue su AttackBox, una VM Ubuntu en la nube, de la máquina objetivo de cada ejercicio. [3]
+
+PRIMER ARRANQUE LOCAL
+
+1. En Entornos reales comprobá el motor. Si falta Docker, revisá requisitos y licencias oficiales. Instalación, WSL, reinicios y virtualización se resuelven aparte; la guía no los ejecuta ni pide desactivar protecciones. [4]
+2. Cuando el motor esté listo, iniciá Juice Shop y esperá el estado disponible. El primer arranque puede descargar la imagen aprobada. Abrí el objetivo con el botón del campus: el puerto del host es dinámico, no supongas que es 3000.
+3. Usá navegador y herramientas en el mismo sistema operativo del campus. Registrá fecha, versión, URL local y estado.
+4. Usá Detener al terminar: cerrar el campus puede dejarlo encendido. Detener no elimina el contenedor, pero Juice Shop puede recrear datos al arrancar según su diseño. Restablecer confirma y descarta el contenedor del objetivo; el progreso académico se conserva.
+
+localhost y 127.0.0.1 se refieren al sistema que los interpreta: localhost de Windows no es el de Kali. No publiques el contenedor en todas las interfaces para conectarlo desde Kali. Las dos VMs usan otra topología: docs/real-labs-topology.md.
+
+El contenedor usa publicación local y red interna Docker. Esto limita exposición, pero permite ciertas comunicaciones con el host y no constituye aislamiento absoluto. No se garantizan desafíos que dependan de Internet, proveedores de IA o claves externas. [1][5][6]
+
+KALI EN OTRA COMPUTADORA: RUTA RECOMENDADA
+
+Ejecutá Campus para Linux y Docker en la computadora con Kali. El objetivo y Burp, Nmap o el navegador quedan en ese mismo equipo. Windows puede seguir siendo tu puesto de lectura; no hay sincronización automática de perfiles entre equipos. Podés transferir una copia de respaldo JSON cuando la necesites.
+
+1. Descargá la AppImage Linux desde las Releases oficiales del campus y otorgale permiso de ejecución.
+2. Seguí la guía oficial de Kali para instalar Docker: https://www.kali.org/docs/containers/installing-docker-on-kali/ . El paquete es docker.io, no el paquete llamado docker. La instalación y los permisos del motor son decisiones tuyas; el campus no los modifica.
+3. Comprobá en una terminal normal: docker version. Debe mostrar cliente y servidor local Linux. Este campus requiere Engine28 o posterior. Si tu versión es anterior, actualizala siguiendo las fuentes oficiales.
+4. El motor debe ser accesible a tu cuenta normal para que la app pueda usarlo. No ejecutes todo el campus con sudo ni desactives el sandbox. La documentación de Docker explica rootless y el grupo docker; ese grupo otorga privilegios de administración del motor. Elegí y configurá conscientemente el método apropiado.
+5. En la app de Kali: Entornos reales → Comprobar → Iniciar Juice Shop. Usá la URL dinámica que muestra esa app. La primera descarga necesita Internet. Guardá evidencias y elegí Detener al terminar.
+
+Fuentes de instalación y permisos: https://docs.docker.com/engine/install/ y https://docs.docker.com/engine/install/linux-postinstall/ . Si Docker aún no está disponible, los enlaces a PortSwigger o TryHackMe permiten prácticas reales externas desde el navegador, con las condiciones y cuentas de cada plataforma.
+
+MISIÓN 1 — DEMOSTRAR QUÉ RESPONDE EL SERVIDOR (30–45 MIN)
+
+Objetivo: distinguir interfaz, solicitud HTTP y respuesta real.
+
+1. Abrí las herramientas de desarrollo del navegador, pestaña Red/Network. Limpiá la lista y recargá Juice Shop.
+2. Elegí una solicitud del catálogo provocada por una acción normal. Anotá método, ruta, estado, tipo de contenido y un fragmento de respuesta sin datos sensibles.
+3. Repetí cambiando una sola acción de la interfaz. Compará solicitudes; separá recursos estáticos de datos de aplicación.
+4. Detené el objetivo y recargá. Registrá el resultado; luego iniciá y comprobá de nuevo. Diferenciá una falla de conexión de una respuesta HTTP de error.
+
+Entrega: dos pares solicitud/respuesta; explicá qué produjo el navegador y qué devolvió el servidor. Concluyó cuando otra persona puede repetirlo. Una página o un puerto abierto no prueban vulnerabilidad.
+
+MISIÓN 2 — SESIÓN, COOKIES Y ALMACENAMIENTO (45–60 MIN)
+
+Objetivo: identificar cómo cambia la identidad de una sesión sin dar por hecho que todo usa cookies.
+
+1. Creá una cuenta ficticia de laboratorio. Observá Cookies y almacenamiento local antes de entrar, después de entrar y después de salir.
+2. Registrá nombres, ubicación y atributos de los elementos presentes; ocultá sus valores. Si no existe una cookie de sesión, anotá esa ausencia y buscá el mecanismo observable en las solicitudes.
+3. Contrastá una acción normal con sesión y sin sesión, usando perfiles separados del navegador. Identificá si cambian cabeceras o datos de autenticación.
+4. Cerrá sesión y probá volver a un recurso propio desde ese perfil. Separá contenido guardado en pantalla, almacenamiento del navegador y nueva respuesta del servidor.
+
+Entrega: tabla antes/durante/después e hipótesis comprobable. Concluyó cuando explicás dónde viaja la identidad y qué falta para afirmar que el servidor la invalidó. Un atributo ausente no demuestra impacto por sí solo.
+
+MISIÓN 3 — CONTROL DE ACCESO ENTRE DOS CUENTAS (60–90 MIN)
+
+Objetivo: comprobar autorización sobre datos propios, después de comprender HTTP y sesión.
+
+1. Creá una segunda cuenta ficticia en otro perfil. Generá un recurso de prueba para cada una mediante funciones normales; anotá quién debería leerlo o modificarlo.
+2. Observá las solicitudes de esos dos recursos. Elegí una operación de lectura y escribí antes una matriz: sin sesión, propietario y otra cuenta.
+3. Repetí únicamente las solicitudes necesarias sobre esos recursos que creaste, cambiando una sola condición por intento. No enumeres identificadores ajenos ni sigas enlaces fuera del objetivo local.
+4. Compará cuerpo, estado y efecto observado. Ocultar un botón no demuestra autorización del servidor; un estado 200 tampoco demuestra acceso si el cuerpo contiene un rechazo.
+
+Entrega: matriz esperada/observada, evidencia reproducible y recomendación de validación en el servidor. Concluyó con un resultado sustentado, incluso sin hallar una falla. No se incluyen soluciones de desafíos.
+
+RUTA DEFENSIVA 1 — EVENT VIEWER EN TU VM WINDOWS (45–60 MIN)
+
+1. Usá una VM Windows propia con licencia válida. Anotá edición, hora y zona horaria; tomá una instantánea previa.
+2. Reiniciá normalmente y registrá el horario. Abrí Visor de eventos, Registros de Windows, Sistema. Filtrá un intervalo corto alrededor de ese arranque.
+3. Elegí dos eventos reales accesibles. Leé General y Detalles; anotá proveedor, canal, ID, RecordId y hora. Si no aparecen o no tenés permiso, registralo sin habilitar auditorías ni elevar todo automáticamente.
+4. Contrastá con una consulta acotada en Windows PowerShell: Get-WinEvent -FilterHashtable @{LogName='System'; StartTime=(Get-Date).AddHours(-1)} -MaxEvents 10. [7]
+5. Armá una cronología y dos hipótesis. Exportá solo los eventos elegidos si necesitás conservarlos; quitá datos personales de la entrega, manteniendo el original dentro del laboratorio.
+
+Concluyó cuando relacionás observaciones y reinicio, separás hechos de inferencias y explicás por qué un ID no demuestra un incidente. windows/guia.txt amplía el trabajo; sus eventos sintéticos no sustituyen estos registros.
+
+RUTA DEFENSIVA 2 — NTFS, BACKUP Y RECUPERACIÓN (60–90 MIN)
+
+1. En esa VM, prepará dos cuentas ficticias y una carpeta nueva de práctica sobre NTFS. Guardá una instantánea; nunca uses carpetas del sistema. Registrá ACL y herencia desde Propiedades, Seguridad, y Get-Acl. [8]
+2. Definí una cuenta lectora y otra editora. Aplicá permisos solo a la carpeta nueva y comprobá desde ambas cuentas lectura, creación y modificación; documentá accesos permitidos y denegados.
+3. Creá archivos ficticios con hora y versión. Copialos a un disco virtual separado dedicado a backup y registrá hashes con Get-FileHash. Una segunda carpeta del mismo disco no prueba recuperación ante su pérdida.
+4. Escribí una versión posterior a la copia. Renombrá la carpeta original para simular indisponibilidad; restaurá a una carpeta nueva. Compará contenido, hashes, ACL y acceso desde ambas cuentas: copiar contenido no garantiza conservar permisos.
+5. Medí tiempo hasta recuperar acceso y antigüedad de la última versión recuperable. Contrastá con objetivos propuestos: RPO 15 minutos (pérdida tolerable de datos), RTO 30 minutos (tiempo para recuperar el servicio).
+
+Concluyó cuando abrís lo restaurado con permisos esperados y justificás ambos objetivos. Un hash no recupera archivos; un snapshot no reemplaza un backup independiente. Dos discos virtuales del mismo host no cubren su pérdida. Para respaldar la VM completa, apagá y copiá configuración, discos y snapshots requeridos a almacenamiento separado; verificá una restauración aislada.
+
+PENTEST DE RED — DOS VMs, UN OBJETIVO (60–90 MIN)
+
+Prepará Kali y una VM objetivo propia con HTTP de práctica en 80, 3000 u 8000, siguiendo la topología adjunta. Confirmá adaptadores, direcciones y alcance. Tomá snapshots de ambas; conservá el informe antes de restaurar.
+
+Desde Kali, verificá dirección y rutas con ip -br address e ip route. Ejecutá nmap -sT -sV -p22,80,3000,8000 --max-retries 1 10.77.0.20. [12] No agregues rangos, objetivos públicos, fuerza bruta ni opciones de scripts. Compará servicios detectados con la consola del objetivo; verificá manualmente el HTTP permitido. Un banner no demuestra vulnerabilidad ni explotación.
+
+Concluyó con alcance firmado por vos, evidencia de red aislada, inventario observado, una hipótesis por validar y cierre: apagar ambas VMs; restaurar solo después de guardar evidencia, y volver a comprobar su red.
+
+CONTINUACIÓN Y FUENTES OFICIALES
+
+TryHackMe requiere cuenta y respetar las reglas de su sala. PortSwigger Academy permite practicar seguridad web y registrar progreso con cuenta. BTLO ofrece investigaciones defensivas; revisá cuenta, requisitos y disponibilidad. Tienen condiciones propias; el campus no inicia sus máquinas ni acredita resultados. [3][10][11]
+
+[1] OWASP Juice Shop, ejecución: https://pwning.owasp-juice.shop/companion-guide/latest/part1/running.html
+[2] Docker, contenedores y VMs: https://docs.docker.com/learn/content/what-is-a-container/
+[3] TryHackMe, AttackBox: https://help.tryhackme.com/en/articles/6721845-the-attackbox-explained
+[4] Docker Desktop para Windows: https://docs.docker.com/desktop/setup/install/windows-install/
+[5] Docker, publicación de puertos: https://docs.docker.com/engine/network/port-publishing/
+[6] Docker, red interna: https://docs.docker.com/reference/cli/docker/network/create/#network-internal-mode---internal
+[7] Microsoft, Get-WinEvent: https://learn.microsoft.com/en-us/powershell/module/microsoft.powershell.diagnostics/get-winevent
+[8] Microsoft, Get-Acl: https://learn.microsoft.com/en-us/powershell/module/microsoft.powershell.security/get-acl
+[9] Windows Evaluation: https://www.microsoft.com/en-us/evalcenter/evaluate-windows-11-enterprise
+[10] PortSwigger Academy: https://portswigger.net/web-security
+[11] Blue Team Labs Online: https://blueteamlabs.online/
+[12] Nmap, referencia: https://nmap.org/book/man.html
+
+Si elegís Windows Evaluation, revisá elegibilidad, registro, requisitos y licencia antes de instalarlo en una VM nueva. La página consultada ofrece una evaluación de 90 días; no es una licencia gratuita permanente ni se propone evitar su vencimiento. [9]
+
+Enlaces oficiales consultados el 2/11/2026. Las misiones son propuestas propias pendientes de ejecución. Comprobá el motor en el campus: esta guía no certifica Docker ni VMs instalados o funcionando.

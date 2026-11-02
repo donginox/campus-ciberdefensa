@@ -20,6 +20,14 @@ La primera versión se construye sin certificado de firma de Windows. El reposit
 
 Para traer el progreso de la aplicación HTML anterior, descargá su copia JSON en «Guardado y ayuda» e importala en un perfil del programa nuevo. La aplicación no inspecciona el almacenamiento de tu navegador. Los archivos originales se conservan fuera de este repositorio.
 
+## Entornos de práctica reales
+
+En «Entornos reales» podés comprobar Docker local e iniciar OWASP Juice Shop con una imagen fijada, red interna propia y un puerto publicado únicamente en127.0.0.1. Los controles permiten abrir, detener y restablecer el objetivo de tu perfil; restablecer requiere confirmación. El campus no instala Docker ni modifica WSL, Hyper-V o tus VMs.
+
+Esto ejecuta una aplicación vulnerable real en un contenedor; no levanta un sistema operativo de VM. La guía incluida distingue contenedores, VMs y laboratorios externos. Si Kali está en otra computadora, ejecutá la app Linux y Docker allí para practicar sobre su localhost. La guía propone también una topología VirtualBox privada y prácticas Windows con evidencia.
+
+Ver [topología y prácticas](docs/real-labs-topology.md) y la guía descargable desde la app. Al cerrar el campus el contenedor puede seguir encendido hasta que elijas Detener. Las notas del campus se guardan por separado del objetivo.
+
 ## Actualizaciones
 
 La app instalada comprueba versiones publicadas al abrirse y permite una comprobación manual. La falta de Internet no impide estudiar. Descarga las versiones nuevas y conserva los datos fuera de la instalación; el reinicio se realiza después de guardar.
