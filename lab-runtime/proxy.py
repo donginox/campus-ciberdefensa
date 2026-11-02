@@ -7,7 +7,7 @@ import re
 import socket
 import threading
 import time
-from urllib.parse import urlsplit
+from urllib.parse import parse_qs, urlsplit
 
 
 MAX_REQUEST = 1024 * 1024
@@ -31,6 +31,21 @@ def filtered_headers(headers):
     tokens = {token.strip().lower() for value in headers.get_all("Connection", []) for token in value.split(",")}
     excluded = HOP_HEADERS | tokens | {"host", "origin", "content-length", "forwarded"}
     return [(name, value) for name, value in headers.items() if name.lower() not in excluded and not name.lower().startswith("x-forwarded-")]
+
+
+def upstream_timeout(mode, method, path):
+    if mode != "juice-shop" or method != "GET" or len(path) > 8192:
+        return 5
+    parsed = urlsplit(path)
+    if parsed.scheme or parsed.netloc or parsed.fragment or parsed.path != "/socket.io/":
+        return 5
+    try:
+        query = parse_qs(parsed.query, keep_blank_values=True, strict_parsing=True, max_num_fields=16)
+    except ValueError:
+        return 5
+    # Engine.IO 4 defaults to a 25-second ping interval. The websocket Upgrade
+    # remains disabled; bounded HTTP polling needs time for that protocol ping.
+    return 55 if query.get("EIO") == ["4"] and query.get("transport") == ["polling"] else 5
 
 
 class ProxyServer(ThreadingHTTPServer):
@@ -130,7 +145,7 @@ class ProxyHandler(BaseHTTPRequestHandler):
             return None
 
     def upstream(self, path, method, body=b"", headers=None, limit=MAX_RESPONSE):
-        deadline = time.monotonic() + 5
+        deadline = time.monotonic() + upstream_timeout(self.server.target_mode, method, path)
         connection = http.client.HTTPConnection(self.server.connect_host, self.server.target_port, timeout=5)
         try:
             # HTTPConnection has no environment proxy support or automatic redirects.
@@ -163,7 +178,7 @@ class ProxyHandler(BaseHTTPRequestHandler):
             if declared is not None and (not declared.isascii() or not declared.isdigit() or int(declared) > limit):
                 raise ValueError("response_limit")
             chunks, total = [], 0
-            while True:
+            while not response.isclosed():
                 remaining = deadline - time.monotonic()
                 if remaining <= 0:
                     raise TimeoutError()

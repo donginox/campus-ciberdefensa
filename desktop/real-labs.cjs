@@ -247,7 +247,10 @@ class RealLabManager {
       requireSafe(binding.HostPort === '' || binding.HostPort === '0' || binding.HostPort === published.HostPort);
     }
     requireSafe(container.State && typeof container.State.Running === 'boolean' && typeof container.State.Status === 'string');
-    if (container.State.Running && binding) requireSafe(published);
+    // Docker's internal-only legacy topology can retain the requested loopback
+    // binding without creating an effective host listener. It is recovery-only;
+    // only the current verified proxy must prove an effective published port.
+    if (container.State.Running && binding && !legacy) requireSafe(published);
     return published?.HostPort;
   }
   async _read(resources, context, recipe, assets) {

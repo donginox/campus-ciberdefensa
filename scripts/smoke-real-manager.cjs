@@ -6,11 +6,19 @@ const assert=require('node:assert/strict'),fs=require('node:fs/promises'),path=r
 const {randomUUID}=require('node:crypto');
 const exec=require('node:util').promisify(require('node:child_process').execFile);
 const pause=ms=>new Promise(resolve=>setTimeout(resolve,ms));
+function webRequest(base,relative,body){
+ const url=new URL(relative,base);assert.equal(url.hostname,'127.0.0.1');assert.equal(url.protocol,'http:');
+ return new Promise((resolve,reject)=>{
+  const request=require('node:http').request(url,{method:body===undefined?'GET':'POST',timeout:60000,headers:body===undefined?{}:{'Content-Type':'text/plain;charset=UTF-8','Content-Length':Buffer.byteLength(body)}},response=>{
+   let bytes=0;const chunks=[];response.on('data',chunk=>{bytes+=chunk.length;if(bytes>2*1024*1024)request.destroy(new Error('Web response too large'));else chunks.push(chunk);});response.on('end',()=>{const value=Buffer.concat(chunks).toString('utf8');if(response.statusCode!==200)return reject(new Error('Web HTTP '+response.statusCode+': '+value.slice(0,200)));resolve(value);});response.on('error',reject);
+  });request.on('timeout',()=>request.destroy(new Error('Web HTTP timeout')));request.on('error',reject);if(body!==undefined)request.write(body);request.end();
+ });
+}
 (async()=>{
  const dataDir=await fs.mkdtemp(path.join(os.tmpdir(),'campus-manager-live-'));
  const manager=new RealLabManager({dataDir,runtimeDir:path.resolve('.local/lab-runtime'),onDiagnostic:error=>console.error('LAB_DIAGNOSTIC',error.stack||error.message)});
  const profile=randomUUID(),labs=['soc-response','database-fundamentals','juice-shop'];
- const evidence={docker:false,soc:false,database:false,web:false,lifecycle:false,loopback:false};
+ const evidence={docker:false,soc:false,database:false,web:false,socketIoPolling:false,lifecycle:false,loopback:false};
  async function ready(labId){
   let snapshot=await manager.start(profile,labId);
   for(let n=0;n<40;n++){
@@ -32,7 +40,14 @@ const pause=ms=>new Promise(resolve=>setTimeout(resolve,ms));
   await assert.rejects(manager.query(profile,'database-fundamentals','DROP TABLE auth_events'));
   assert.ok((await manager.query(profile,'database-fundamentals','SELECT COUNT(*) AS count FROM auth_events')).rows[0][0]>0);evidence.database=true;
   const web=await ready('juice-shop');assert.equal(new URL(web.url).hostname,'127.0.0.1');
-  const page=await new Promise((resolve,reject)=>{const request=require('node:http').get(web.url,{timeout:5000},response=>{let bytes=0;const chunks=[];assert.equal(response.statusCode,200);response.on('data',chunk=>{bytes+=chunk.length;if(bytes>2*1024*1024)request.destroy(new Error('Juice HTML too large'));else chunks.push(chunk);});response.on('end',()=>resolve(Buffer.concat(chunks).toString('utf8')));response.on('error',reject);});request.on('timeout',()=>request.destroy(new Error('Juice HTTP timeout')));request.on('error',reject);});assert.match(page,/juice.?shop/i);evidence.web=true;
+  const page=await webRequest(web.url,'/');assert.match(page,/juice.?shop/i);evidence.web=true;
+  // Socket.IO defaults to polling before trying WebSocket. Prove fallback stays
+  // usable through its real 25-second heartbeat, rather than only testing HTML.
+  const handshake=await webRequest(web.url,'/socket.io/?EIO=4&transport=polling');assert.equal(handshake[0],'0');const engineIo=JSON.parse(handshake.slice(1));assert.match(engineIo.sid,/^[A-Za-z0-9_-]{1,100}$/);
+  const poll='/socket.io/?EIO=4&transport=polling&sid='+engineIo.sid;
+  assert.equal(await webRequest(web.url,poll,'40'),'ok');
+  for(let attempt=0;attempt<8;attempt++){const packet=await webRequest(web.url,poll);if(packet.split('\x1e').includes('2')){assert.equal(await webRequest(web.url,poll,'3'),'ok');evidence.socketIoPolling=true;break;}}
+  assert.equal(evidence.socketIoPolling,true,'Socket.IO real heartbeat must pass through the local proxy');
   for(const labId of labs){const stopped=await manager.stop(profile,labId);assert.equal(stopped.state,'stopped');assert.equal(stopped.capabilities.open,false);const reset=await manager.reset(profile,labId);assert.ok(['starting','running'].includes(reset.state),JSON.stringify(reset));await ready(labId);}
   evidence.lifecycle=true;console.log('CAMPUS_DOCKER_MANAGER_OK',JSON.stringify(evidence));
  }finally{

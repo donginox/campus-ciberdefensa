@@ -7,6 +7,7 @@ from pathlib import Path
 import threading
 import time
 import unittest
+from unittest.mock import patch
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -90,6 +91,43 @@ class ProxyTests(unittest.TestCase):
                 with self.assertRaises(ValueError):
                     proxy.target_from_environment({**valid, field: value})
 
+    def test_only_juice_engineio_polling_get_receives_its_protocol_deadline(self):
+        self.assertTrue(hasattr(proxy, "upstream_timeout"), "Juice polling must survive its 25-second ping interval")
+        self.assertEqual(proxy.upstream_timeout("juice-shop", "GET", "/socket.io/?EIO=4&transport=polling&sid=abc123"), 55)
+        for mode, method, path in (("soc", "GET", "/socket.io/?EIO=4&transport=polling"),
+                                   ("juice-shop", "POST", "/socket.io/?EIO=4&transport=polling"),
+                                   ("juice-shop", "GET", "/socket.io/?EIO=4&transport=websocket"),
+                                   ("juice-shop", "GET", "/socket.io/?EIO=4&transport=polling&transport=websocket"),
+                                   ("juice-shop", "GET", "/socket.io/?EIO=3&transport=polling"),
+                                   ("juice-shop", "GET", "/socket.io/other?EIO=4&transport=polling"),
+                                   ("juice-shop", "GET", "/?EIO=4&transport=polling")):
+            with self.subTest(mode=mode, method=method, path=path):
+                self.assertEqual(proxy.upstream_timeout(mode, method, path), 5)
+
+    def test_real_juice_polling_response_survives_a_wait_longer_than_five_seconds(self):
+        class Backend(BaseHTTPRequestHandler):
+            def log_message(self, *args):
+                pass
+
+            def do_GET(self):
+                time.sleep(6)
+                self.send_response(200)
+                self.send_header("Content-Length", "1")
+                self.send_header("Content-Type", "text/plain")
+                self.end_headers()
+                try:
+                    self.wfile.write(b"2")
+                except OSError:
+                    pass
+
+        backend = ThreadingHTTPServer(("127.0.0.1", 0), Backend)
+        backend.daemon_threads = True
+        self.start(backend)
+        gateway = proxy.create_proxy_server(TARGET, backend.server_port, "juice-shop", "127.0.0.1", 0, connect_host="127.0.0.1")
+        self.start(gateway)
+        status, packet, _ = self.request("/socket.io/?EIO=4&transport=polling&sid=abc123", port=gateway.server_port)
+        self.assertEqual((status, packet), (200, "2"))
+
     def test_hop_headers_are_removed_and_redirect_is_not_followed(self):
         observations = []
 
@@ -154,6 +192,22 @@ class ProxyTests(unittest.TestCase):
         gateway = proxy.create_proxy_server(TARGET, backend.server_port, "soc", "127.0.0.1", 0, connect_host="127.0.0.1")
         self.start(gateway)
         self.assertEqual(self.request("/", port=gateway.server_port)[0], 502)
+
+    def test_completed_response_is_not_used_after_python_closes_its_transport(self):
+        # CPython 3.12+ read1 closes its response at Content-Length zero. Older
+        # 3.11 patch levels defer that close; normalize this documented lifecycle
+        # while preserving real HTTP parsing, sockets and request side effects.
+        class ClosingResponse(http.client.HTTPResponse):
+            def read1(self, size=-1):
+                result = super().read1(size)
+                if self.length == 0:
+                    self.close()
+                return result
+
+        with patch.object(http.client.HTTPConnection, "response_class", ClosingResponse):
+            status, health, _ = self.request("/health")
+        self.assertEqual(status, 200)
+        self.assertEqual(health["service"], "campus-lab-runtime")
 
     def test_response_deadline_applies_when_backend_closes_its_connection(self):
         class Backend(BaseHTTPRequestHandler):

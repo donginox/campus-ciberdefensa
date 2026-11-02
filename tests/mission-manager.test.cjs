@@ -207,3 +207,14 @@ test('paused or dead proxy cannot publish a ready URL and dead proxy offers vali
   docker.proxy.State.Paused = false; docker.proxy.State.Running = false; docker.proxy.State.Dead = true; docker.proxy.State.Status = 'dead'; docker.proxy.NetworkSettings.Ports = {};
   const dead = await manager.status(PROFILE, 'soc-response'); assert.equal(dead.state, 'error'); assert.equal(dead.capabilities.reset, true); assert.equal(dead.capabilities.start, false); assert.equal(dead.url, undefined); assert.equal((await manager.reset(PROFILE, 'soc-response')).state, 'running');
 });
+test('legacy internal-only Juice target without an effective published port remains safely stoppable and migrates on reset', async t => {
+  const { manager, docker } = await fixture(t); assert.equal((await manager.start(PROFILE, 'juice-shop')).state, 'running');
+  const target = docker.container, oldId = target.Id, proxy = docker.proxy, network = docker.net;
+  delete network.Containers[proxy.Id]; docker.containers.delete(proxy.Name.slice(1)); docker.networks.delete(docker.edge.Name);
+  target.HostConfig.PortBindings = { '3000/tcp': [{ HostIp: '127.0.0.1', HostPort: '' }] };
+  target.NetworkSettings.Ports = { '3000/tcp': null }; target.NetworkSettings.Networks[network.Name].Aliases = null;
+  const snapshot = await manager.status(PROFILE, 'juice-shop'); assert.equal(snapshot.state, 'runtime_update'); assert.equal(snapshot.url, undefined); assert.equal(snapshot.capabilities.start, false); assert.equal(snapshot.capabilities.open, false); assert.equal(snapshot.capabilities.stop, true); assert.equal(snapshot.capabilities.reset, true);
+  const before = mutations(docker).length; assert.equal((await manager.start(PROFILE, 'juice-shop')).state, 'runtime_update'); assert.equal(mutations(docker).length, before);
+  const stopped = await manager.stop(PROFILE, 'juice-shop'); assert.equal(stopped.state, 'runtime_update'); assert.equal(stopped.capabilities.stop, false);
+  const migrated = await manager.reset(PROFILE, 'juice-shop'); assert.equal(migrated.state, 'running'); assert.equal(migrated.capabilities.open, true); assert.notEqual(docker.container.Id, oldId); assert.deepEqual(docker.container.HostConfig.PortBindings, {}); assert.ok(docker.proxy); assert.equal(docker.net.Internal, true); assert.equal(docker.edge.Internal, false);
+});

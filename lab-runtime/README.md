@@ -33,7 +33,10 @@ rutas se reenvían al destino fijo. El proxy valida Host/Origin de loopback,
 reescribe ambos para el servicio interno, elimina headers hop-by-hop y los
 declarados en Connection, no sigue redirecciones y rechaza respuestas 3xx.
 Admite 1 MiB de cuerpo de solicitud, 16 MiB de respuesta, timeout de 5 segundos
-y un máximo de 16 threads simultáneos. No admite CONNECT ni URLs absolutas.
+y un máximo de 16 threads simultáneos. Solo el GET de polling Engine.IO 4 de
+Juice Shop en `/socket.io/?EIO=4&transport=polling` dispone de 55 segundos para
+recibir su ping periódico; conserva los mismos límites de bytes y concurrencia.
+No admite Upgrade de WebSocket, CONNECT ni URLs absolutas.
 
 ## API del protocolo 1
 
