@@ -38,10 +38,22 @@ Los objetivos Docker se abren en el `localhost` de la computadora que los ejecut
 
 Consultá **Qué necesito saber** y **Roadmap**: muestran fuentes oficiales, actividades del campus y brechas. CC y CCST comparten fundamentos; Security+, BTL1 y eJPT requieren preparación adicional específica. Un simulacro de elección múltiple no reemplaza investigar evidencias, usar un SIEM o trabajar con explotación y pivoting en entornos autorizados.
 
+En **Certificaciones**, abrí tu ruta y elegí una competencia para registrar fecha, entorno, procedimiento, resultado e interpretación. Declará la ayuda recibida y el estado de revisión. Elegir una ruta como prioridad actualiza **Mi plan**. Las fuentes y brechas visibles permiten distinguir apoyo local, trabajo externo y objetivos todavía sin verificar.
+
 Entregá los **Simulacros docentes** para ver la explicación y las omisiones. El tiempo opcional continúa aunque cierres la app. Los resultados describen esa selección propia de preguntas y no predicen una nota oficial. Repetí las competencias con casos nuevos y ayuda reducida.
+
+En **Mi plan → Revisar mi avance**, abrí cualquier intento retenido y compará muestras compatibles. Mirá también cuántas preguntas se repiten. El refuerzo propone hasta tres acciones concretas; los resultados de los casos prácticos aparecen separados.
+
+## Usar un caso nuevo
+
+**Análisis de paquetes** permite descargar un ZIP con consignas, PCAP, registros y hashes. Extraelo, conservá una copia original y analizá el caso guiado con Wireshark en Windows o Linux. Registrá filtros, números de paquete, cronología, interpretación y una hipótesis alternativa. Después de guardar el primer informe podés consultar su corrección. Resolvé el caso de transferencia con evidencia nueva. Todo el tráfico del paquete es sintético; no captura tu red.
+
+En **Evaluación práctica**, definí entorno, línea de base y alcance autorizado antes de iniciar. Abrí la sala correspondiente para encender el objetivo propio cuando el motor esté disponible. El informe registra hallazgos, intentos fallidos, evidencia, impacto, remediación, límites y asistencia. Entregar conserva una versión inmutable; consultar orientación y repetir el mismo caso queda señalado. Las prácticas externas de sistemas y pivoting conservan sus requisitos propios.
 
 ## Conservar y revisar el trabajo
 
 En **Mi portafolio**, exportá PDF o HTML con los textos y evidencias guardados. Revisá los datos personales antes de compartirlo y contrastá procedimiento, resultado, interpretación y límites. El informe distingue declaraciones y comprobaciones acotadas; no acredita una certificación.
 
 En **Ajustes**, exportá una copia JSON a una carpeta que respaldes. El PDF sirve para leer; el JSON permite volver a importar el progreso. La actualización de la app conserva los perfiles fuera de la instalación. Sin Internet podés seguir estudiando y comprobar actualizaciones más tarde.
+
+Si el campus no puede abrir los datos, presenta **Copias y recuperación**. Inspeccioná fecha y perfiles de una copia, elegila y confirmá la restauración. El archivo actual se conserva aparte. Si no hay copia interna válida, elegí tu JSON externo. Cancelar conserva los datos. Las copias internas están en el mismo disco: mantené además tu respaldo externo.

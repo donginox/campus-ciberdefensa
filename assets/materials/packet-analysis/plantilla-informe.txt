@@ -1,0 +1,45 @@
+INFORME DE ANÁLISIS DE PAQUETES (completar una copia por intento)
+Caso e intento:
+Analista / fecha real / zona horaria:
+Origen declarado: paquete docente SINTÉTICO de Campus Ciberdefensa.
+Alcance autorizado: archivos de este caso, análisis offline de copias.
+Pregunta de investigación:
+
+RECEPCIÓN Y MANEJO
+Originales recibidos (ruta, tamaño, SHA-256):
+Referencia usada y cómo se recibió SHA256SUMS.txt:
+Verificación inicial / resultado / diferencias:
+Copia de trabajo (ruta, fecha real, quién copió, hash comparado):
+Herramienta y versión / configuración UTC / filtros:
+Registro de manejo (cuándo, quién, fuente, destino, acción, hash):
+Verificación final / resultado:
+
+LÍNEA DE BASE E HIPÓTESIS
+Actividad autorizada exacta según cambios.csv:
+Hipótesis inicial:
+Hipótesis alternativa y observación que permitiría distinguirlas:
+Intentos o filtros que no aportaron evidencia (también registrar fallos):
+
+CRONOLOGÍA (UTC, número de paquete o event_id, fuente, observación, límite)
+DNS:
+Handshake TCP y tupla IP/puerto:
+Solicitud HTTP, Host, método, ruta, cuerpo y bytes:
+Respuesta HTTP, estado, cuerpo y bytes:
+ACK/cierre:
+Correlación endpoint / servidor / autorización:
+
+CONCLUSIONES
+Hechos con referencias exactas:
+Inferencias y confianza justificada:
+Alternativa descartada o todavía abierta, con razones:
+Qué no demuestra esta captura / qué evidencia falta:
+
+ACCIONES PROPUESTAS (sólo redactar, no ejecutar)
+Acción, responsable ficticio, alcance, impacto, prioridad y validación:
+Cómo comprobarías el resultado y cuándo revisarías:
+
+ASISTENCIA Y REVISIÓN
+Ayuda utilizada (persona, pista, filtro, corrección; momento y efecto):
+Informe inicial entregado antes de leer corrección (fecha real):
+Diferencias después de contrastar la corrección:
+Siguiente práctica externa pendiente / próxima revisión:

@@ -24,6 +24,8 @@ jobs:
           python3 tests/python-runtime.py -v
           python3 tests/python-runtime-proxy.py -v
           python3 tests/python-runtime-build.py -v
+          python3 tests/python-packet-cases.py
+          python3 scripts/build-packet-bundle.py --check
       - name: Build immutable local lab archive
         run: python3 scripts/build-lab-runtime.py --version "0.1.${GITHUB_RUN_NUMBER}" --output-dir .local/lab-runtime
       - name: Exercise Docker runtime and verified archive
@@ -138,6 +140,6 @@ jobs:
       - name: Upload all assets before publishing release
         run: |
           tag="v0.1.${RUN_NUMBER}"
-          gh release create "$tag" --draft --target "$COMMIT" --title "Campus Ciberdefensa 0.1.${RUN_NUMBER}" --notes "Salas prácticas de ataque web, defensa y bases de datos; 27 competencias con fuentes oficiales. Incluye runtime local de defensa y SQLite, probado con Docker en CI. Requiere Docker local con contenedores Linux para los entornos; las clases y simuladores funcionan sin motor. Los perfiles existentes se conservan fuera de la instalación. Sin certificados configurados en CI, el instalador Windows no está firmado."
+          gh release create "$tag" --draft --target "$COMMIT" --title "Campus Ciberdefensa 0.1.${RUN_NUMBER}" --notes "Campus profesional: diagnóstico y plan, agenda y repaso, prácticas Windows/Linux, espacios de certificación y bitácora, casos PCAP, evaluaciones independientes, historial y portafolio PDF/HTML. Incluye recuperación local con checkpoints y VMs propias mediante VirtualBox 7.2, con instalación manual del invitado. Las salas web/defensa/SQLite requieren Docker local Linux; clases, ejercicios y archivos funcionan sin motores. Los perfiles se conservan fuera de la instalación. Contenido docente propio con brechas externas explícitas; no garantiza aprobación ni cobertura oficial completa. Sin certificados configurados en CI, el instalador Windows no está firmado."
           gh release upload "$tag" release-assets/*
           gh release edit "$tag" --draft=false --latest

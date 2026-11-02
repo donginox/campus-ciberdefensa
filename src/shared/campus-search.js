@@ -9,6 +9,16 @@
   for(const practice of data.practices?.practices||[])add('practice',practice.id,practice.title,[practice.platform,practice.description||practice.objective,practice.theory].filter(Boolean).join(' '));
   for(const campaign of data.practices?.campaigns||[])add('campaign',campaign.id,campaign.title,campaign.description||campaign.objective);
   for(const book of Array.isArray(data.library)?data.library:[])add('material',book.file,book.title,[book.tag,book.description].join(' '));
+  for(const [id,title,description]of [
+   ['onboarding','Guía de inicio','Preparar el campus, disponibilidad, Windows, Kali y requisitos'],
+   ['preparation','Certificaciones y evidencias','CC CCST Security+ BTL1 eJPT, dominios y bitácora'],
+   ['assessment','Evaluación práctica independiente','Caso web y defensivo, alcance, informe y asistencia'],
+   ['learning-history','Historial y refuerzo','Intentos, errores, omisiones, comparación y próximos repasos'],
+   ['packet-analysis','Análisis de paquetes PCAP','Wireshark DNS TCP HTTP, casos guiado y transferencia, ZIP sin conexión'],
+   ['recovery','Copias y recuperación','Respaldos JSON, checkpoints, archivo dañado y restauración'],
+   ['calendar','Mi agenda','Organizar sesiones y fecha de revisión'],
+   ['portfolio','Mi portafolio','Exportar informes PDF HTML y evidencias']
+  ])add('page',id,title,description);
   return items.slice(0,2000).map(item=>({...item,searchText:fold(item.title+' '+item.description),titleText:fold(item.title)}));
  }
  function search(index,query,limit=12){if(!Array.isArray(index)||typeof query!=='string'||query.length>300)return[];const q=fold(query);if(!q)return[];const words=q.split(' ').slice(0,12),count=Number.isSafeInteger(limit)?Math.min(20,Math.max(1,limit)):12;return index.flatMap((item,position)=>{if(!words.every(word=>item.searchText.includes(word)))return[];const score=(item.titleText===q?100:0)+(item.titleText.startsWith(q)?30:0)+words.reduce((sum,word)=>sum+(item.titleText.includes(word)?5:1),0);return[{...item,score,position}];}).sort((a,b)=>b.score-a.score||a.position-b.position).slice(0,count);}

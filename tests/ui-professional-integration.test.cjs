@@ -1,5 +1,15 @@
 'use strict';
 const {test}=require('node:test'),assert=require('node:assert/strict');const {boot,click,input,tick}=require('./ui-harness.cjs');
+async function until(check){for(let i=0;i<100;i++){if(check())return;await tick()}assert.ok(check(),'La operación integrada no terminó a tiempo.');}
+test('las rutas nuevas guardan bitácora y análisis PCAP separados, y la prioridad actualiza el plan',async t=>{
+ const c=await boot({professional:true,missions:true});t.after(()=>c.w.close());
+ click(c,'[data-view="preparation"]');click(c,'[data-preparation-evidence="cc-controles"]');
+ for(const [name,value]of Object.entries({environment:'VM propia de práctica',procedure:'Comparé dos muestras ficticias.',result:'El resultado fue reproducible.',interpretation:'La muestra no prueba autoría.',help:'independent',review:'pending'})){const el=c.d.querySelector('[name="'+name+'"]');el.value=value;el.dispatchEvent(new c.w.Event(el.tagName==='SELECT'?'change':'input',{bubbles:true}));}
+ c.d.querySelector('.preparation-hub form').dispatchEvent(new c.w.Event('submit',{bubbles:true,cancelable:true}));await until(()=>c.records.get('one').labs['preparation-ledger']?.entries?.length===1);
+ click(c,'[data-preparation-cert="ejpt"]');click(c,'[data-preparation-action="choose"]');await until(()=>c.records.get('one').labs['professional-learning']?.settings.certificationId==='ejpt'&&c.records.get('one').labs['preparation-ledger']?.selectedCertificationId==='ejpt');
+ click(c,'[data-view="packet-analysis"]');for(const key of ['filters','timeline','evidence','interpretation','alternative'])input(c,'[data-packet-field="'+key+'"]',key==='evidence'?'Paquetes 1 y 2 contrastados con registros.':'Una interpretación propia de más de veinte caracteres.');click(c,'[data-packet-action="submit"]');await until(()=>!!c.records.get('one').labs['packet-casework']?.cases.guiado.attempt);assert.equal(c.d.querySelector('[data-packet-action="correction-export"]').disabled,false);
+ click(c,'[data-view="assessment"]');assert.ok(c.d.querySelector('.assessment-hub'));click(c,'[data-view="learning"]');click(c,'[data-learning-view="history"]');assert.match(c.d.querySelector('h1').textContent,/avance/i);await c.close();assert.equal(c.records.get('one').labs['preparation-ledger'].entries.length,1);assert.equal(c.records.get('one').labs['packet-casework'].cases.transferencia.attempt,null);
+});
 test('la navegación integra plan, diagnóstico, sistemas, VM y portafolio con el perfil activo',async t=>{const c=await boot({professional:true,missions:true});t.after(()=>c.w.close());
  for(const [view,pattern]of [['learning',/plan|aprend|recorrido/i],['systems',/Windows.*Linux/i],['vms',/virtuales/i],['portfolio',/portafolio/i]]){click(c,`[data-view="${view}"]`);await tick();assert.match(c.d.querySelector('h1').textContent,pattern);}
  click(c,'[data-action="export-portfolio-pdf"]');await tick();const call=c.calls.find(x=>Array.isArray(x)&&x[0]==='portfolio');assert.equal(call[1].profileId,'one');assert.equal(call[1].format,'pdf');

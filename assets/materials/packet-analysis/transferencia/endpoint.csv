@@ -1,0 +1,5 @@
+timestamp_utc,host,event_id,pid,process,action,detail,provenance
+2026-10-04T12:00:00.000000Z,WS-DEMO-02,EP-01,202,utilidad-manual-demo,start,usuario ficticio: alumno-demo,SINTETICO
+2026-10-04T12:00:00.400000Z,WS-DEMO-02,EP-02,202,utilidad-manual-demo,connect,192.0.2.22:49162->198.51.100.80:80,SINTETICO
+2026-10-04T12:00:00.550000Z,WS-DEMO-02,EP-03,202,utilidad-manual-demo,http_request,POST /collect recepcion.campus.test,SINTETICO
+2026-10-04T12:00:00.900000Z,WS-DEMO-02,EP-04,202,utilidad-manual-demo,exit,codigo=0; no equivale a HTTP 200,SINTETICO

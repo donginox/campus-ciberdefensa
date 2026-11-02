@@ -1,0 +1,35 @@
+{
+  "version": 1,
+  "origin": "Casos originales de Campus, creados el 2026-11-02. No son preguntas oficiales ni material de una plataforma de terceros.",
+  "scopeNote": "Informes de práctica con ejecución y revisión declaradas por el alumno. Abrir una sala no inicia ni demuestra una prueba. Ninguna entrega acredita preparación ni aprobación oficial.",
+  "cases": [
+    {
+      "id": "web-control-review",
+      "missionId": "web-investigation",
+      "title": "Caso A · Un control de acceso bajo revisión",
+      "brief": "Un equipo ficticio necesita decidir si una diferencia de comportamiento entre dos estados de acceso justifica corregir un control. En tu instancia propia de Juice Shop elegí una acción acotada de autenticación o acceso, diseñá la comparación y entregá una conclusión reproducible. Es válido concluir que no hay evidencia suficiente; explicá qué faltó. No hay una vulnerabilidad obligatoria ni una respuesta única.",
+      "baseline": "Anotá fecha y zona horaria, instancia propia publicada por el perfil, estado inicial de sesión y datos ficticios de prueba. Si no está disponible, dejá ejecución pendiente y describí el impedimento. No reutilices la línea de base de otro intento.",
+      "authorizedScope": "Solo la instancia de Juice Shop de tu perfil y la dirección loopback que muestre su sala. Acciones HTTP manuales de navegación, autenticación y acceso con datos ficticios propios. Excluye terceros, escaneo de otros servicios, fuerza bruta, automatización masiva, datos reales y cambios del host. Detenete ante un destino fuera de ese objetivo.",
+      "deliverable": "Documentá la comparación elegida, una hipótesis alternativa y sus resultados, solicitud/respuesta mínima sin secretos, conclusión, impacto comprobado frente a supuesto, control propuesto y prueba de regresión. Una respuesta distinta o un botón oculto no bastan para afirmar una vulnerabilidad.",
+      "rubric": ["Alcance y línea de base permiten repetir la comparación sin ampliar autorización.", "Los pasos distinguen observación, hipótesis, intento fallido y conclusión.", "La evidencia mínima identifica condiciones y resultados contrastados sin tokens.", "Impacto y remediación corresponden al control observado y contienen una validación.", "El resumen comunica incertidumbre y no presenta una app local como explotación de hosts."],
+      "guidance": "Para revisar tu entrega: verificá si comparaste condiciones equivalentes cambiando una sola variable; separá identidad, recurso y permiso. Una respuesta HTTP solo prueba esa solicitud. Buscá qué observación refutaría tu conclusión y agregala a un intento nuevo. Esto orienta la revisión; no determina si tu hallazgo existe."
+    },
+    {
+      "id": "soc-containment-review",
+      "missionId": "soc-investigation",
+      "title": "Caso B · Decisión de contención con incertidumbre",
+      "brief": "Un equipo ficticio sospecha que una secuencia de solicitudes requiere contener a un actor del caso. Partí de una línea de base nueva en tu servicio HTTP de defensa, obtené tu propia muestra y decidí entre una contención acotada o una escalada sin bloqueo. Contrastá el efecto de tu decisión y explicá cómo conservarías una alternativa benigna. No copies el informe ni los valores del caso A.",
+      "baseline": "Registrá fecha y zona, caseId actual, estado inicial de contención, ventana observada y si ya había eventos. Volver a generar tráfico puede añadir eventos: explicá cómo evitaste confundir muestras acumuladas. Si restablecés el caso desde la sala, preservá antes tus notas y registrá el cambio.",
+      "authorizedScope": "Solo el servicio soc-response de tu perfil y su dirección loopback validada. Usá los controles existentes de la sala para consultar eventos, repetir tráfico y, si lo justificás, contener al actor ficticio en esa aplicación. No bloquear IP del equipo, cambiar firewall o servicios, investigar cuentas reales ni acceder a otra red.",
+      "deliverable": "Entregá cronología mínima con IDs del caso, distinción actor ficticio/peer HTTP, hipótesis descartada, decisión proporcional, evidencia antes/después o razón de no ejecutar, impacto y recuperación propuesta. Indicá qué dato cambiaría tu decisión. El caso HTTP no demuestra una intrusión real ni un SIEM.",
+      "rubric": ["La línea de base nueva registra caseId, ventana y estado previo sin copiar valores de otra muestra.", "La correlación cita eventos propios y diferencia actor ficticio de peer HTTP.", "La hipótesis alternativa tiene criterio de descarte y reconoce evidencia faltante.", "La decisión y su validación se limitan a la aplicación; recuperación y escalada tienen motivo.", "El informe distingue eventos HTTP reales, datos ficticios y lo pendiente de investigación."],
+      "guidance": "Para revisar tu entrega: separá muestras acumuladas de solicitudes nuevas y vinculá cada afirmación a un identificador. El peer HTTP puede ser una pasarela y no identifica a la persona. Una contención útil necesita un resultado esperado y una comparación posterior; si decidiste no contener, explicá el umbral que faltó. No existe una atribución automática a partir del conteo."
+    }
+  ],
+  "externalPractice": {
+    "title": "Práctica externa pendiente · Windows, Linux y pivoting",
+    "text": "Estos casos loopback no demuestran explotación Windows/Linux ni pivoting entre hosts. Para esas capacidades usá manualmente un entorno propio o de formación expresamente autorizado con hosts Windows y Linux y al menos dos segmentos aislados. Antes de actuar registrá propietario, activos/direcciones exactas, técnicas permitidas, exclusiones, ventana, punto de partida, snapshots y criterio de parada. Campus no crea ni modifica ese entorno desde esta evaluación.",
+    "evidence": "En una práctica externa autorizada conservá un diagrama de origen, salto y destino, versiones y línea de base; hipótesis y pruebas de acceso por host; evidencia mínima de ejecución con marcas de tiempo; ruta o reenvío realmente verificado, límites de privilegios, limpieza y validación posterior. Registrá aquí una síntesis anonimizada y declarala como externa. No adjuntes secretos, no uses un tercero como objetivo y no marques pivoting demostrado por abrir una sala local.",
+    "review": "Contrastá el reporte y la evidencia con un revisor competente. La revisión propia de este módulo es una declaración tuya y su feedback solo comprueba estructura; no concede una nota ni un apto oficial."
+  }
+}

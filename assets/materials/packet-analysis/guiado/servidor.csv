@@ -1,0 +1,2 @@
+timestamp_utc,event_id,source_ip,source_port,host,method,path,status,request_body_bytes,response_body_bytes,decision,provenance
+2026-10-03T12:00:00.450000Z,WEB-01,192.0.2.11,49161,estado.campus.test,GET,/status.txt,200,0,33,ruta-permitida,SINTETICO

@@ -1,0 +1,71 @@
+const {test}=require('node:test');
+const assert=require('node:assert/strict');
+const fs=require('node:fs/promises');
+const os=require('node:os');
+const path=require('node:path');
+const {ProfileStore}=require('../desktop/store.cjs');
+const core=require('../src/shared/study-core.js');
+async function setup(t){const dir=await fs.mkdtemp(path.join(os.tmpdir(),'campus-recovery-'));t.after(()=>fs.rm(dir,{recursive:true,force:true}));const store=new ProfileStore(dir);const p=await store.createProfile('Ana');return {dir,store,p,file:path.join(dir,'profiles.json')};}
+async function disk(dir){const result={};for(const name of (await fs.readdir(dir)).sort()){const s=await fs.lstat(path.join(dir,name));result[name]={size:s.size,mtime:s.mtimeMs,bytes:s.isFile()?(await fs.readFile(path.join(dir,name))).toString('base64'):null};}return result;}
+async function corrupt(file){await fs.writeFile(file,'{damaged current');}
+test('inspection and cancellation preserve every byte and mtime, expose bounded previews without paths',async t=>{const {dir,store,file}=await setup(t);await corrupt(file);const before=await disk(dir);const status=await store.recoveryStatus();assert.equal(status.state,'corrupt');assert.equal(status.candidates.length,1);assert.equal(status.candidates[0].profiles[0].name,'Ana');assert.equal(status.candidates[0].profileCount,1);assert.equal(JSON.stringify(status).includes(dir),false);assert.deepEqual(await disk(dir),before);await store.recoveryStatus();assert.deepEqual(await disk(dir),before);});
+test('restore preserves damaged bytes first and restores all profiles and active selection',async t=>{const {dir,store,p,file}=await setup(t);const other=await store.createProfile('Luis');await store.selectProfile(p.id);await store.renameProfile({id:p.id,name:'Ana nueva'});await corrupt(file);const status=await store.recoveryStatus();const restored=await store.recover(status.candidates.find(x=>x.kind==='previous').id);assert.equal(restored.name,'Ana');assert.equal(restored.id,p.id);assert.equal((await store.getProfile(other.id)).name,'Luis');const preserved=(await fs.readdir(dir)).filter(n=>n.startsWith('profiles.preserved.'));assert.equal(preserved.length,1);assert.equal(await fs.readFile(path.join(dir,preserved[0]),'utf8'),'{damaged current');});
+test('untrusted IDs, changed candidates and invalid candidates never overwrite a good store',async t=>{const {dir,store,file}=await setup(t);const status=await store.recoveryStatus();const before=await fs.readFile(file);for(const id of ['../profiles.json','profiles.json.bak','',null])await assert.rejects(()=>store.recover(id),/RECOVERY/);const candidate=status.candidates[0];const changed=JSON.parse(await fs.readFile(file+'.bak','utf8'));Object.values(changed.profiles)[0].name='Changed';await fs.writeFile(file+'.bak',JSON.stringify(changed));await assert.rejects(()=>store.recover(candidate.id),/RECOVERY/);assert.deepEqual(await fs.readFile(file),before);for(const text of ['{',JSON.stringify({...changed,schemaVersion:'1'}),JSON.stringify({...changed,createdAt:JSON.parse('{"__proto__":{}}')})]){await fs.writeFile(file+'.bak',text);assert.equal((await store.recoveryStatus()).candidates.some(c=>c.kind==='previous'),false);}assert.deepEqual(await fs.readFile(file),before);});
+test('typed profile fields and prototype keys reject candidates',async t=>{const {store,file}=await setup(t);const original=JSON.parse(await fs.readFile(file,'utf8'));for(const mutate of [d=>Object.values(d.profiles)[0].createdAt=1,d=>Object.values(d.profiles)[0].revision='1',d=>d.profiles.constructor={},d=>Object.values(d.profiles)[0].labs={constructor:{}}]){const d=structuredClone(original);mutate(d);await fs.writeFile(file+'.bak',JSON.stringify(d));assert.equal((await store.recoveryStatus()).candidates.some(x=>x.kind==='previous'),false);}});
+test('pre-import checkpoints retain the complete previous store with bounded rotation',async t=>{const {dir,store,p,file}=await setup(t);const text=await store.exportBackup(p.id);for(let i=0;i<8;i++){await store.renameProfile({id:p.id,name:'Before '+i});await store.importBackup(p.id,text);}const checkpoints=(await fs.readdir(dir)).filter(n=>n.startsWith('profiles.checkpoint.'));assert.equal(checkpoints.length,5);const candidates=(await store.recoveryStatus()).candidates.filter(c=>c.kind==='checkpoint');assert.equal(candidates.length,5);assert.ok(candidates.some(c=>c.profiles[0].name==='Before 7'));const before=await disk(dir);await assert.rejects(()=>store.importBackup(p.id,'{'));assert.deepEqual(await disk(dir),before);const p2=await store.getProfile(p.id);await store.saveProfile({id:p.id,expectedRevision:p2.revision,study:p2.study,labs:{draft:1}});assert.equal((await fs.readdir(dir)).filter(n=>n.startsWith('profiles.checkpoint.')).length,5);});
+test('failed replacement retains original and a durable preserved copy without reporting success',async t=>{const {dir,store,file}=await setup(t);await corrupt(file);const candidate=(await store.recoveryStatus()).candidates[0];const rename=fs.rename;fs.rename=async(a,b)=>{if(b===file)throw Object.assign(new Error('injected rename failure'),{code:'EACCES'});return rename(a,b);};t.after(()=>{fs.rename=rename;});await assert.rejects(()=>store.recover(candidate.id),/rename failure/);assert.equal(await fs.readFile(file,'utf8'),'{damaged current');const preserved=(await fs.readdir(dir)).filter(n=>n.startsWith('profiles.preserved.'));assert.equal(preserved.length,1);assert.equal(await fs.readFile(path.join(dir,preserved[0]),'utf8'),'{damaged current');assert.equal((await fs.readdir(dir)).some(n=>n.endsWith('.tmp')),false);});
+test('linked candidate and junction store directory are never followed',async t=>{const {dir,store,file}=await setup(t);await fs.unlink(file+'.bak');await fs.link(file,file+'.bak');assert.equal((await store.recoveryStatus()).candidates.some(c=>c.kind==='previous'),false);const link=dir+'-junction';await fs.symlink(dir,link,process.platform==='win32'?'junction':'dir');t.after(()=>fs.unlink(link));await assert.rejects(()=>new ProfileStore(link).recoveryStatus(),/RECOVERY|CORRUPT/);});
+test('external backup inspection is read-only; recovery preserves corruption and healthy stores reject it',async t=>{const {dir,store,p,file}=await setup(t);const text=await store.exportBackup(p.id);const before=await disk(dir);assert.deepEqual(await store.inspectExternalBackup(text),{name:'Ana',savedAt:JSON.parse(text).savedAt,legacy:false});await assert.rejects(()=>store.recoverExternalBackup(text),/RECOVERY/);assert.deepEqual(await disk(dir),before);await corrupt(file);const restored=await store.recoverExternalBackup(text);assert.equal(restored.name,'Ana');assert.notEqual(restored.id,p.id);assert.equal((await store.listProfiles()).length,1);assert.equal((await fs.readdir(dir)).filter(n=>n.startsWith('profiles.preserved.')).length,1);});
+test('legacy HTML backups bootstrap an empty store and invalid external input cannot modify corruption',async t=>{const {dir,store,p,file}=await setup(t);const legacy=core.exportBackup(p.study);assert.equal((await store.inspectExternalBackup(legacy)).legacy,true);await corrupt(file);const before=await disk(dir);await assert.rejects(()=>store.recoverExternalBackup('{'));assert.deepEqual(await disk(dir),before);await fs.unlink(file);const restored=await store.recoverExternalBackup(legacy);assert.equal(restored.name,'Perfil recuperado');assert.equal(restored.revision,1);});
+test('preservation history is bounded and reaching capacity never deletes original evidence',async t=>{const {dir,store,file}=await setup(t);for(let i=0;i<5;i++){await corrupt(file);const candidate=(await store.recoveryStatus()).candidates.find(c=>c.kind==='previous');await store.recover(candidate.id);}await corrupt(file);const candidate=(await store.recoveryStatus()).candidates.find(c=>c.kind==='previous');const before=await disk(dir);await assert.rejects(()=>store.recover(candidate.id),/RECOVERY_CAPACITY/);assert.deepEqual(await disk(dir),before);});
+test('checkpoint pruning failure cannot accumulate copies or replace current data',async t=>{const {dir,store,p,file}=await setup(t);const text=await store.exportBackup(p.id);for(let i=0;i<5;i++)await store.importBackup(p.id,text);const before=await fs.readFile(file);const unlink=fs.unlink;fs.unlink=async file=>{if(path.basename(file).startsWith('profiles.checkpoint.'))throw new Error('injected checkpoint prune failure');return unlink(file);};t.after(()=>{fs.unlink=unlink;});for(let i=0;i<2;i++)await assert.rejects(()=>store.importBackup(p.id,text),/prune failure/);assert.deepEqual(await fs.readFile(file),before);assert.equal((await fs.readdir(dir)).filter(n=>n.startsWith('profiles.checkpoint.')).length,5);});
+test('failure preserving the current file aborts restoration before replacement',async t=>{const {store,file}=await setup(t);await corrupt(file);const candidate=(await store.recoveryStatus()).candidates[0];const rename=fs.rename;fs.rename=async(a,b)=>{if(path.basename(b).startsWith('profiles.preserved.'))throw new Error('injected preservation failure');return rename(a,b);};t.after(()=>{fs.rename=rename;});await assert.rejects(()=>store.recover(candidate.id),/preservation failure/);assert.equal(await fs.readFile(file,'utf8'),'{damaged current');});
+test('ordinary saves checkpoint at the daily boundary instead of every edit',async t=>{const {dir,store,p}=await setup(t);await store.renameProfile({id:p.id,name:'First'});let snapshots=(await fs.readdir(dir)).filter(n=>n.startsWith('profiles.checkpoint.'));assert.equal(snapshots.length,1);await store.renameProfile({id:p.id,name:'Second'});assert.equal((await fs.readdir(dir)).filter(n=>n.startsWith('profiles.checkpoint.')).length,1);const old=new Date(Date.now()-25*60*60*1000);await fs.utimes(path.join(dir,snapshots[0]),old,old);await store.renameProfile({id:p.id,name:'Third'});assert.equal((await fs.readdir(dir)).filter(n=>n.startsWith('profiles.checkpoint.')).length,2);});
+test('recovery joins the normal write queue and finishes before the next rename',async t=>{const {store,p}=await setup(t);await store.renameProfile({id:p.id,name:'Later'});const candidate=(await store.recoveryStatus()).candidates.find(c=>c.kind==='previous');const restored=store.recover(candidate.id);const renamed=store.renameProfile({id:p.id,name:'After recovery'});assert.equal((await restored).name,'Ana');assert.equal((await renamed).revision,2);assert.equal((await store.getActiveProfile()).name,'After recovery');});
+test('schema-1 stores retain independently valid large profiles without an aggregate node cap',async t=>{
+ const {store,p,file}=await setup(t),other=await store.createProfile('Luis');
+ const data=JSON.parse(await fs.readFile(file,'utf8'));
+ for(const record of Object.values(data.profiles))record.labs={values:Array.from({length:51000},(_,i)=>i)};
+ await fs.writeFile(file,JSON.stringify(data));
+ assert.equal((await store.getProfile(p.id)).labs.values.length,51000);
+ await store.renameProfile({id:other.id,name:'Luis actualizado'});
+ assert.equal((await store.getProfile(other.id)).labs.values[50999],50999);
+ const status=await store.recoveryStatus();assert.equal(status.state,'healthy');
+ assert.equal(status.candidates.find(c=>c.kind==='previous').profileCount,2);
+ // Unknown extension fields still receive recursive unsafe-key checks.
+ data.extension={nested:JSON.parse('{"__proto__":{}}')};await fs.writeFile(file+'.bak',JSON.stringify(data));
+ assert.equal((await store.recoveryStatus()).candidates.some(c=>c.kind==='previous'),false);
+});
+test('a compact near-128MiB recovery candidate remains readable after restoration',async t=>{
+ const {dir,store,p,file}=await setup(t),maximum=128*1024*1024;
+ let data=JSON.parse(await fs.readFile(file,'utf8'));data.extension='';
+ const target=maximum-100;const emptyLength=Buffer.byteLength(JSON.stringify(data));
+ data.extension='x'.repeat(target-emptyLength);
+ let text=JSON.stringify(data);assert.equal(Buffer.byteLength(text),target);
+ await fs.writeFile(file+'.bak',text);data=null;text=null;
+ await corrupt(file);
+ const candidate=(await store.recoveryStatus()).candidates.find(c=>c.kind==='previous');assert.ok(candidate);
+ await store.recover(candidate.id);
+ assert.ok((await fs.stat(file)).size<=maximum,'restoration must never publish an oversized primary');
+ assert.equal((await new ProfileStore(dir).getActiveProfile()).id,p.id);
+});
+test('candidate preview normalizes padded stored names before exposing either name field',async t=>{
+ const {store,p,file}=await setup(t),data=JSON.parse(await fs.readFile(file,'utf8'));
+ data.profiles[p.id].name=' '.repeat(1024*1024)+'Ana';await fs.writeFile(file+'.bak',JSON.stringify(data));
+ const candidate=(await store.recoveryStatus()).candidates.find(c=>c.kind==='previous');assert.ok(candidate);
+ assert.equal(candidate.profiles[0].name.length,3);assert.equal(candidate.profiles[0].name,'Ana');
+ assert.equal(candidate.activeProfileName,'Ana');
+});
+test('serialization growth over 128MiB is rejected before any preservation or replacement',async t=>{
+ const {dir,store,file}=await setup(t),maximum=128*1024*1024;
+ let data=JSON.parse(await fs.readFile(file,'utf8'));data.extension='';data.large=1e20;
+ let template=JSON.stringify(data).replace('"large":100000000000000000000','"large":1e20');
+ const target=maximum-4,padding=target-Buffer.byteLength(template);
+ let text=template.replace('"extension":""','"extension":"'+'x'.repeat(padding)+'"');
+ assert.equal(Buffer.byteLength(text),target);await fs.writeFile(file+'.bak',text);data=null;template=null;text=null;
+ const beforeNames=(await fs.readdir(dir)).sort(),beforePrimary=await fs.readFile(file),beforeStat=await fs.stat(file);
+ const candidate=(await store.recoveryStatus()).candidates.find(c=>c.kind==='previous');assert.ok(candidate);
+ await assert.rejects(()=>store.recover(candidate.id),/RECOVERY_INVALID/);
+ assert.deepEqual((await fs.readdir(dir)).sort(),beforeNames);
+ assert.deepEqual(await fs.readFile(file),beforePrimary);assert.equal((await fs.stat(file)).mtimeMs,beforeStat.mtimeMs);
+});
