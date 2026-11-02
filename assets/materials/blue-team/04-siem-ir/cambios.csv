@@ -1,0 +1,2 @@
+change_id,inicio_utc,fin_utc,user,src_ip,host,accion,objeto,alcance
+CHG-077,2026-10-28T09:00:00Z,2026-10-28T09:04:00Z,admin-mantenimiento,10.60.0.8,PORTAL01,config_update,config/banner.txt,Cambiar solamente texto visual de inscripcion. No modificar auditoria ni retencion.

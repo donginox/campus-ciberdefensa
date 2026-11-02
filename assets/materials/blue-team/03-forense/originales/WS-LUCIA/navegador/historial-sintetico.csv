@@ -1,0 +1,3 @@
+visit_id,ts_utc,url,resultado
+V001,2026-10-28T08:50:00Z,https://campus.aurora.test/calendario,200
+V002,2026-10-28T09:06:11Z,https://verificacion-cuenta.test/confirmar?rid=AUR028,200

@@ -1,0 +1,9 @@
+flow_id,event_time,fuente,src_ip,src_port,dst_ip,dst_port,protocolo,observacion,regla_reportada,detalle
+F001,2026-11-16T08:55:00Z,cliente,10.60.10.25,51001,10.60.20.20,443,TCP,timeout,,no hay respuesta de aplicacion observada
+F002,2026-11-16T08:55:15Z,cliente,10.60.10.25,53001,10.60.30.10,53,UDP,timeout,,consulta portal.aula.test sin respuesta en cliente
+F003,2026-11-16T09:02:00Z,firewall,10.60.10.25,51020,10.60.20.20,443,TCP,permitido,10,sesion TCP observada
+F004,2026-11-16T09:03:00Z,firewall,10.60.20.20,42001,10.60.20.21,5432,TCP,permitido,30,conexion de aplicacion
+F005,2026-11-16T09:10:00Z,firewall,10.60.10.25,51022,10.60.20.20,22,TCP,denegado,40,solicitud SSH
+F006,2026-11-16T09:30:00Z,firewall,10.60.20.20,53022,10.60.30.10,53,UDP,denegado,99,consulta de nombre desde portal
+F007,2026-11-16T10:00:20Z,cliente,10.60.10.26,51201,10.60.20.20,443,TCP,HTTP_503,,conexion recibio respuesta HTTP
+F008,2026-11-16T10:04:20Z,cliente,10.60.10.26,51204,10.60.20.20,443,TCP,HTTP_200,,conexion recibio respuesta HTTP

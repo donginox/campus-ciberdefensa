@@ -1,0 +1,50 @@
+'use strict';
+const {app,BrowserWindow,ipcMain,protocol,dialog,session,shell}=require('electron');
+const fs=require('node:fs/promises'),path=require('node:path'),os=require('node:os');const {Worker}=require('node:worker_threads');
+const {ProfileStore}=require('./store.cjs');const security=require('./security.cjs');const {updateSnapshot}=require('./update-state.cjs');const {CloseGate}=require('./close-gate.cjs');
+protocol.registerSchemesAsPrivileged([{scheme:'campus',privileges:{standard:true,secure:true,supportFetchAPI:true,corsEnabled:true}}]);
+let mainWindow,store,updater,closeGate=new CloseGate(),installRequested=false,sqlBusy=false;
+let snapshot=updateSnapshot('disabled');const root=app.getAppPath();
+const repository='https://github.com/donginox/campus-ciberdefensa';
+function send(channel,data){if(mainWindow&&!mainWindow.isDestroyed())mainWindow.webContents.send(channel,data);}
+function publish(event,data){snapshot=updateSnapshot(event,data);send('campus:update-status',snapshot);}
+function requestClose(){closeGate.request();send('campus:before-close');}
+// Registered before updater: every quit path first waits for renderer and disk queues.
+app.on('before-quit',event=>{if(mainWindow&&!closeGate.allowed){event.preventDefault();requestClose();}});
+function external(raw){const url=security.externalUrl(raw);if(url)shell.openExternal(url).catch(()=>{});}
+function protect(window,allowed){window.webContents.setWindowOpenHandler(details=>{external(details.url);return {action:'deny'};});window.webContents.on('will-navigate',(event,url)=>{if(!allowed(url)){event.preventDefault();external(url);}});window.webContents.on('will-attach-webview',event=>event.preventDefault());}
+const preferences={contextIsolation:true,sandbox:true,nodeIntegration:false,webSecurity:true,webviewTag:false,allowRunningInsecureContent:false};
+async function registerResources(target=protocol){
+ await target.handle('campus',async request=>{try{if(request.method!=='GET')return new Response('Método no permitido',{status:405});const filename=security.resourcePath(request.url,root);const isMaterial=new URL(request.url).pathname.startsWith('/assets/materials/');const ext=path.extname(filename).toLowerCase();const mime={'.html':'text/html; charset=utf-8','.js':'text/javascript; charset=utf-8','.css':'text/css; charset=utf-8','.json':'application/json','.svg':'image/svg+xml','.png':'image/png','.jpg':'image/jpeg','.woff':'font/woff','.woff2':'font/woff2'};
+ const csp=isMaterial?"default-src 'none'; style-src 'unsafe-inline'; img-src campus: data:; font-src campus:; form-action 'none'; base-uri 'none'; frame-ancestors 'none'":"default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self'; connect-src 'none'; object-src 'none'; frame-src 'none'; form-action 'none'; base-uri 'none'; frame-ancestors 'none'";
+ return new Response(await fs.readFile(filename),{headers:{'Content-Type':mime[ext]||'text/plain; charset=utf-8','Content-Security-Policy':csp,'X-Content-Type-Options':'nosniff','Cache-Control':'no-store'}});
+ }catch{return new Response('Recurso no disponible',{status:404});}});
+}
+async function openMaterial(relative){const url='campus://app/assets/materials/'+relative.split('/').map(encodeURIComponent).join('/');const child=new BrowserWindow({parent:mainWindow,width:1000,height:760,autoHideMenuBar:true,title:'Material de consulta · Campus',webPreferences:{...preferences,partition:'material-readonly'}});protect(child,security.trustedMaterialUrl);child.webContents.session.setPermissionRequestHandler((_wc,_permission,callback)=>callback(false));child.webContents.session.setPermissionCheckHandler(()=>false);child.webContents.session.on('will-download',event=>event.preventDefault());await child.loadURL(url);return {opened:true};}
+async function runSqlLab(input){if(sqlBusy)throw new Error('Ya hay una consulta en ejecución.');sqlBusy=true;try{return await new Promise((resolve,reject)=>{
+ const workerRoot=app.isPackaged?root.replace(/app\.asar$/,'app.asar.unpacked'):root;
+ const worker=new Worker(path.join(workerRoot,'src/labs/sql-worker.cjs'),{workerData:{...input,wasmPath:app.isPackaged?path.join(process.resourcesPath,'sql-wasm.wasm'):require.resolve('sql.js/dist/sql-wasm.wasm')},resourceLimits:{maxOldGenerationSizeMb:64,maxYoungGenerationSizeMb:16,stackSizeMb:4}});let settled=false;
+ const done=(error,result)=>{if(settled)return;settled=true;clearTimeout(timer);worker.terminate();if(error)reject(error);else resolve(result);};
+ const timer=setTimeout(()=>done(new Error('SQL_TIMEOUT: La consulta excedió dos segundos.')),2000);
+ worker.once('message',result=>{if(result?.error)return done(new Error(String(result.error.code||'SQL_ERROR')+': '+String(result.error.message||'Consulta inválida.')));if(!result||!Array.isArray(result.columns)||!Array.isArray(result.rows)||result.rows.length>200)return done(new Error('Respuesta SQL inválida.'));done(null,result);});worker.once('error',()=>done(new Error('No se pudo ejecutar el laboratorio SQL.')));worker.once('exit',code=>{if(!settled)done(new Error('El laboratorio SQL terminó sin resultado ('+code+').'));});
+ });}finally{sqlBusy=false;}}
+function registerIpc(){const handlers={
+ getAppInfo:()=>({version:app.getVersion(),platform:process.platform,packaged:app.isPackaged,repository,updatesEnabled:app.isPackaged}),
+ listProfiles:()=>store.listProfiles(),getActiveProfile:()=>store.getActiveProfile(),createProfile:value=>store.createProfile(value),selectProfile:id=>store.selectProfile(id),renameProfile:value=>store.renameProfile(value),saveProfile:value=>store.saveProfile(value),
+ exportBackup:async id=>{const text=await store.exportBackup(id);const result=await dialog.showSaveDialog(mainWindow,{title:'Exportar respaldo del perfil',defaultPath:'campus-respaldo.json',filters:[{name:'Respaldo JSON',extensions:['json']}]});if(result.canceled||!result.filePath)return {canceled:true};await fs.writeFile(result.filePath,text,{encoding:'utf8',mode:0o600});return {canceled:false};},
+ importBackup:async id=>{await store.getProfile(id);const result=await dialog.showOpenDialog(mainWindow,{title:'Elegí el respaldo para reemplazar el progreso',properties:['openFile'],filters:[{name:'Respaldo JSON',extensions:['json']}]});if(result.canceled||!result.filePaths[0])return {canceled:true};const selected=result.filePaths[0];if((await fs.stat(selected)).size>7*1024*1024)throw new Error('El respaldo supera 7 MB.');return {canceled:false,profile:await store.importBackup(id,await fs.readFile(selected,'utf8'))};},
+ openMaterial,exportMaterial:async relative=>{const result=await dialog.showSaveDialog(mainWindow,{title:'Guardar una copia del material',defaultPath:path.basename(relative)});if(result.canceled||!result.filePath)return {canceled:true};await fs.copyFile(path.join(root,'assets/materials',relative),result.filePath);return {canceled:false};},
+ getSystemLabInfo:()=>({platform:process.platform,release:os.release(),cpuCount:os.cpus().length,totalMemoryGiB:Math.round(os.totalmem()/1024**3*10)/10}),runSqlLab,
+ checkForUpdates:async()=>{if(!updater)return snapshot;try{await updater.checkForUpdates();}catch{publish('error');}return snapshot;},
+ installUpdate:()=>{if(!updater||snapshot.status!=='downloaded')return false;installRequested=true;requestClose();return true;},
+ readyToClose:async()=>{if(await closeGate.ready(()=>store.flush())){if(installRequested&&updater)updater.quitAndInstall(false,true);else app.quit();}}
+ };
+ for(const [method,handler]of Object.entries(handlers))ipcMain.handle('campus:'+method,async(event,arg)=>{security.assertTrustedSender(event,mainWindow?.webContents);return handler(security.validateCall(method,arg));});
+}
+function setupUpdater(){if(!app.isPackaged)return;const {autoUpdater}=require('electron-updater');updater=autoUpdater;updater.autoDownload=true;updater.autoInstallOnAppQuit=true;updater.setFeedURL({provider:'github',owner:'donginox',repo:'campus-ciberdefensa',private:false});for(const event of ['checking-for-update','update-available','update-not-available','download-progress','update-downloaded','error'])updater.on(event,data=>publish(event,data));setTimeout(()=>updater.checkForUpdates().catch(()=>publish('error')),1000);}
+async function createWindow(){mainWindow=new BrowserWindow({width:1440,height:940,minWidth:920,minHeight:640,title:'Campus Ciberdefensa',backgroundColor:'#f6f1e7',autoHideMenuBar:true,webPreferences:{...preferences,preload:path.join(__dirname,'preload.cjs')}});protect(mainWindow,security.trustedMainUrl);mainWindow.on('close',event=>{if(!closeGate.allowed){event.preventDefault();requestClose();}});mainWindow.on('closed',()=>{mainWindow=null;});mainWindow.webContents.once('did-finish-load',()=>{send('campus:update-status',snapshot);if(closeGate.pending)send('campus:before-close');});await mainWindow.loadURL(security.TRUSTED_URL);}
+if(!app.requestSingleInstanceLock())app.quit();else{
+ app.on('second-instance',()=>{if(mainWindow){if(mainWindow.isMinimized())mainWindow.restore();mainWindow.focus();}});
+ app.whenReady().then(async()=>{store=new ProfileStore(path.join(app.getPath('userData'),'campus-data'));session.defaultSession.setPermissionRequestHandler((_wc,_permission,callback)=>callback(false));session.defaultSession.setPermissionCheckHandler(()=>false);session.defaultSession.on('will-download',(event)=>event.preventDefault());await registerResources();await registerResources(session.fromPartition('material-readonly').protocol);registerIpc();await createWindow();setupUpdater();}).catch(error=>{dialog.showErrorBox('No se pudo abrir Campus',error.message);closeGate.allowed=true;app.quit();});
+ app.on('window-all-closed',()=>app.quit());
+}

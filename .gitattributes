@@ -1,0 +1,7 @@
+* text=auto eol=lf
+assets/** -text
+*.png binary
+*.ico binary
+*.wasm binary
+*.exe binary
+*.AppImage binary

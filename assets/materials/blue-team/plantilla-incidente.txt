@@ -1,0 +1,20 @@
+INFORME DE INVESTIGACIÓN
+
+Caso y analista:
+Fecha/hora real de elaboración:
+Resumen para una persona no técnica:
+Pregunta y señal inicial:
+Fuentes incluidas y fuentes ausentes:
+Integridad y método:
+Cronología con event_id y tiempo UTC:
+Hechos respaldados por evidencia:
+Hipótesis alternativas:
+Alcance conocido y posible impacto:
+Confianza y límites:
+Regla de detección propuesta y validación:
+Acciones propuestas, condiciones y responsables:
+Evidencia adicional necesaria:
+Recuperación y seguimiento:
+Consultas o pasos reproducibles:
+
+Todas las respuestas son del alumno; no hay conclusiones esperadas precargadas.

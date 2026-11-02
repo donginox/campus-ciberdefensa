@@ -1,0 +1,15 @@
+OBSERVACIÓN SINTÉTICA DE WS-LUCIA
+Momento: 2026-11-16T08:50:00Z
+No es una salida real de ipconfig ni de PowerShell; los campos están normalizados para el ejercicio.
+
+Interfaz: Ethernet Aula
+Estado del enlace: conectado
+IPv4: 10.60.10.25
+Longitud del prefijo: 26
+Puerta de enlace configurada: 10.60.10.65
+DNS configurado: 10.60.30.10
+Nombre esperado del portal: portal.aula.test
+Dirección prevista del portal según inventario: 10.60.20.20
+
+El inventario y esta observación son fuentes diferentes. Antes de recomendar un cambio, contrastá el prefijo, la ruta, la hora y el contexto.
+No apliques esta configuración en tu equipo: solamente analizala.

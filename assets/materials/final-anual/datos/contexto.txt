@@ -1,0 +1,39 @@
+CENTRO AULA RÍO CLARO
+Escenario ficticio de evaluación; no describe a una institución real.
+
+El centro tiene dos aulas, personal docente y un portal interno. Los puestos de trabajo usan Windows; el portal y la base de datos se administran en Linux. Tu función es investigar un problema de acceso y preparar un informe de estado sin cambiar sistemas de producción.
+
+Al comenzar la jornada del 16 de noviembre de 2026, Lucía informó que el portal no respondía desde su puesto. Más tarde, el equipo de coordinación recibió una alerta por actividad de autenticación y una exportación de datos. Durante la misma mañana había una ventana de mantenimiento del portal.
+
+La pregunta del encargo es qué problemas podés demostrar, qué conexiones hay entre ellos y qué sigue siendo una hipótesis. No se presupone una sola causa para todos los síntomas.
+
+Período a estudiar: 2026-11-16 08:45:00Z a 10:30:00Z. Todos los archivos usan UTC salvo un campo que explícitamente indique otra cosa. La fecha es parte de una simulación; los registros no fueron recolectados en esa fecha.
+
+Cuentas de personas:
+- lucia: estudiante, pertenece al grupo AULA\Estudiantes.
+- bruno: docente, pertenece a AULA\Docentes.
+- soporte: operador de soporte, pertenece a AULA\Operaciones; no se presume administrador de todos los equipos por ese nombre.
+- auditor: auditor de lectura, pertenece a AULA\Auditoria.
+
+El escenario menciona además cuentas técnicas, como svc_portal y svc_deploy, que no representan a una persona. Los grupos del escenario no existen necesariamente en tu Windows: no hay que crearlos para analizar estos datos.
+
+Reglas del negocio:
+- Las exportaciones deben tener una finalidad de trabajo y autorización correspondiente.
+- El código de una solicitud es una referencia; la presencia de un código en un registro no prueba por sí sola que la acción estuviera autorizada.
+- RTO del portal: 90 minutos desde la declaración del incidente hasta recuperar el servicio aceptado por su responsable.
+- RPO de los datos académicos: como máximo 30 minutos de información perdida.
+- El propietario del servicio decide si acepta el servicio recuperado. Soporte puede investigar, preservar y proponer; no recibe autorización para bloquear cuentas reales durante este ejercicio.
+
+Fuentes recibidas:
+- activos.csv: inventario previsto.
+- red-puesto.txt: observación anterior al reporte inicial.
+- politica-red.csv: reglas simplificadas de un firewall con evaluación de arriba hacia abajo y primera coincidencia.
+- flujos.csv: observaciones normalizadas de cliente y firewall; cada fila indica su fuente.
+- acl-windows.txt y eventos-windows.xml: datos sintéticos para razonar sobre NTFS y eventos.
+- eventos.jsonl: registros de varias fuentes con hora del evento y hora de ingreso al colector.
+- datos.sql: copia lógica pequeña y normalizada para consultas.
+- solicitudes-flat.csv: exportación de una planilla anterior que debes revisar, no una fuente de verdad garantizada.
+- codigo-revision.txt y intercalado-hilos.csv: material propio de lectura de código y concurrencia.
+- recuperacion.csv y cambios.txt: alternativas y contexto operativo.
+
+La colección no incluye paquetes de una captura real, memoria RAM, disco forense ni EVTX nativo. No atribuyas esos tipos de evidencia a los archivos de texto.

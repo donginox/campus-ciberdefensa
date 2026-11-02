@@ -1,0 +1,9 @@
+FINAL INTEGRADOR ANUAL
+
+Empezá por guia.txt. Todos los datos de esta carpeta son ficticios y se crearon para estudiar. No son registros de UNDEF, de una empresa ni de tu equipo. Las direcciones del escenario son datos: no hay que conectarse a ellas. Para ejecutar una prueba real se usan únicamente tus archivos de práctica y servicios propios en loopback, o VMs que vos controles.
+
+La evaluación integra Sistemas Operativos I y II, Infraestructura de Telecomunicaciones, Tratamiento de Datos, Programación y fundamentos de gestión/seguridad. El eje es conectar lo aprendido durante el año; las certificaciones se evalúan aparte.
+
+datos/ contiene el escenario y las evidencias. plantillas/ contiene formularios de entrega. Conservá los originales. Creá respuestas/ para tu trabajo. No hay solucionario incluido.
+
+La base SQLite se crea recién cuando sigas el montaje de guia.txt. El paquete no trae ejecutables, malware ni imágenes de máquinas virtuales. La ejecución real en Windows, Linux y SQL se marca aparte de la interpretación de las evidencias sintéticas.

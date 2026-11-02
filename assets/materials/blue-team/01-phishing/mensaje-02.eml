@@ -1,0 +1,23 @@
+Return-Path: <boletin@aurora.test>
+Received: from filtro.aurora.test (filtro.aurora.test [10.60.0.6]) by
+ mailgw.aurora.test with ESMTP id AUR002; Wed, 28 Oct 2026 08:40:04 +0000
+Received: from smtp.aurora.test (smtp.aurora.test [192.0.2.55]) by
+ filtro.aurora.test with ESMTP id FIL002; Wed, 28 Oct 2026 08:40:02 +0000
+Authentication-Results: mailgw.aurora.test; spf=pass
+ smtp.mailfrom=aurora.test; dkim=pass header.d=aurora.test; dmarc=pass
+ header.from=aurora.test
+X-Lab-Synthetic: yes; all identities and authentication results are invented
+X-Lab-DKIM-Note: Gateway results are synthetic; no verifiable signature or
+ real DNS key is supplied
+Date: Wed, 28 Oct 2026 08:40:00 +0000
+From: Boletin Aurora <boletin@aurora.test>
+Reply-To: boletin@aurora.test
+To: Lucia Estudiante <lucia@aurora.test>
+Subject: Calendario semanal del campus
+Message-ID: <AUR002.20261028@laboratorio.test>
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: quoted-printable
+MIME-Version: 1.0
+
+Hola Lucia. El calendario semanal esta disponible en https://campus.aurora.te=
+st/calendario. No te pedimos contrasenas ni pagos. Este mensaje es sintetico.

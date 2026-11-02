@@ -1,0 +1,34 @@
+MATERIAL PROPIO PARA LEER Y RAZONAR; NO HACE FALTA COMPILARLO
+No es una copia del código de la cátedra ni una aplicación de producción.
+
+Contrato del caso:
+El carrito debe agregar exactamente la cantidad pedida. La cantidad pedida debe ser un entero positivo y no superar el stock disponible. El stock no puede ser negativo. Un fallo de validación no debe cambiar el estado del producto ni del carrito. Se trabaja con un solo producto, sin concurrencia en esta primera función.
+
+Pseudocódigo con sintaxis cercana a C:
+
+typedef struct {
+    int id;
+    int stock;
+    int cantidad_en_carrito;
+} Producto;
+
+int agregar(Producto *p, int cantidad) {
+    if (cantidad == 0) {
+        return 0;
+    }
+    if (cantidad > p->stock) {
+        return -1;
+    }
+    p->cantidad_en_carrito = p->cantidad_en_carrito + 1;
+    p->stock = p->stock - cantidad;
+    return 1;
+}
+
+Estado inicial para la traza: id=18, stock=8, cantidad_en_carrito=0.
+Analizá cada llamada sobre una copia independiente de ese estado inicial, no una después de otra:
+agregar(p, 3)
+agregar(p, 0)
+agregar(p, -2)
+agregar(p, 9)
+
+Para la revisión, podés suponer que p apunta a un Producto válido. Después proponé qué validación adicional necesitaría una función real si no pudiera hacer esa suposición. No hay archivo ejecutable ni operación sobre datos del equipo.

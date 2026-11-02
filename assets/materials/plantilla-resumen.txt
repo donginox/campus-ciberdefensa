@@ -1,0 +1,63 @@
+PLANTILLA PARA TU RESUMEN FINAL DEL AÑO
+
+Objetivo: escribir una síntesis que puedas explicar y usar para resolver situaciones nuevas. Completá una ficha por unidad importante y una hoja de conexión entre materias. No copies párrafos sin comprenderlos; guardá las referencias para volver al original.
+
+FICHA POR UNIDAD
+
+Materia y unidad:
+Pregunta o problema que resuelve:
+Fuente exacta del campus y ubicación:
+Estado de la fuente: leída / identificada / pendiente / restringida:
+Ampliación docente utilizada:
+Fecha de tu revisión:
+
+Cinco a ocho conceptos centrales, definidos con tus palabras:
+Relaciones entre ellos:
+Conocimientos previos necesarios:
+Ejemplo propio, distinto del de la guía:
+Procedimiento explicado paso a paso:
+Datos o comandos utilizados, si corresponde:
+Qué evidencia confirma el resultado:
+Qué no puede concluirse con esa evidencia:
+Error frecuente y cómo detectarlo:
+Relación con otra materia:
+Pregunta que todavía no podés contestar:
+Ejercicio independiente resuelto y referencia a tu evidencia:
+
+HOJA DE SISTEMAS OPERATIVOS
+
+Conectá hardware, kernel, modo usuario, llamada al sistema, proceso, hilo, planificación, memoria y archivo. Explicá un cambio de estado de proceso, una carrera, un interbloqueo, una traducción de direcciones y una recuperación de archivo.
+Compará Windows y Linux en identidad, permisos, procesos, servicios, red y eventos. Indicá una diferencia de modelo real, no solamente dos comandos que se parecen.
+
+HOJA DE TELECOMUNICACIONES
+
+Relacioná señal, medio, ruido, ancho de banda, tasa, errores y modulación con la comunicación digital. Después vinculá trama/paquete/segmento, MAC/IP/puerto, switch/router, DNS/DHCP, TCP/UDP y HTTP/TLS.
+Agregá un ejemplo de subnetting resuelto por vos y un recorrido entre redes con explicación de cada salto. Identificá supuestos y unidades en los cálculos.
+
+HOJA DE DATOS
+
+Dibujá tres entidades con claves y cardinalidades. Mostrá una dependencia y una anomalía de diseño. Incluí consultas de selección, JOIN y agrupamiento; explicá cómo trata cada una duplicados o NULL. Diseñá una transacción y una restauración comprobable.
+
+HOJA DE PROGRAMACIÓN
+
+Elegí un algoritmo, describí entradas y resultados, trazá variables y escribí su invariante. Relacioná tipo, condición, bucle, función, arreglo y límites. Explicá objeto/clase/encapsulación/composición con un ejemplo y un diagrama sencillo. Mostrá una frontera cliente/servidor/base y el control que necesita cada una.
+
+HOJA DE GESTIÓN Y SEGURIDAD
+
+Definí servicio, activo, dependencia, responsable, incidente, problema, cambio, riesgo, control, RTO y RPO en un mismo caso. Separá las explicaciones propias de las definiciones que debas citar de tus materias. Distinguí una medida ejecutada de una decisión propuesta.
+
+AUTOEVALUACIÓN DEL RESUMEN
+
+0: solo reconozco el nombre.
+1: puedo explicarlo mirando el apunte.
+2: puedo explicarlo sin leer, pero necesito ayuda para aplicarlo.
+3: puedo resolverlo con evidencia y justificar mis decisiones.
+4: puedo transferirlo a un caso nuevo, explicar límites y corregir un error.
+
+Anotá un nivel por tema, la evidencia que lo respalda y la próxima tarea. No uses un promedio para ocultar que una competencia esencial sigue en cero. El integrador final tiene sus propios mínimos por estación y separa análisis de ejecución.
+
+CONEXIÓN GENERAL DEL AÑO
+
+Redactá una explicación de una página para este recorrido: usuario en Windows → aplicación y proceso → DNS y red → servicio en Linux → consulta en una base → respuesta y registro → investigación de un fallo → recuperación y comunicación al responsable.
+
+Cada flecha debe tener una explicación y una evidencia posible. Si una flecha solo dice magia o una marca de herramienta, falta desarrollar el concepto. Ese mapa es el centro de tu resumen final.

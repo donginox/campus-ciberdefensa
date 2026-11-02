@@ -1,0 +1,6 @@
+host,ip,rol,os,criticidad
+WS-LUCIA,10.60.0.20,puesto de Lucia,Linux del escenario,media
+MAILGW,10.60.0.5,pasarela de correo ficticia,Linux del escenario,alta
+PORTAL01,10.60.0.30,portal y reportes ficticios,Linux del escenario,alta
+ADMIN01,10.60.0.8,mantenimiento autorizado,Linux del escenario,alta
+IDP01,10.60.0.10,identidad ficticia,Linux del escenario,alta

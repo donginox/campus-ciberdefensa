@@ -1,0 +1,127 @@
+CERTIFICACIONES DE CIBERSEGURIDAD Y CRITERIOS DE PREPARACIÓN
+Verificación: 30 de octubre de 2026. Horizonte del alumno: diciembre de 2026.
+Entorno declarado: Kali Linux. El tiempo disponible dejó de limitarse a seis horas semanales.
+
+Este registro separa hechos publicados por los organismos de propuestas pedagógicas propias. Preparar competencias compartidas permite avanzar hacia cinco objetivos; no acredita cobertura completa ni predice aprobar cinco exámenes en diciembre. Las recomendaciones de experiencia no son requisitos obligatorios cuando el organismo las presenta como recomendaciones.
+
+ISC2 CERTIFIED IN CYBERSECURITY CC
+
+Hechos verificados: rige un temario nuevo desde el 1 de septiembre de 2026. Dominios: Security Principles 24%; Security Governance 17,3%; Identity and Access Management Concepts 20%; Networking and Cloud Security Concepts 21,3%; Security Operations and Incident Response 17,3%. Suman 99,9% por el redondeo publicado. Se incorporan conceptos de seguridad de IA en los cinco dominios. [S1]
+
+El examen es adaptativo, dura dos horas y utiliza entre 100 y 125 preguntas. Se ofrece en español. La aprobación de 700/1000 es una puntuación escalada, no una equivalencia con 70% de respuestas correctas. No exige experiencia laboral previa. [S1, S2]
+
+Uso propuesto: consolidar vocabulario y decisiones mediante casos de riesgo, controles, IAM, continuidad, nube, protección de datos y respuesta a incidentes. Los laboratorios apoyan la comprensión; una práctica en Kali no sustituye revisar todos los objetivos conceptuales.
+
+Control de versión: no preparar el examen actual con los antiguos porcentajes 26/10/22/24/18 ni con el antiguo agrupamiento de dominios.
+
+CISCO CCST CYBERSECURITY 100-160
+
+Hechos verificados: principios de seguridad; seguridad de redes; endpoints; evaluación de vulnerabilidades y riesgos; gestión de incidentes. Cisco incluye controles de acceso, cifrado, interpretación de registros y recuperación en los objetivos de su capacitación oficial. Examen de 50 minutos, disponible en español. No hay prerrequisitos formales para CCST; hay que comprender el temario antes de rendir. [S3, S4, S5]
+
+Uso propuesto: relacionar teoría con identificación de servicios, controles de acceso, revisión de endpoints, interpretación de logs, priorización de vulnerabilidades y escalamiento de incidentes.
+
+Límite: el enlace al temario detallado en Cisco Learning Network no devolvió texto legible durante esta revisión. Se verificaron la página del examen y los objetivos oficiales del curso, pero no una auditoría exhaustiva de todos los subobjetivos del examen. No se atribuyen porcentajes ni una nota mínima no publicados en las fuentes revisadas.
+
+COMPTIA SECURITY+ V7 Y V8
+
+V7, SY0-701: conceptos generales 12%; amenazas, vulnerabilidades y mitigaciones 22%; arquitectura 18%; operaciones 28%; gestión y supervisión del programa 20%. Hasta 90 preguntas de opción múltiple y desempeño, 90 minutos, 750 en escala 100–900. Se ofrece en español. CompTIA recomienda Network+ y dos años en seguridad o administración de sistemas; no se interpretan como una certificación previa obligatoria. Retiro publicado: inglés 11/6/2027; español, japonés, portugués y tailandés 13/8/2027. [S6]
+
+V8, SY0-801: lanzamiento esperado alrededor del 17/11/2026, por lo tanto aún futuro a la fecha de este registro. Dominios: General Security Concepts 16%; Threats, Vulnerabilities, and Attacks 24%; Security Architecture 19%; Security Operations 27%; Security Program Management and Oversight 14%. La ficha anuncia inicialmente inglés, hasta 90 preguntas, 90 minutos y 750 en escala 100–900. Añade riesgos asociados con IA. [S7]
+
+Uso propuesto: elegir UNA versión para el mapa detallado y los simulacros. Para rendir en español en diciembre, la ficha V7 permite planificar SY0-701 sin inventar una disponibilidad en español para V8. Verificar el código exacto y el idioma antes de reservar. Preparar tanto operaciones y resolución práctica como gobierno y riesgos; no concentrarse exclusivamente en herramientas ofensivas.
+
+Método de verificación: web.run no pudo abrir las fichas de CompTIA. Se recuperó y leyó su HTML público directamente mediante Invoke-WebRequest. No se usaron cookies ni sesión autenticada. No se recurrió a blogs para confirmar fechas o porcentajes.
+
+BLUE TEAM LEVEL 1 BTL1
+
+Identidad actual: securityblue.team redirige oficialmente a centri.org. El curso conserva el nombre Blue Team Level 1. No se encontró un número nuevo de versión del examen que justifique llamar al producto BTL1 v2. [S8]
+
+Áreas técnicas: fundamentos; análisis de phishing; inteligencia de amenazas; forense digital; SIEM; respuesta a incidentes. El soporte explica análisis forense de Windows y Linux, disco y memoria con Autopsy/Volatility; inteligencia con MISP; análisis de eventos con Splunk; y contención, erradicación y recuperación. [S9]
+
+Evaluación real: examen práctico de respuesta a incidentes de 24 horas en un laboratorio corporativo comprometido accesible desde navegador. Son 20 preguntas basadas en tareas; se investiga con herramientas y se identifican vectores vinculados con ATT&CK. Es open book, sin supervisión tradicional, con corrección inmediata y aprobación desde 70%. Hay dos intentos incluidos y una espera de al menos diez días después de fallar para repetir. [S10]
+
+La página oficial dice que no hay requisitos de entrada al examen y recomienda completar todos los laboratorios antes de rendir. Publica 23 laboratorios en navegador y 100 horas de acceso a ellos, con cuatro meses de capacitación. Los plazos de acceso y activación deben confirmarse en la cuenta del alumno; no se compró ni activó nada. La propia ficha muestra estimaciones de duración distintas en el resumen y las preguntas frecuentes: no usar ninguna como promesa de preparación individual. [S8, S11]
+
+Requisitos de práctica: Kali sirve para fundamentos, red y parte del análisis. Hace falta practicar también artefactos Windows, EVTX, disco/memoria y consultas de SIEM. Los laboratorios alojados brindan acceso a los sistemas; no se concluye que el alumno deba comprar Windows o un equipo potente. La guía técnica indica laboratorios aislados con Internet restringida, un laboratorio activo a la vez y portapapeles limitado a 100 caracteres. La conectividad del navegador debe probarse antes del examen. [S12]
+
+La política permite usar IA para aprender fuera de la evaluación, pero prohíbe IA y ayuda de otras personas durante los exámenes. Por eso los simulacros de aptitud deben resolverse de forma autónoma. No pedir ni copiar preguntas reales del examen. [S13]
+
+Uso propuesto: entrenar investigaciones que terminen en una línea temporal, indicadores contextualizados, consultas reproducibles, hipótesis contrastadas y recomendaciones de contención con evidencia. Detectar una cadena sospechosa no equivale a demostrar causa, alcance ni compromiso.
+
+INE EJPT JUNIOR PENETRATION TESTER
+
+Hechos actuales: la ficha publica Host and Network Penetration Testing 35%; Assessment Methodologies 25%; Host and Networking Auditing 25%; Web Application Penetration Testing 15%. Incluye descubrimiento de endpoints, puertos, servicios y vulnerabilidades; información de sistema, red y cuentas; transferencia de archivos y datos de contraseñas; explotación con Metasploit, adaptación de exploits, rutas/port forwarding y pruebas de autenticación; reconocimiento y vulnerabilidades web. Se presenta para personas con una base de redes y sistemas. Cualquiera puede intentar el examen; para acceder se requieren una suscripción INE y un voucher de examen. [S14]
+
+Cambio de 2026: el comunicado de INE fechado el 26/3/2026, publicado el 1/4, anuncia pasar de 35 a 45 preguntas y mantener 48 horas de formato práctico. Amplía alcance/reconocimiento, Nikto, Gobuster y CMS/WordPress; añade una formación en uso responsable de IA generativa. Esto no demuestra por sí solo que usar IA esté permitido durante el examen. [S15]
+
+Plataforma: INE describe el examen como práctico y basado en navegador. Su anuncio histórico de v2 distingue este modelo del antiguo v1 mediante OpenVPN y señala fundamentos de redes, Linux y Windows como conocimientos previos. No se trasladan los 35 ítems ni las reglas históricas de puntuación a la revisión de 2026. [S16]
+
+Límites técnicos: no se encontró una ficha pública actual con mínimos exactos de RAM, CPU o lista completa de herramientas de la máquina del examen. No se promete que se pueda conectar la Kali local a la red del examen mediante VPN. El alumno debe comprobar las instrucciones y la conectividad del laboratorio oficial en su cuenta antes de iniciar la evaluación. No se verificaron umbrales actuales por dominio ni reglas actuales de uso de IA; prevalecen las instrucciones vigentes de su convocatoria.
+
+Uso propuesto: pruebas solamente en máquinas propias o redes de laboratorio autorizadas. Evaluar la metodología completa: delimitar alcance, descubrir, enumerar, elegir y justificar un camino, demostrar acceso mínimo, enumerar el sistema, alcanzar una segunda red mediante una ruta autorizada y explicar la corrección. Hace falta trabajar con objetivos Windows y Linux, servicios y web; Kali por sí sola no constituye un laboratorio objetivo.
+
+MATRIZ PEDAGÓGICA DE COMPETENCIAS Y EVIDENCIA
+Esta matriz es una propuesta propia. Relaciona competencias públicas con ejercicios; no son preguntas oficiales, una equivalencia exacta de puntuación ni una declaración de cobertura total.
+
+Competencia compartida | Evidencia independiente propuesta | Relación principal
+Redes y servicios | Explicar recorrido de un paquete, DNS/TCP y rutas; identificar servicios en red autorizada y justificar hallazgos | CC, CCST, Security+; base de BTL1 y eJPT
+Linux y Windows | Interpretar procesos, servicios, permisos y logs; distinguir hechos de hipótesis | CCST y Security+; auditoría eJPT y forense BTL1
+Identidad y mínimo privilegio | Explicar autenticación/autorización; detectar y corregir un acceso excesivo en datos sintéticos | CC, CCST, Security+; apoyo a investigaciones BTL1
+Datos y consultas | Correlacionar eventos de dos fuentes, tratar duplicados y justificar una línea temporal | Base práctica de operaciones y SIEM; conecta con SQL de la cursada
+Gobierno, riesgo, nube y criptografía | Resolver escenarios nuevos justificando controles, responsabilidad compartida y continuidad | CC y Security+; parte de CCST y fundamentos BTL1
+Investigación defensiva | Analizar email, PCAP y artefactos de endpoint; recuperar indicadores y documentar confianza/alternativas | BTL1; apoya CCST y operaciones Security+
+Evaluación ofensiva | Enumerar servicios y web, validar una debilidad y documentar impacto dentro de alcance | eJPT; apoya comprensión de vulnerabilidades
+Pivoting y auditoría posterior al acceso | Construir y explicar ruta o reenvío en red aislada; obtener evidencia de sistema sin salir del alcance | eJPT
+Respuesta a incidentes | Priorizar un caso, proponer contención y recuperación, conservar evidencias y redactar informe | BTL1, CCST, CC y Security+ con distinta profundidad
+
+CRITERIOS PROPUESTOS PARA DECIDIR APTITUD
+
+Registro por competencia: 0 = no puede explicar; 1 = resuelve siguiendo receta; 2 = resuelve parcialmente con pistas; 3 = resuelve de forma autónoma y justifica; 4 = transfiere el método a un caso nuevo y distingue limitaciones.
+
+Antes de considerar una fecha de examen:
+1. Mapear todos los objetivos públicos de la versión elegida a teoría, práctica y evidencia; marcar sin evidencia los huecos.
+2. Resolver escenarios nuevos sin soluciones abiertas, aunque el estudio previo haya sido guiado.
+3. Conservar comandos/consultas, resultados relevantes y explicaciones de decisiones; no basta un listado de herramientas instaladas.
+4. Completar al menos dos revisiones separadas que no reproduzcan el mismo ejercicio memorizado.
+5. Para BTL1 y eJPT, completar una investigación o cadena de prueba independiente con tiempo medido y comprobar acceso estable a la plataforma real.
+6. Para CC, CCST y Security+, comprobar además los dominios conceptuales que el laboratorio no mide, usando preguntas nuevas y revisión de los errores.
+
+Los niveles y puertas anteriores son criterios internos del plan. No representan la nota oficial de ningún organismo. La decisión sobre qué exámenes rendir en diciembre debe depender de estas evidencias, de los huecos del temario y de las fechas disponibles; aumentar horas no elimina la necesidad de demostrar comprensión.
+
+FUENTES OFICIALES
+
+[S1] ISC2 CC Exam Outline, vigente desde 1/9/2026:
+https://www.isc2.org/certifications/cc/cc-certification-exam-outline
+[S2] ISC2 CC, sin experiencia laboral requerida:
+https://www.isc2.org/certifications/cc
+[S3] Cisco, examen 100-160:
+https://www.cisco.com/site/us/en/learn/training-certifications/exams/ccst-cybersecurity.html
+[S4] Cisco, prerequisitos CCST:
+https://www.cisco.com/site/us/en/learn/training-certifications/certifications/support-technician/index.html
+[S5] Cisco, objetivos de capacitación CCST Cybersecurity:
+https://www.cisco.com/c/dam/en_us/training-events/training/courses/ccst-cybersecurity.pdf
+[S6] CompTIA, Security+ V7 SY0-701:
+https://www.comptia.org/en-us/certifications/security/v7/
+[S7] CompTIA, Security+ V8 SY0-801:
+https://www.comptia.org/en-us/certifications/security/v8/
+[S8] BTL1, página del organismo; securityblue.team redirige aquí:
+https://www.centri.org/certifications/blue-team-level-1
+[S9] BTL1, áreas y orientación:
+https://support.centri.org/hc/en-gb/articles/11316228055836-Is-BTL1-Right-For-Me
+[S10] BTL1, formato del examen:
+https://support.centri.org/hc/en-gb/articles/11316638140444-BTL1-Exam-Format
+[S11] Centri, acceso a capacitación y exámenes:
+https://support.centri.org/hc/en-gb/articles/11520624967836-Certification-and-Exam-Access
+[S12] Centri, guía técnica de laboratorios:
+https://support.centri.org/hc/en-gb/articles/11480096441500-Lab-Access-and-Troubleshooting-Guide
+[S13] Centri, integridad de exámenes y uso de IA:
+https://support.centri.org/hc/en-gb/articles/27767888402972-Exam-Integrity-Policy
+[S14] INE, eJPT y objetivos actuales:
+https://ine.com/security/certifications/ejpt-certification
+[S15] INE, actualización de eJPT de marzo de 2026:
+https://ine.com/newsroom/ine-security-launches-updated-ejpt-certification-with-expanded-web-app-testing-recon-training-and-offensive-ai
+[S16] INE, anuncio histórico de eJPTv2 de 2022; usado solo para plataforma y fundamentos, no para cantidad actual de preguntas:
+https://ine.com/blog/ejptv2-certification-is-here
+
+ALCANCE DE LA VERIFICACIÓN
+No se compraron cursos, vouchers ni suscripciones. No se accedió a preguntas reales de exámenes ni al laboratorio privado de un organismo. Las condiciones de compra, activación, soporte y evaluación pueden cambiar: comprobarlas en la cuenta y convocatoria concreta antes de rendir.

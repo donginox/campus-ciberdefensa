@@ -1,0 +1,48 @@
+appId: ar.campus.ciberdefensa
+productName: Campus Ciberdefensa
+electronVersion: 45.2.1
+asar: true
+asarUnpack:
+  - src/labs/**
+  - node_modules/sql.js/**
+directories:
+  output: dist
+  buildResources: build
+files:
+  - desktop/**
+  - src/**
+  - assets/**
+  - package.json
+  - '!**/*.test.*'
+  - '!**/*.map'
+extraResources:
+  - from: node_modules/sql.js/dist/sql-wasm.wasm
+    to: sql-wasm.wasm
+artifactName: Campus-Ciberdefensa-${version}-${os}-${arch}.${ext}
+publish:
+  provider: github
+  owner: donginox
+  repo: campus-ciberdefensa
+  private: false
+  releaseType: release
+win:
+  target:
+    - target: nsis
+      arch: [x64]
+  icon: build/icon.ico
+  verifyUpdateCodeSignature: true
+nsis:
+  oneClick: true
+  perMachine: false
+  allowElevation: false
+  deleteAppDataOnUninstall: false
+  createDesktopShortcut: true
+  createStartMenuShortcut: true
+  shortcutName: Campus Ciberdefensa
+linux:
+  target:
+    - target: AppImage
+      arch: [x64]
+  category: Education
+  icon: build/icon.png
+  executableName: campus-ciberdefensa

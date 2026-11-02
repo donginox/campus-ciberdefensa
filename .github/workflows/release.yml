@@ -1,0 +1,103 @@
+name: Test, build and publish desktop
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: desktop-release
+  cancel-in-progress: false
+jobs:
+  build:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: windows-latest
+            target: win
+          - os: ubuntu-24.04
+            target: linux
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1
+        with:
+          node-version: 22.17.0
+          cache: npm
+      - run: npm ci
+      - run: npm test
+      - name: Assign immutable release version
+        shell: bash
+        run: npm version "0.1.${GITHUB_RUN_NUMBER}" --no-git-tag-version
+      - name: Build installers and updater metadata
+        shell: bash
+        env:
+          TARGET: ${{ matrix.target }}
+          WIN_CSC_LINK: ${{ secrets.WIN_CSC_LINK }}
+          WIN_CSC_KEY_PASSWORD: ${{ secrets.WIN_CSC_KEY_PASSWORD }}
+        run: |
+          args=(--config electron-builder.yml --publish never --x64)
+          if [ "$TARGET" = win ]; then
+            args+=(--win nsis)
+            if [ -n "$WIN_CSC_LINK" ]; then args+=(--config.forceCodeSigning=true); fi
+          else
+            args+=(--linux AppImage)
+          fi
+          npx electron-builder "${args[@]}"
+      - name: Preserve distribution assets
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9
+        with:
+          name: installers-${{ matrix.target }}
+          if-no-files-found: error
+          retention-days: 14
+          path: |
+            dist/*.exe
+            dist/*.AppImage
+            dist/*.blockmap
+            dist/latest*.yml
+  release:
+    needs: build
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: write
+      actions: read
+    env:
+      GH_TOKEN: ${{ github.token }}
+      GH_REPO: ${{ github.repository }}
+      RUN_ID: ${{ github.run_id }}
+      RUN_NUMBER: ${{ github.run_number }}
+      COMMIT: ${{ github.sha }}
+    steps:
+      - name: Download both completed builds
+        run: gh run download "$RUN_ID" --pattern 'installers-*' --dir downloaded
+      - name: Verify complete installer and manifest set
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          import os
+          root = Path('downloaded')
+          files = list(root.rglob('*'))
+          names = {p.name for p in files if p.is_file()}
+          version = '0.1.' + os.environ['RUN_NUMBER']
+          required = {
+              f'Campus-Ciberdefensa-{version}-win-x64.exe',
+              f'Campus-Ciberdefensa-{version}-win-x64.exe.blockmap',
+              f'Campus-Ciberdefensa-{version}-linux-x64.AppImage',
+              'latest.yml', 'latest-linux.yml'
+          }
+          if not required <= names:
+              raise SystemExit('Missing release assets: ' + ', '.join(sorted(required - names)))
+          out = Path('release-assets'); out.mkdir()
+          for p in files:
+              if p.is_file():
+                  target = out / p.name
+                  if target.exists(): raise SystemExit('Duplicate asset: ' + p.name)
+                  target.write_bytes(p.read_bytes())
+          PY
+      - name: Upload all assets before publishing release
+        run: |
+          tag="v0.1.${RUN_NUMBER}"
+          gh release create "$tag" --draft --target "$COMMIT" --title "Campus Ciberdefensa 0.1.${RUN_NUMBER}" --notes "Aplicación local para Windows y Linux. Los perfiles existentes se conservan fuera de la instalación. La firma de Windows depende de los certificados configurados en CI; sin ellos, el instalador no está firmado."
+          gh release upload "$tag" release-assets/*
+          gh release edit "$tag" --draft=false --latest

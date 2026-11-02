@@ -1,0 +1,20 @@
+FICHA DE ANÁLISIS DE CORREO
+
+Analista y fecha real de trabajo:
+Archivo y hash SHA-256:
+Message-ID:
+Tiempo declarado y zona:
+From visual:
+Return-Path y dominio del sobre:
+Reply-To:
+Saltos Received y límite de confianza:
+Resultados declarados de autenticación y alcance:
+Partes MIME y adjuntos:
+Enlaces visibles y destinos en código fuente:
+Hechos observados:
+Hipótesis y clasificación provisional:
+Confianza y evidencia faltante:
+Acciones propuestas y responsable:
+Procedimiento reproducible:
+
+No completar con una solución prefabricada: citar campos y resultados de tu análisis.

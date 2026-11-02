@@ -1,0 +1,917 @@
+REPASO ANUAL DE LAS MATERIAS IMPORTANTES DE CIBERDEFENSA
+
+Este volumen desarrolla teoría para construir tu resumen final y conectar las materias. Incluye sistemas operativos en general, Windows y Linux, telecomunicaciones, datos, programación y gestión. Se complementa con los prácticos por plataforma y el final integrador.
+
+Las explicaciones son elaboración docente propia sobre los temas confirmados en los programas y guías que se pudieron leer. El inventario conserva qué fuentes se revisaron y cuáles siguen pendientes. Este volumen no acredita una lectura de todos los PDF, videos o semanas del campus. Cuando un tema se amplía más allá de lo leído, se presenta como explicación adicional.
+
+Usá los ejemplos resueltos para entender. Después elaborá un ejemplo distinto en plantilla-resumen.txt y resolvé los retos sin abrir una solución. Los datos de final-anual/ se reservan para medir aplicación; si los usás para aprender, pedí después una variante nueva para evaluar transferencia.
+
+REPASO ANUAL DE SISTEMAS OPERATIVOS Y TELECOMUNICACIONES
+
+Este cuaderno desarrolla la teoría que necesitás conectar para entender una computadora, administrar Windows y Linux y seguir una comunicación por una red. Sirve para escribir tu resumen final con tus palabras y resolver una evaluación integradora. No presupone que estudiar ciberseguridad sea aprender comandos de Kali: una misma idea se comprueba con herramientas distintas en cada sistema.
+
+PROCEDENCIA Y ALCANCE
+
+Los temas de hardware, representación de datos, introducción a los sistemas operativos, virtualización/nube, memoria y sistemas de archivos están confirmados en el programa de Sistemas Operativos I leído completo. Sus guías semanales HTML fueron leídas; los apuntes semanales PDF y los videos siguen pendientes. Fuente del programa: https://campus.fadena.undef.edu.ar/mod/resource/view.php?id=22388 .
+
+Las guías HTML accesibles de Sistemas Operativos II confirman procesos/hilos, comunicación, sincronización, interbloqueos y sistemas distribuidos/TCP-IP. Se leyó una consigna de comparar ps y kill con herramientas de Windows y la descripción de un simulador de condiciones de carrera. El programa PDF y los apuntes internos de SO II no se pudieron leer. Por eso las explicaciones y ejemplos desarrollados aquí son elaboración docente propia sobre los temas constatados, no una transcripción de esos apuntes.
+
+El programa de Infraestructura de Telecomunicaciones leído completo confirma señales, enlaces, Fourier, banda base, capacidad, errores, modulación, redes, protocolos, Internet y ruteo. Las guías HTML accesibles se revisaron; muchos recursos internos siguen pendientes. Las unidades de Internet y ruteo constan en el programa, pero sus semanas estaban restringidas. Fuente: https://campus.fadena.undef.edu.ar/mod/resource/view.php?id=71545 . El programa llama Unidad 10 Protocolos y el campus muestra Unidad 10 Redes LAN; se conserva esa diferencia.
+
+Los ejemplos numéricos, analogías, preguntas y ejercicios de este cuaderno son propios. Los ejemplos resueltos enseñan un procedimiento. Los retos finales de cada bloque quedan sin solución para poder evaluar tu intento. Para la administración concreta de Windows se usa además el módulo de Windows del paquete; los laboratorios Linux son otra aplicación de estas mismas bases.
+
+CÓMO USAR ESTE REPASO
+
+En cada bloque hacé tres pasadas. Primero leé y seguí el ejemplo; después cerrá el texto y explicá el concepto con un ejemplo distinto; finalmente resolvé el reto sin copiar. Para tu resumen usá cinco campos: qué problema resuelve, cómo funciona, ejemplo, límites y cómo lo comprobarías en Windows y Linux. Una definición memorizada sin poder diagnosticar un caso todavía necesita práctica.
+
+BLOQUE 1 — LA COMPUTADORA EJECUTA INSTRUCCIONES Y MUEVE DATOS
+
+El hardware es la parte física; el software son instrucciones y datos organizados para realizar tareas. La CPU ejecuta instrucciones; la memoria principal mantiene información necesaria durante la ejecución; los dispositivos de entrada/salida conectan la máquina con almacenamiento, red, pantalla y otros periféricos. Un controlador permite al sistema operativo utilizar un dispositivo; no es lo mismo que la aplicación que lo necesita.
+
+El modelo de Von Neumann describe un sistema de programa almacenado en el que instrucciones y datos se conservan en memoria y el procesador los obtiene para trabajar. Es un modelo útil, no el plano literal de cada CPU moderna: hay cachés, ejecución en paralelo y diseños internos que hacen más compleja la implementación. El ciclo conceptual es buscar una instrucción, interpretarla y ejecutarla; puede requerir leer o escribir datos.
+
+La unidad de control coordina operaciones; la unidad aritmético-lógica realiza cálculos y comparaciones; los registros guardan valores de uso inmediato. Las cachés conservan copias de información para reducir accesos a memoria más lenta. La jerarquía habitual va de registros y cachés a RAM y almacenamiento persistente. Se intercambian velocidad, capacidad y costo: un disco grande no reemplaza RAM de igual capacidad para ejecutar una carga con poca latencia.
+
+Frecuencia indica ciclos por segundo. No permite comparar por sí sola el rendimiento de dos equipos: también importan instrucciones por ciclo, cantidad de núcleos, caché, memoria, almacenamiento y naturaleza de la carga. Una GPU tiene unidades orientadas a mucho trabajo paralelo, pero no acelera automáticamente cualquier programa.
+
+Ejemplo resuelto: al abrir un documento, el sistema localiza sus datos en almacenamiento, los lleva a memoria según sea necesario y el procesador ejecuta el editor. Si el disco tarda, la CPU puede quedar esperando entrada/salida; comprar una CPU más rápida no corrige necesariamente ese cuello de botella. El mismo razonamiento sirve para un editor en Windows o en Linux.
+
+Errores frecuentes: llamar memoria a cualquier capacidad; confundir núcleo de CPU con kernel; afirmar que más GHz siempre significa más rapidez; atribuir a un programa una falla que puede estar en el dispositivo o controlador.
+
+Reto: una computadora tarda mucho en abrir archivos, pero trabaja bien una vez abiertos. Proponé tres hipótesis y una observación que diferencie cada una. No elijas hardware nuevo antes de reunir evidencia.
+
+Para tu resumen: dibujá CPU, RAM, almacenamiento y dispositivo de red. Marcá qué guarda cada componente y qué movimiento ocurre al abrir una página.
+
+BLOQUE 2 — BITS, BYTES Y REPRESENTACIÓN
+
+Un bit representa una elección entre dos estados; un byte contiene ocho bits. Los mismos bytes pueden interpretarse como número, texto, imagen o instrucciones según el formato y el programa. Representación y significado no son lo mismo: ver un valor en hexadecimal no demuestra que esté cifrado.
+
+El sistema decimal usa potencias de diez; el binario, potencias de dos. En binario, la posición de la derecha vale 1, la siguiente 2, luego 4, 8, 16 y así sucesivamente. En hexadecimal se usan dieciséis símbolos: 0–9 y A–F. Cada dígito hexadecimal representa exactamente cuatro bits, por lo que dos dígitos representan un byte. Las direcciones y volcados de memoria se vuelven más legibles sin cambiar su contenido.
+
+Ejemplo resuelto: 10110110 en binario es 128 + 32 + 16 + 4 + 2 = 182 en decimal. Al separar 1011 y 0110 obtenemos B6 en hexadecimal. No son tres valores diferentes: son tres escrituras del mismo número.
+
+Ocho bits sin signo permiten 256 combinaciones, de 0 a 255. Para números negativos hace falta definir una representación, como complemento a dos. También hay que conocer el tamaño del dato: el patrón de bits no alcanza para decidir si estamos ante un entero con signo, un carácter o una parte de una dirección.
+
+Las unidades decimales y binarias se distinguen: 1 MB son 1.000.000 bytes; 1 MiB son 1.048.576 bytes. Las tasas de red suelen expresarse en bits por segundo. Un enlace de 80 Mbit/s equivale a un máximo aritmético de 10 MB/s antes de descontar sobrecarga y otras limitaciones. La velocidad de una descarga no se predice solo con el tamaño del archivo y el número comercial del enlace.
+
+En una arquitectura con direcciones de 32 bits, 2 elevado a 32 posiciones de un byte equivalen a 4 GiB de espacio de direcciones. No conviene transformar esa cuenta en una regla absoluta sobre toda memoria física: hay extensiones y límites del sistema operativo. En 64 bits también existen límites de implementación inferiores al máximo matemático. Arquitectura de CPU, versión del sistema y aplicación deben distinguirse.
+
+Reto: convertí 45 a binario y hexadecimal; calculá cuántas combinaciones representan doce bits; estimá el tiempo mínimo ideal para transmitir 250 MB a 100 Mbit/s y enumerá qué omite tu cálculo.
+
+Para tu resumen: escribí una conversión mostrando las potencias usadas y una cuenta de transferencia con unidades en cada paso.
+
+BLOQUE 3 — QUÉ HACE UN SISTEMA OPERATIVO
+
+El sistema operativo administra recursos y ofrece abstracciones. Una aplicación trabaja con archivos sin programar cada operación física de un SSD; crea procesos sin decidir directamente qué núcleo ejecuta cada instrucción. El sistema también controla accesos y aísla tareas. No se reduce al escritorio gráfico: un servidor puede prestar servicios sin una interfaz gráfica de uso cotidiano.
+
+Kernel es el núcleo del sistema. Modo usuario y modo núcleo son niveles de ejecución con distintas facultades; no equivalen a usuario común y administrador. Una aplicación iniciada por un administrador sigue ejecutando gran parte de su código en modo usuario. Cuando necesita una operación protegida, solicita un servicio mediante interfaces que terminan en llamadas al sistema. La petición se valida: solicitar acceso no significa obtenerlo.
+
+La shell interpreta comandos y permite iniciar programas y encadenar operaciones. Bash y Zsh son ejemplos en Linux; CMD y PowerShell cumplen papeles de línea de comandos en Windows, con modelos y sintaxis diferentes. PowerShell trabaja habitualmente con objetos en sus canalizaciones; no hay que suponer que una tubería se comporta igual en todas las shells.
+
+Un sistema por lotes procesa trabajos con poca interacción inmediata. La multiprogramación permite mantener varios programas y aprovechar CPU mientras alguno espera entrada/salida. El tiempo compartido reparte ejecución para sostener la interacción de varias tareas. Estos conceptos explican por qué muchas aplicaciones parecen avanzar a la vez incluso cuando no tienen un núcleo dedicado cada una.
+
+Ejemplo resuelto: un editor pide guardar un archivo. El sistema considera la ruta, permisos, estado del almacenamiento y operaciones pendientes. Que el usuario vea una ventana de guardado no demuestra todavía que los datos hayan llegado al medio persistente; existen cachés, errores y garantías específicas de la aplicación y del sistema.
+
+Errores frecuentes: usar sistema operativo, kernel y shell como sinónimos; creer que una cuenta administradora ejecuta todo en modo núcleo; pensar que un mensaje de permiso denegado se arregla siempre elevando privilegios.
+
+Reto: describí el recorrido de una aplicación que intenta abrir un archivo sin autorización. Separá lo que hace la aplicación, la interfaz del sistema y el control de acceso. Proponé cómo investigarías en Windows y Linux sin cambiar primero los permisos.
+
+Para tu resumen: redactá la diferencia entre mecanismo y política: qué puede hacer el sistema y qué reglas deciden quién puede hacerlo.
+
+BLOQUE 4 — PROCESOS, HILOS, PLANIFICACIÓN Y COMUNICACIÓN
+
+Un programa es código almacenado; un proceso es una ejecución con recursos, estado y contexto. Un mismo programa puede originar varios procesos. El PID identifica un proceso durante cierto período y puede reutilizarse después de su finalización; antes de terminar una tarea hay que comprobar identidad, usuario y momento, no confiar en un número viejo.
+
+Un proceso listo puede ejecutarse pero espera CPU. Uno en ejecución la está usando. Uno bloqueado espera un evento, como datos de un dispositivo; bloqueado no significa necesariamente defectuoso. El sistema mantiene estructuras con información para administrar cada proceso. Al cambiar de tarea conserva y restaura contexto; ese trabajo tiene costo.
+
+Un hilo es una unidad de ejecución dentro de un proceso. Los hilos del mismo proceso comparten normalmente su espacio de direcciones y varios recursos, pero tienen su propio contexto de ejecución y pila. Esa colaboración reduce algunos costos y también crea riesgos: un dato compartido mal coordinado puede ser modificado por varios hilos a la vez.
+
+El planificador elige qué tarea se ejecuta. Un reparto por turnos favorece la interacción; las prioridades permiten preferir ciertas tareas. Importan rendimiento total, tiempo de respuesta, espera y equidad. Una tarea intensiva en CPU y otra intensiva en entrada/salida requieren observar cosas diferentes; subir prioridad no crea CPU ni elimina un disco saturado.
+
+Los procesos se comunican mediante mecanismos como tuberías, memoria compartida, colas y sockets. Un socket no significa obligatoriamente Internet: también puede conectar procesos de la misma máquina. La memoria compartida evita ciertas copias, pero necesita coordinación. La frontera entre procesos sigue siendo relevante para permisos, fallos y análisis de servicios.
+
+Ejemplo resuelto: un servidor web tiene un proceso que mantiene recursos y varios hilos que atienden solicitudes. Dos clientes pueden provocar trabajos concurrentes; si ambos actualizan el mismo contador, compartir memoria no garantiza que el resultado sea correcto. Un contador de CPU observado una sola vez tampoco prueba qué solicitud causó el consumo.
+
+Reto: clasificá una tarea esperando lectura de disco, otra lista para ejecutar y otra usando CPU. Proponé cómo relacionarías servicio, proceso, usuario y conexiones en cada sistema. Usá ejemplos de práctica, sin terminar servicios reales.
+
+Para tu resumen: armá un cuadro programa/proceso/hilo/servicio e incluí una observación que permita distinguirlos. Conectalo con la consigna de SO II sobre herramientas Windows y Linux.
+
+BLOQUE 5 — SINCRONIZACIÓN, CONDICIONES DE CARRERA E INTERBLOQUEO
+
+Una condición de carrera aparece cuando el resultado depende del orden temporal de operaciones que acceden a un estado compartido sin coordinación suficiente. La sección crítica es la parte del trabajo que debe proteger ese estado. Que cada instrucción individual parezca simple no convierte una secuencia completa en indivisible.
+
+Ejemplo resuelto, ampliando la situación de depósitos descrita en la guía de SO II: una cuenta tiene 100. Hilo A lee 100; hilo B lee 100; A calcula y guarda 150; B también guarda 150. Se realizaron dos depósitos de 50, pero se perdió una actualización. El resultado correcto de esa operación sería 200. El problema no se arregla cambiando el orden de impresión: hay que proteger la operación de lectura, cálculo y escritura como unidad lógica.
+
+Un mutex permite exclusión mutua para una sección crítica. Un semáforo mantiene un contador y puede coordinar disponibilidad de recursos. No se usan indistintamente en cualquier diseño. La protección debe cubrir el dato y las operaciones correctas; poner un bloqueo en una línea que no cubre la modificación no resuelve la carrera. En una base de datos, transacciones y niveles de aislamiento ayudan a abordar problemas relacionados, con reglas propias.
+
+Un interbloqueo ocurre cuando un conjunto de tareas queda esperando recursos o acciones que el mismo conjunto necesita liberar o realizar. En el modelo clásico se estudian exclusión mutua, retención mientras se espera, ausencia de apropiación forzada y espera circular. Estas condiciones ayudan a razonar sobre la posibilidad del problema y sobre cómo prevenirlo.
+
+Ejemplo resuelto: A tiene la cerradura X y espera Y; B tiene Y y espera X. Un orden común para adquirir X y luego Y evita esa circularidad en este caso. No garantiza que todo el programa esté libre de otros problemas. Inanición es otra situación: una tarea puede no obtener atención porque otras la desplazan continuamente, aun sin ese ciclo de espera.
+
+Reto: diseñá una secuencia intercalada de dos retiros que produzca un resultado incorrecto sin protección. Después indicá dónde ubicarías la sección crítica y qué dato protege. Para un caso con tres recursos, dibujá las dependencias antes de proponer una solución.
+
+Para tu resumen: escribí carrera, exclusión mutua, interbloqueo e inanición con ejemplos diferentes. No los reduzcas a que el programa se quedó colgado.
+
+BLOQUE 6 — MEMORIA FÍSICA, DIRECCIONES Y PAGINACIÓN
+
+Una aplicación trabaja con direcciones de su espacio virtual. El sistema operativo y el hardware de gestión de memoria traducen esas direcciones a memoria física y aplican permisos. Dos procesos pueden usar el mismo valor de dirección virtual sin referirse al mismo dato físico. El aislamiento sería mucho más difícil si todas las aplicaciones pudieran escribir libremente sobre la memoria de las demás.
+
+La gestión mediante particiones fijas o variables explica problemas clásicos de reparto. Fragmentación interna significa espacio desperdiciado dentro de una asignación; externa, espacio libre repartido de forma que no satisface una solicitud contigua. La paginación divide el espacio en páginas y la memoria física en marcos, permitiendo ubicaciones no contiguas. Segmentación organiza regiones lógicas de tamaño variable; los sistemas concretos pueden combinar técnicas.
+
+Un fallo de página significa que la traducción o acceso necesita intervención del sistema. No prueba por sí solo que se leyó el disco ni que ocurrió un error grave: puede requerirse asignar una página inicial, recuperar una copia o rechazar una operación inválida. Cuando el sistema mueve contenido entre RAM y almacenamiento de respaldo para gestionar presión, hablamos de intercambio o paginación según el mecanismo concreto. Memoria virtual no significa solamente usar disco como RAM.
+
+Ejemplo resuelto: con páginas de 4 KiB, una región de 10 KiB necesita tres páginas si se reserva por páginas completas. Hay 12 KiB de capacidad asignada y 2 KiB que ese contenido no utiliza. Esto muestra fragmentación interna en ese ejemplo; no permite deducir cuánto consume físicamente un proceso real que comparte páginas o reserva regiones sin materializarlas todas.
+
+En Windows y Linux conviene distinguir reserva virtual, contenido residente y recursos compartidos. Una cifra grande de espacio virtual no equivale automáticamente a RAM agotada. Se observan tendencias, fallos, actividad de almacenamiento y latencia. Una medición aislada de memoria libre tampoco alcanza: parte de la memoria puede usarse como caché recuperable.
+
+Reto: explicá dos motivos distintos por los que una aplicación puede parecer lenta cuando aumenta la presión de memoria. Proponé qué medirías y qué evidencia refutaría cada hipótesis. No desactives mecanismos de memoria para probarlo.
+
+Para tu resumen: dibujá traducción virtual/física, páginas/marcos y permisos. Anotá qué parte es modelo general y qué contador concreto usarías en cada sistema.
+
+BLOQUE 7 — DISCOS, PARTICIONES, SISTEMAS DE ARCHIVOS Y PERMISOS
+
+Un HDD guarda datos mediante mecanismos magnéticos con componentes móviles; un SSD utiliza memoria no volátil y un controlador que administra su ubicación y desgaste. Cambian latencia, comportamiento de acceso y tratamiento interno de escrituras. No hay una única prueba de salud que garantice que un dispositivo no fallará: S.M.A.R.T. aporta indicadores y alertas, y las copias deben existir antes del problema.
+
+Una partición describe una región lógica del dispositivo; un sistema de archivos organiza nombres, directorios, contenido y metadatos. Formatear, particionar y crear una carpeta son acciones de niveles diferentes. Un volumen visto por el sistema puede depender de varios dispositivos o capas de almacenamiento, por lo que no debe asumirse una correspondencia uno a uno.
+
+Un archivo tiene datos y atributos: tamaño, marcas de tiempo, propietario, permisos y otros metadatos según el sistema. La ruta permite localizarlo dentro de una jerarquía. Renombrar cambia una referencia de nombre; no necesariamente reescribe todo su contenido. Borrar una referencia tampoco garantiza borrar físicamente cada copia o bloque anterior. En SSD intervienen además operaciones del controlador, por lo que recuperación y preservación necesitan métodos específicos.
+
+Windows suele usar NTFS en su volumen del sistema y listas de control de acceso con herencia. Linux dispone de diversos sistemas de archivos, como ext4, y combina bits de permisos con otros mecanismos. No conviene traducir cada permiso de Windows a un número chmod como si fueran modelos idénticos. En ambos sistemas se distinguen identidad, grupos, reglas del objeto y capacidad de recorrer la ruta. Un recurso de red puede añadir otra capa de permisos.
+
+Ejemplo resuelto: un archivo tiene lectura permitida para un usuario, pero ese usuario no puede atravesar una carpeta anterior. El permiso del archivo aislado no demuestra acceso efectivo. Si además existe una regla explícita o una política adicional, hay que evaluar todo el contexto. Cambiar permisos no cifra los bytes; calcular un hash no impide que alguien los lea.
+
+Reto: una persona puede abrir un archivo desde una aplicación pero no desde una ruta compartida. Separá al menos cuatro capas a investigar antes de otorgar acceso amplio. Proponé una evidencia de contenido y otra de metadatos.
+
+Para tu resumen: diferenciá dispositivo, partición, volumen, sistema de archivos, directorio y archivo. Incluí una ruta Windows y otra Linux y explicá sus componentes.
+
+BLOQUE 8 — VIRTUALIZACIÓN, CONTENEDORES Y NUBE
+
+La virtualización permite presentar recursos de una máquina como entornos separados. Un hipervisor administra máquinas virtuales; cada invitado puede ejecutar su propio sistema operativo y kernel. Los modelos tipo 1 y tipo 2 describen dónde se sitúa el hipervisor respecto del hardware y de un sistema anfitrión; las implementaciones actuales pueden tener componentes que vuelvan menos simple esa clasificación.
+
+Una VM requiere CPU, memoria, almacenamiento y conectividad virtuales. Una instantánea conserva un estado útil para volver a una práctica, pero no debe confundirse con una copia de seguridad independiente. Si se pierde el almacenamiento del que depende, una instantánea del mismo entorno puede perderse con él. El aislamiento tampoco es una promesa absoluta: importan vulnerabilidades, permisos, carpetas compartidas, dispositivos y configuración de red.
+
+Un contenedor aísla procesos y recursos usando funciones del sistema, habitualmente compartiendo el kernel anfitrión correspondiente. No es una VM completa por el solo hecho de tener su propio conjunto de archivos. Un contenedor Linux en una computadora Windows puede ejecutarse a través de una VM Linux intermedia; observar el comando docker no basta para describir toda la arquitectura.
+
+Ejemplo resuelto: querés practicar una aplicación insegura. Una VM aislada con instantánea permite observar el invitado y volver a su estado anterior; un contenedor puede simplificar desplegar la aplicación. En ambos casos hay que definir datos ficticios, puertos y redes. Compartir la carpeta personal con el entorno vulnerable ampliaría el impacto posible aunque el programa esté dentro de una caja virtual.
+
+En nube se distinguen modelos de servicio. En IaaS el proveedor ofrece infraestructura y el cliente administra, entre otras cosas, su sistema invitado y aplicaciones. En PaaS el proveedor gestiona una plataforma adicional y el cliente se concentra en su código y configuración. En SaaS se consume una aplicación; siguen existiendo responsabilidades sobre identidades, acceso, datos y uso. La división exacta depende del servicio y del contrato.
+
+Infraestructura como código describe recursos y configuración en archivos que pueden revisarse y versionarse. Facilita repetición y control de cambios, pero también repite errores si la definición es incorrecta. Las claves no se convierten en públicas por formar parte de un ejemplo de configuración: deben tratarse separadamente.
+
+Reto: compará desplegar un portal en una VM propia, una plataforma administrada y un servicio SaaS. Para cada opción, identificá quién actualiza qué y cómo recuperarías un dato borrado.
+
+Para tu resumen: dibujá aplicación, runtime, kernel, hipervisor y hardware en tres montajes diferentes. Después agregá sus límites de responsabilidad.
+
+BLOQUE 9 — SEÑALES, VELOCIDAD Y PRESUPUESTO DE ENLACE
+
+Los datos necesitan una representación física para viajar. Una señal puede variar de forma continua, mientras que una interpretación digital usa estados o símbolos discretos. Transmisión analógica y digital no significan que desaparezcan ruido, pérdidas o límites físicos. Simplex permite comunicación en una dirección; semidúplex, alternar direcciones; dúplex, comunicarse simultáneamente en ambos sentidos según el sistema.
+
+Una señal periódica se repite. Su período T es el tiempo de un ciclo y su frecuencia f es 1/T. La longitud de onda depende de la velocidad de propagación y de la frecuencia. Frecuencia de una portadora, tasa de símbolos y tasa de datos son magnitudes distintas. Un símbolo puede representar más de un bit: con cuatro símbolos equiprobables correctamente mapeados, se transportan dos bits por símbolo antes de considerar codificación y sobrecarga.
+
+Ejemplo resuelto: 2.000 símbolos por segundo con ocho estados posibles representan 2.000 × log2(8) = 6.000 bit/s brutos con ese mapeo. No son 2.000 bit/s ni 6.000 byte/s. Para obtener la tasa útil hay que considerar códigos, cabeceras, retransmisiones y otras condiciones.
+
+En transmisión asíncrona suele haber delimitación y sincronización por unidades; en síncrona se mantiene una coordinación de temporización para transmitir bloques o flujos. No conviene resumirlo como que una de ellas no usa reloj: el receptor siempre necesita resolver cuándo interpretar las señales, aunque lo haga de manera distinta.
+
+La potencia se expresa en unidades absolutas; el decibel representa una relación logarítmica. Para potencias, ganancia en dB = 10 log10(Psalida/Pentrada). dBm es potencia referida a 1 mW: 0 dBm equivale a 1 mW y 10 dBm a 10 mW. Un número negativo en dBm no significa potencia negativa.
+
+Ejemplo resuelto: transmitís a 10 dBm, hay ganancias de antena de 3 dB en cada extremo y pérdidas de cable de 2 y 1 dB, más 70 dB de propagación. La potencia recibida estimada es 10 + 3 + 3 − 2 − 1 − 70 = −57 dBm. Con sensibilidad de −70 dBm habría un margen aritmético de 13 dB en este modelo. No garantiza rendimiento: falta considerar interferencia, variaciones, obstáculos y especificaciones reales.
+
+Reto: calculá período para 5 kHz; tasa bruta para 1.200 símbolos/s y cuatro estados; y potencia recibida con otros valores elegidos por vos. Mostrá unidades y separá dato medido de supuesto.
+
+Para tu resumen: armá un cuadro Hz/bit por segundo/baud/byte por segundo/dB/dBm con el significado y un ejemplo de cada uno.
+
+BLOQUE 10 — FOURIER, ANCHO DE BANDA E INFORMACIÓN
+
+Fourier permite estudiar una señal mediante componentes de distintas frecuencias. Una señal periódica puede representarse por una serie de componentes sinusoidales bajo las condiciones matemáticas apropiadas. No significa que el cable tenga emisores físicos independientes para cada componente: es una herramienta de representación y análisis.
+
+Un pulso con transiciones muy rápidas necesita componentes de frecuencia altas para conservar su forma. Una onda cuadrada ideal tendría un espectro que se extiende sin límite; un canal real de banda limitada atenúa o modifica componentes y las transiciones se deforman. Si símbolos sucesivos dejan de distinguirse correctamente puede aparecer interferencia entre símbolos. Esto conecta una forma temporal con su espectro, sin reducirlo a memorizar una gráfica.
+
+Ancho de banda físico describe una extensión de frecuencias, en Hz. En lenguaje cotidiano también se llama ancho de banda a una tasa de datos, pero en una cuenta hay que distinguir ambas cosas. Latencia es tiempo de demora; capacidad y tasa indican cuánto puede transmitirse por unidad de tiempo. Un enlace puede tener gran tasa y alta latencia simultáneamente.
+
+La codificación de línea representa bits mediante estados y transiciones. Códigos como Manchester incorporan características útiles para sincronización, con costos y requisitos de banda propios. No hay una correspondencia universal de tensión positiva con bit uno para cualquier código. Para dibujar una secuencia tenés que fijar la convención que utiliza la cátedra; el detalle de esas convenciones en sus archivos sigue pendiente.
+
+Información, en teoría de la información, se relaciona con incertidumbre. Cuatro mensajes equiprobables requieren dos bits para distinguirlos en una representación fija. Si algunos resultados son mucho más previsibles que otros, una codificación apropiada puede reducir la longitud media bajo ciertas condiciones. Entropía no mide el valor humano de un mensaje ni su confidencialidad.
+
+Para un canal ideal sin ruido y con los supuestos del modelo de Nyquist, una relación usada es Rmáx = 2 B log2(M), con B en Hz y M niveles distinguibles. No debe aplicarse ignorando ruido o limitaciones del equipo. Para un canal bandalimitado con ruido blanco gaussiano, Shannon-Hartley expresa C = B log2(1 + S/N), usando una relación de potencias lineal, no su valor en dB.
+
+Ejemplo resuelto propio: B = 1 MHz y S/N = 15 dan C = 1.000.000 × log2(16) = 4 Mbit/s en ese modelo. Es una frontera teórica para las condiciones indicadas, no una promesa de descarga ni de un módem concreto. Si te dan S/N en dB, primero convertís la relación: S/N = 10 elevado a (dB/10).
+
+Reto: explicá por qué aumentar niveles de modulación indefinidamente no produce una tasa útil ilimitada. Luego compará dos enlaces con distinta banda y ruido sin mezclar Hz con bit/s.
+
+Para tu resumen: relacioná forma temporal, espectro, banda, ruido y tasa. Incluí los supuestos debajo de cada fórmula que conserves.
+
+BLOQUE 11 — MODULACIÓN, DIGITALIZACIÓN Y ERRORES
+
+Modular significa variar propiedades de una señal portadora para representar información. En ejemplos analógicos se estudian amplitud y frecuencia; en modulación digital aparecen ASK, FSK, PSK y QAM. QAM combina variaciones asociadas a componentes de la señal para distinguir símbolos. Más símbolos pueden transportar más bits por símbolo, pero exigen que el receptor pueda diferenciarlos con el ruido y distorsión presentes.
+
+Banda base y transmisión sobre una portadora describen modos de llevar la información al medio. No deben confundirse con el cifrado: una señal modulada puede transportar datos públicos o protegidos criptográficamente. Cambiar el formato físico no autoriza a leer contenido ni oculta necesariamente su significado a un receptor adecuado.
+
+PCM digitaliza una señal mediante muestreo, cuantificación y codificación. Muestrear toma valores en instantes; cuantificar los aproxima a niveles disponibles; codificar representa esos niveles. La tasa de muestreo y la cantidad de bits por muestra influyen en tasa bruta y precisión. El teorema de muestreo se aplica con condiciones de banda y filtrado: tomar pocas muestras puede generar aliasing, una interpretación engañosa de frecuencias.
+
+Ejemplo resuelto: un canal con 8.000 muestras por segundo y ocho bits por muestra produce 64.000 bit/s de muestras codificadas, antes de agregar estructuras de transporte. Si se duplican los canales independientes con el mismo formato, se duplica esa tasa bruta. No se deduce de allí la calidad perceptual completa ni la tasa de un archivo comprimido.
+
+BER expresa una proporción de bits erróneos respecto de bits transmitidos o examinados según la medición. La detección y corrección agregan redundancia. Un checksum ayuda a detectar ciertas alteraciones; un CRC se diseña para patrones de errores; familias de códigos como Hamming pueden corregir determinados patrones según su construcción. No todo código corrige cualquier cantidad de errores.
+
+ARQ usa mecanismos de confirmación y retransmisión; FEC añade información para recuperar ciertos errores sin solicitar nuevamente cada bloque. Pueden combinarse. La integridad frente a errores accidentales no equivale a autenticidad criptográfica: un atacante capaz de cambiar contenido puede también recalcular un CRC si no hay otro control.
+
+Reto: calculá tasa bruta para 16.000 muestras/s y doce bits por muestra. Después compará ARQ y FEC para un enlace con mucha demora, indicando ventajas y costos sin declarar una solución universal.
+
+Para tu resumen: separá representación, detección de errores, corrección, retransmisión y protección criptográfica; asigná un mecanismo a cada finalidad.
+
+BLOQUE 12 — CAPAS, ETHERNET, DISPOSITIVOS Y VECINOS
+
+OSI organiza funciones en siete capas: física, enlace, red, transporte, sesión, presentación y aplicación. El modelo TCP/IP suele exponerse en cuatro: acceso/enlace, Internet, transporte y aplicación. También se enseña una variante de cinco capas que separa física y enlace. Son modelos para razonar; no hay que forzar una correspondencia perfecta de cada implementación con una sola caja.
+
+Encapsular significa que una capa incorpora la información necesaria para prestar su servicio alrededor de datos de otra. Una petición HTTP puede viajar como datos de un flujo TCP, dentro de paquetes IP y tramas de una tecnología de enlace. PDU es una denominación general de la unidad del protocolo; trama, paquete, segmento y datagrama aportan contexto, pero los nombres deben usarse indicando la capa.
+
+Ethernet utiliza direcciones MAC para identificar interfaces en su contexto de enlace. Un switch aprende asociaciones entre MAC de origen y puertos y reenvía tramas dentro de los dominios correspondientes. Una dirección que todavía no conoce puede provocar difusión por los puertos apropiados de esa VLAN. Un hub clásico replica señales con otras limitaciones; no equivale a un switch que toma decisiones de reenvío.
+
+Un router comunica redes mediante decisiones sobre direcciones y prefijos de red. En una LAN Ethernet IPv4, ARP permite resolver la dirección de enlace del siguiente salto local. Si el destino está fuera de la red local, normalmente se busca la MAC del gateway, no la del servidor remoto a través de Internet. En IPv6 se utiliza Neighbor Discovery, basado en ICMPv6, para funciones de descubrimiento de vecinos; no ARP.
+
+Ejemplo resuelto: una PC envía una solicitud a una red remota. Decide el siguiente salto usando su configuración y tabla de rutas; prepara una trama dirigida al router local. El paquete contiene la dirección IP remota como destino, salvo transformaciones específicas como NAT. Al atravesar otro enlace cambian las direcciones de enlace pertinentes; no hace falta que cambie la IP de destino en cada router.
+
+Una VLAN separa dominios lógicos de enlace y difusión. Comunicar VLANs requiere funciones de ruteo y controles adecuados. La separación por VLAN no cifra tráfico ni reemplaza reglas de acceso. Un firewall evalúa comunicaciones mediante su política; NAT traduce direcciones y no debe presentarse como sinónimo de esa política.
+
+Reto: dibujá PC–switch–router–red remota. Marcá IP de origen/destino y MAC del primer enlace. Explicá qué cambia al cruzar el router y qué afirmaciones requieren saber si hay NAT.
+
+Para tu resumen: elegí tres dispositivos y explicá qué información usan para decidir. Después asigná una posible falla a cada capa del recorrido.
+
+BLOQUE 13 — DIRECCIONAMIENTO, SUBREDES, IPV6 Y RUTEO
+
+Una dirección IP identifica una interfaz en un contexto de red; no identifica de manera permanente a una persona. IPv4 utiliza 32 bits. El prefijo CIDR indica cuántos bits se usan para identificar la red. La máscara permite separar esa parte de los bits de host. El equipo determina si un destino puede alcanzarse por una red directamente conectada o mediante un siguiente salto.
+
+Ejemplo resuelto: 192.168.50.70/26 tiene máscara 255.255.255.192. Quedan seis bits de host y bloques de 64 direcciones. El bloque que contiene 70 empieza en 64 y termina en 127: red 192.168.50.64, broadcast 192.168.50.127 y, en una LAN IPv4 convencional de ese prefijo, hosts 65–126. No usamos 70 como nombre de la red. Hay casos especiales, como enlaces /31 o rutas /32, para los que no se aplica sin matices la cuenta habitual de restar dos.
+
+VLSM permite usar prefijos de distinto tamaño según la necesidad. Para diseñar una red primero se calculan cantidad de subredes, hosts, crecimiento y separación requerida; después se asignan bloques sin superposición. Aprender las potencias de dos sirve aquí, aunque no rehagas una materia entera de matemática. Una dirección privada no autoriza a explorar una red: alcance y propiedad son preguntas separadas.
+
+IPv6 utiliza direcciones de 128 bits y notación hexadecimal con reglas de compresión. No usa broadcast como IPv4; emplea mecanismos de multicast y descubrimiento apropiados. No se obtiene seguridad automática por ser IPv6: sigue siendo necesario configurar accesos, servicios y observación. Las direcciones link-local tienen alcance de enlace y pueden necesitar identificar la interfaz al usarse.
+
+Una tabla de rutas relaciona prefijos de destino con interfaces, siguientes saltos y atributos. La elección utiliza la coincidencia de prefijo más específica entre rutas elegibles, con criterios adicionales según el sistema. Una ruta por defecto sirve cuando no hay otra más específica aplicable; no garantiza conectividad ni respuesta del destino.
+
+Ruteo estático se configura expresamente; el dinámico intercambia información mediante protocolos. Los algoritmos por vector de distancia comparten información sobre destinos y costos; otros enfoques construyen conocimiento distinto de la topología. Métrica no equivale siempre a distancia física. Sistemas autónomos agrupan administración y políticas de ruteo; el programa de la materia incluye protocolos que deben estudiarse con sus supuestos, no como comandos memorizados.
+
+Reto: dividí 192.168.80.0/24 en subredes para tres grupos de 50, 25 y 12 hosts, dejando espacio de crecimiento. Mostrá rangos sin superposición y explicá una ruta por defecto. Compará tu diseño con una alternativa usando el mismo prefijo para todos.
+
+Para tu resumen: conservá un cálculo completo de subred, una tabla de rutas pequeña y un ejemplo IPv6. Indicá siempre alcance y supuestos.
+
+BLOQUE 14 — DHCP, DNS, TRANSPORTE, HTTP Y TLS
+
+DHCP permite obtener parámetros de configuración, como dirección, máscara/prefijo, router y servidores DNS según el entorno. En el inicio típico de DHCPv4 se estudian Discover, Offer, Request y Acknowledge; renovación y otras situaciones no repiten siempre exactamente el mismo intercambio. Tener una IP no demuestra que el gateway o DNS funcionen. Una dirección puede asignarse manualmente, por DHCP o mediante otros mecanismos según la versión y configuración.
+
+Resolver un nombre es obtener información a partir de un identificador. El sistema puede consultar archivos locales, caché y servicios; DNS es un mecanismo específico con estructura distribuida, registros y respuestas. A relaciona nombres con direcciones IPv4; AAAA, con IPv6; CNAME expresa un alias en las condiciones del protocolo. TTL limita cuánto puede conservarse información en caché según el dato y el funcionamiento del resolvedor; no es el tiempo que tarda una consulta.
+
+Ejemplo resuelto: localhost puede resolverse mediante configuración local sin emitir una consulta DNS. Por eso obtener una IP usando una herramienta de resolución no prueba haber capturado DNS en la red. Para sostener esa afirmación se necesita observar la consulta y respuesta o una evidencia equivalente del componente correspondiente. DNS puede usar UDP o TCP y existen transportes cifrados: puerto 53 no describe todos los montajes actuales.
+
+IP permite transportar paquetes entre redes, pero no promete a la aplicación una conversación fiable por sí solo. TCP ofrece un flujo ordenado de bytes con mecanismos de secuencia, reconocimiento, retransmisión y control de flujo/congestión. No conserva límites de mensajes como una lista de paquetes independientes: la aplicación debe definir cómo interpretar su flujo. Un segmento perdido no implica necesariamente que el usuario vea datos corruptos, porque puede retransmitirse.
+
+El establecimiento TCP habitual usa SYN, SYN-ACK y ACK. Esto coordina estado y números de secuencia; no autentica por sí solo a una persona ni cifra el contenido. UDP transporta datagramas sin ofrecer por sí mismo las mismas garantías de entrega y orden. Puede ser elegido por aplicaciones que agregan mecanismos propios o prefieren otro compromiso. Decir UDP es inseguro y TCP es seguro confunde transporte con protección.
+
+Un puerto ayuda a identificar extremos de comunicación dentro del protocolo y equipo. Un servidor puede escuchar en un puerto conocido y un cliente utilizar un puerto efímero de origen. La misma IP puede prestar varios servicios. Observar 443 o 22 sugiere usos frecuentes, pero no prueba qué protocolo corre ni cómo está configurado.
+
+HTTP define solicitudes y respuestas: método, destino, cabeceras y contenido según la versión. GET solicita una representación; HEAD permite obtener metadatos de una respuesta sin su cuerpo conforme a las reglas del protocolo. Un 404 es una respuesta de aplicación: en ese intercambio se llegó a un servidor HTTP que no entregó el recurso solicitado. Una conexión rechazada ocurre antes de recibir esa respuesta HTTP. Un 200 tampoco garantiza autorización correcta ni que una operación haya cumplido la intención del usuario.
+
+HTTPS incorpora TLS para proteger la comunicación y autenticar al servidor mediante las comprobaciones correspondientes. Certificado válido, nombre esperado y cadena de confianza importan; no se verifica cifrado mirando solo el número de puerto. HTTP/1.1 y HTTP/2 suelen estudiarse sobre TCP con TLS para HTTPS; HTTP/3 utiliza QUIC sobre UDP. Especificar el montaje evita convertir un ejemplo introductorio en una regla falsa para todos los sitios.
+
+Ejemplo resuelto: una PC Windows y otra Linux acceden al mismo portal. Ambas necesitan configuración IP, resolución pertinente, ruta, transporte y un servicio compatible. Si solo falla el nombre pero responde una prueba controlada por dirección, investigamos resolución; para HTTPS por IP también importa que la identidad del certificado coincida, por lo que esa prueba debe diseñarse sin desactivar validaciones. Una página de error HTTP orienta a otra capa que un timeout sin respuesta, pero todavía hay varias causas posibles.
+
+Reto: describí el recorrido de una URL desde la aplicación hasta su respuesta, incluyendo qué información podría provenir de caché. Luego diseñá observaciones para distinguir DNS, ruta, puerto y aplicación. Indicá qué demostraría cada resultado y qué seguiría abierto.
+
+Para tu resumen: armá una secuencia con nombre, IP, MAC del siguiente salto, puertos, conexión, protección y mensaje de aplicación. Incluí un contraejemplo para cada inferencia demasiado rápida.
+
+INTEGRACIÓN — DIAGNOSTICAR SIN ADIVINAR
+
+Caso de repaso: una persona dice que el sistema está lento y no puede entrar al portal. Esa frase puede referirse al equipo, al enlace, al nombre, al servicio, a una cuenta o al contenido. Antes de cambiar configuraciones, precisá qué acción falla, desde cuándo, en qué equipo y con qué mensaje. Anotá si se reproduce, qué cambió y qué otras observaciones tenés.
+
+Separá hipótesis por capas. Si todos los usuarios de una red fallan pero otra red accede, investigá el tramo compartido sin concluir de inmediato que es un firewall. Si un equipo tiene presión de memoria y fallan aplicaciones locales, observá procesos y almacenamiento. Si una cuenta recibe denegación dentro de una sesión que funciona, revisá autorización y estado de la aplicación. La evidencia puede obligarte a cambiar de hipótesis; eso es parte del método.
+
+Una prueba útil tiene una pregunta, procedimiento, resultado y límite. El mismo objetivo puede comprobarse con herramientas de Windows o Linux y los resultados no tienen por qué imprimirse igual. Lo que se compara es el significado: configuración, proceso, escucha, respuesta, regla o evento observado. No ejecutes cambios para después inventar una explicación de por qué funcionaron.
+
+Para preparar tu resumen final, escribí por cada bloque una página con: explicación propia, diagrama, ejemplo resuelto diferente al del cuaderno, error frecuente y una prueba concreta. Después uní las páginas mediante el recorrido de abrir un portal: hardware → proceso → memoria → archivo/configuración → identidad → red → protocolo → servicio → datos. Esa cadena muestra por qué las materias se necesitan entre sí.
+
+Autoevaluación breve, sin solucionario:
+1. ¿Por qué CPU, RAM y disco pueden limitar tareas diferentes?
+2. ¿Qué cambia entre programa, proceso, hilo y servicio?
+3. ¿Cómo distinguirías un bloqueo normal por entrada/salida de un interbloqueo?
+4. ¿Por qué memoria virtual no significa solamente disco usado como RAM?
+5. ¿Qué diferencia hay entre permiso, cifrado, CRC y hash criptográfico?
+6. ¿Cómo relacionás símbolo, bit, espectro, ruido y capacidad?
+7. ¿Por qué una consulta a otra red necesita una dirección de enlace local?
+8. ¿Cómo decidís red, host y siguiente salto usando un prefijo?
+9. ¿Qué evidencia distingue resolución local de DNS observado?
+10. ¿Qué podés y qué no podés concluir de un SYN-ACK, un 404 y un 200?
+
+Criterio de avance: podés explicar el concepto sin leer, resolver una variante nueva y justificar una observación tanto en Windows como en Linux o en un esquema independiente del sistema. Si una herramienta todavía no se practicó, anotá esa parte como pendiente; no invalida todo lo que comprendiste, pero evita confundir explicación con experiencia demostrada.
+
+REFERENCIAS DE CONTROL Y CONTINUIDAD
+
+Fuentes académicas verificadas: programa SO I y programa Telecom, con sus enlaces al comienzo. Las guías de SO II que sostienen la selección de temas están registradas en inventarios/so2-programacion.json del paquete. El detalle de recursos leídos y pendientes se conserva en los inventarios; este repaso no cambia esos estados.
+
+Ampliaciones técnicas verificadas con fuentes primarias:
+- IETF/RFC Editor, especificación TCP: https://www.rfc-editor.org/rfc/rfc9293
+- IETF/RFC Editor, IPv6: https://www.rfc-editor.org/rfc/rfc8200
+- IETF/RFC Editor, conceptos y estructura DNS: https://www.rfc-editor.org/rfc/rfc1034
+- IETF/RFC Editor, HTTP/3 sobre QUIC: https://www.rfc-editor.org/rfc/rfc9114 y transporte QUIC sobre UDP: https://www.rfc-editor.org/rfc/rfc9000
+- MIT OpenCourseWare, David D. Clark, Lecture 3 de Communications and Information Policy: https://ocw.mit.edu/courses/esd-68j-communications-and-information-policy-spring-2006/bf760030db372bab28ce53734e7daf99_mod1_lec3.pdf . Se utilizó para controlar la relación de capacidad, banda y ruido; los ejemplos numéricos de este cuaderno son propios.
+- University of Illinois, CS498, Physical Layer: https://courses.grainger.illinois.edu/cs498wn3/fa2018/slides/phy.pdf . Control de la expresión de Nyquist para el modelo sin ruido.
+
+Estas referencias apoyan conceptos puntuales; un RFC no reemplaza el programa ni un apunte docente. La continuidad es completar las lecturas pendientes del campus, conservar las convenciones específicas de la cátedra y realizar la práctica final integradora del paquete con evidencias propias.
+
+
+WINDOWS PARA INTEGRAR SISTEMAS OPERATIVOS Y CIBERSEGURIDAD
+
+Esta guía trabaja Windows como un sistema que tenés que comprender, administrar y diagnosticar. Kali es otro entorno del recorrido; las competencias de Windows requieren estudiar Windows y practicar en él. El objetivo es conectar hardware, procesos, memoria, archivos, redes, identidad y registros para que puedas explicar un caso completo.
+
+El contenido es una ampliación docente propia, preparada el 30 de octubre de 2026. Se relaciona con los temas constatados del programa de Sistemas Operativos I y las guías accesibles de Sistemas Operativos II; no se atribuye a los PDF de Windows que siguen pendientes de lectura en el campus. No es una guía exhaustiva de toda la administración empresarial de Microsoft. Sí cubre la base de Windows necesaria para esta integración anual, junto con seis prácticos y puntos de continuación.
+
+ENTORNO Y FORMA DE TRABAJO
+
+Usá Windows 11 en un equipo propio o una VM de práctica. Si tenés otra versión soportada o un laboratorio alojado, registrá versión y edición: los nombres de pantallas, módulos y funciones pueden variar. Una VM permite probar cambios de cuentas y políticas con una instantánea previa, pero una instantánea no reemplaza un backup separado. En un equipo administrado por una institución no se cambian sus políticas para completar una práctica.
+
+Los ejemplos se diseñaron para Windows PowerShell 5.1, disponible mediante powershell.exe en Windows. PowerShell 7 usa pwsh.exe, se instala por separado y puede coexistir. La mayoría de los conceptos de lenguaje es compartida, pero el motor, módulos y algunos comportamientos difieren. Los módulos de red, Defender o administración pueden depender de Windows y de compatibilidad; un error de módulo no se interpreta como falta de comprensión. Antes de ejecutar, mirá $PSVersionTable y Get-Command para comprobar el comando concreto. No hace falta instalar PowerShell 7 para empezar. [W1]
+
+Abrí Windows PowerShell sin elevar como administrador. Los prácticos iniciales usan tu cuenta normal, lecturas acotadas y archivos ficticios. Cuando una lectura no está permitida, registrá el límite. No se resuelve un acceso denegado elevando todo automáticamente. Los nombres locales o datos de tu equipo pueden ser privados: entregá solo la evidencia necesaria del laboratorio.
+
+Para los ejemplos, los bloques están identificados como powershell; no se pegan en Bash ni en CMD. En PowerShell una barra vertical transmite objetos entre cmdlets, no solamente líneas de texto. Get-Help muestra la ayuda local y Get-Member permite inspeccionar propiedades y métodos. Format-Table y Format-List se usan al final, para presentar; si formateás antes de filtrar o exportar, podés perder el tipo de información que necesitabas.
+
+QUÉ HACE WINDOWS DESDE QUE ARRANCA
+
+La computadora comienza ejecutando firmware. En una instalación moderna, UEFI participa en localizar y arrancar el cargador. Luego se cargan componentes del sistema, controladores y servicios hasta ofrecer inicio de sesión y aplicaciones. Un fallo antes de iniciar sesión puede estar en una etapa distinta de un problema de una aplicación ya abierta: diagnosticar consiste en ubicar el límite donde deja de funcionar.
+
+Secure Boot ayuda a verificar componentes autorizados en la cadena de arranque; Trusted Boot y otras protecciones intervienen en etapas posteriores. Un TPM puede proteger claves y mediciones. Son piezas relacionadas, no equivalentes. Ninguna implica por sí sola que todos los archivos del usuario estén cifrados o que cualquier programa sea confiable. Para esta unidad se observan conceptos y estado; no se cambia firmware ni se desactivan protecciones para practicar. [W2]
+
+El kernel coordina ejecución, memoria y acceso a recursos. El modo usuario limita el acceso directo de las aplicaciones a partes críticas del sistema; las llamadas al sistema permiten solicitar servicios controlados. Un driver es código que participa en la interacción con hardware u otros componentes. Una falla de una aplicación no tiene el mismo alcance que un componente privilegiado defectuoso. El escritorio gráfico y la shell no son el kernel.
+
+La arquitectura de 32 o 64 bits influye en instrucciones, direcciones y compatibilidad. No deduzcas la memoria disponible de un proceso contando solamente la RAM instalada. Tampoco significa que todo programa en un Windows de 64 bits sea de 64 bits. La compatibilidad de aplicaciones depende además de bibliotecas, interfaces y edición. Para la cursada importa explicar la diferencia entre ancho de direcciones, espacio virtual, memoria física y límites del sistema.
+
+MEMORIA, CPU, PROCESOS E HILOS
+
+Un proceso agrupa recursos y un contexto de ejecución: código, espacio de direcciones, identificador, contexto de seguridad y objetos abiertos, entre otros. Un hilo es una unidad de ejecución dentro del proceso que puede planificarse; varios hilos comparten recursos del proceso. Tener muchos hilos no garantiza mejor rendimiento: pueden esperar disco, red o una sección crítica. [W3]
+
+La memoria virtual es un espacio de direcciones que el sistema traduce a ubicaciones físicas o a respaldos correspondientes. La paginación organiza ese manejo en páginas; no hay que confundirla con el archivo de paginación. El working set describe páginas residentes asociadas a un proceso en un momento. Un número alto de memoria no demuestra una fuga: necesitás observar tendencia, carga, límites y comportamiento. CPU alta y memoria alta son señales diferentes. [W4]
+
+En Administración de tareas podés observar procesos y rendimiento; el Monitor de recursos agrega detalle. Compará mediciones sobre el mismo intervalo y con la misma unidad. CPU acumulada de un proceso no es porcentaje instantáneo. Identificadores se reutilizan al terminar los procesos; por eso para actuar sobre un proceso propio también conviene registrar su momento de inicio.
+
+Un servicio es una aplicación o componente administrado por el sistema de servicios, con una identidad y ciclo de vida propios. No todo proceso es un servicio ni toda tarea automática es un servicio. El Programador de tareas ejecuta acciones según desencadenadores, condiciones y cuenta. Un servicio detenido puede estar funcionando según su configuración; una tarea que existe no prueba que se ejecutó. Para investigarlos se relacionan configuración, estado, desencadenador, cuenta, último resultado y registros.
+
+Ejemplo conceptual: una aplicación depende de un servicio que espera una base de datos. Reiniciar la interfaz puede no corregir nada. Antes de actuar preguntás qué proceso escucha, si su dependencia está disponible, qué identidad usa y qué registro corresponde al intento. Reiniciar o terminar componentes sin observar primero puede borrar el síntoma y afectar otras tareas.
+
+ARCHIVOS, RUTAS Y REGISTRO
+
+Una partición o volumen no es lo mismo que un directorio. Una letra como C: es una forma de acceder a un volumen; la ruta identifica un objeto dentro de un espacio de nombres. La extensión ayuda a asociar un archivo con un programa pero no verifica su formato real. Mostrar extensiones en el Explorador ayuda a detectar nombres engañosos; esa opción no analiza el contenido ni determina si es seguro.
+
+NTFS ofrece metadatos, descriptores de seguridad, permisos y mecanismos de consistencia. Su registro transaccional del sistema de archivos no es un historial completo del contenido del usuario ni una copia de seguridad. Un volumen que conserva consistencia estructural puede contener archivos borrados o datos incorrectos. FAT/exFAT no ofrecen el mismo modelo de permisos NTFS; antes del práctico de ACL comprobamos el tipo de sistema de archivos. [W5]
+
+El Registro de Windows almacena configuración mediante claves y valores. No es una base de datos SQL ni una única lista de programas maliciosos. Una ruta de configuración tiene contexto: equipo o usuario, programa, permisos y momento del cambio. Aprender a inspeccionarlo no exige editarlo. En este módulo no modificamos claves ni importamos archivos .reg.
+
+Una ruta puede apuntar a un vínculo o punto de reanálisis. Cuando una tarea modifica permisos o escribe archivos, conviene comprobar el objeto resuelto y el alcance. Por eso usamos una carpeta nueva con nombre aleatorio y no ejecutamos cambios recursivos sobre rutas generales. LiteralPath evita interpretar comodines: sirve para tratar el nombre como dato.
+
+IDENTIDADES, GRUPOS, UAC Y MÍNIMO PRIVILEGIO
+
+Autenticación comprueba una identidad declarada mediante controles; autorización decide qué acciones permite a ese contexto. Windows identifica principales mediante SID. Un nombre visible puede cambiar o repetirse en autoridades distintas: EQUIPO\ana no es necesariamente DOMINIO\ana. La pertenencia a grupos y los privilegios forman parte del contexto de acceso. Ser propietario de un archivo tampoco es sinónimo de tener cualquier permiso operativo en todos los recursos. [W6]
+
+Una cuenta local se administra en ese equipo. Una cuenta Microsoft y una identidad institucional tienen otros servicios y mecanismos de gestión. Antes de cambiar una cuenta, determiná de qué autoridad depende. Crear usuarios, unir un equipo a un dominio o modificar contraseñas no es parte de los ejercicios sobre tu equipo real.
+
+UAC permite que tareas ordinarias y acciones elevadas se ejecuten con contextos diferentes. Un usuario miembro de Administradores no necesariamente ejecuta cada aplicación con el token elevado. La elevación requiere una interacción según el usuario y la política. Un prompt de UAC no es un análisis de seguridad del código: aceptar sin comprender sigue siendo una decisión riesgosa. Mantener la tarea con los permisos que necesita reduce el alcance de un error. [W7]
+
+En un entorno empresarial, los grupos permiten asignar permisos por función. Dar permisos a un grupo no elimina la necesidad de revisar quién lo integra y quién puede modificarlo. Una cuenta de servicio necesita derechos para una función concreta, registro de actividad y gestión de su ciclo de vida; no debe recibir privilegios generales por comodidad.
+
+NTFS, HERENCIA Y RECURSOS COMPARTIDOS
+
+La DACL contiene entradas de control de acceso para principales y derechos. Hay entradas explícitas y heredadas; la herencia transmite reglas desde un contenedor a hijos según sus indicadores. Un permiso de un grupo puede seguir concediendo una acción aunque agregues otra entrada de lectura para el usuario. Agregar una regla no demuestra que redujiste el acceso efectivo. [W6, W8]
+
+En el Explorador: Propiedades, Seguridad y Opciones avanzadas permiten observar propietario, herencia y entradas. La herramienta de acceso efectivo puede ayudar, pero tiene condiciones y no reemplaza probar el acceso con el contexto correcto en una VM de práctica. Evitá resumir el algoritmo como «Deny siempre gana» sin considerar orden, herencia, grupos, derechos y contexto.
+
+Al acceder por un recurso compartido de red se evalúan capas adicionales: identidad, permisos del recurso compartido y del sistema de archivos, entre otras. Un permiso amplio en una capa no elimina una restricción de la otra. El acceso local a un archivo no atraviesa del mismo modo la autorización del recurso SMB. Si un usuario lee localmente pero no por red, el diagnóstico tiene que recorrer esas capas, junto con conectividad y nombres.
+
+Un acceso denegado se investiga identificando usuario/grupos, recurso, operación exacta, herencia, reglas y ruta de acceso. Dar Full Control a Everyone puede ocultar la causa y ampliar acceso. Tampoco se necesita ensayar esa modificación para comprenderla.
+
+REDES Y SEGURIDAD DEL EQUIPO
+
+Windows usa los mismos principios IP, TCP/UDP y DNS estudiados en Telecomunicaciones. Una interfaz tiene configuración; una ruta define un recorrido; un puerto permite diferenciar extremos de transporte. Nombre, dirección y puerto son datos distintos. Poder resolver un nombre no demuestra que el servicio esté escuchando. Una conexión TCP exitosa tampoco demuestra que la aplicación responda correctamente.
+
+Get-NetIPConfiguration muestra la configuración de interfaces; Get-NetRoute permite observar rutas. Usá filtros y registrá solamente la interfaz necesaria. Resolve-DnsName consulta resolución DNS con opciones específicas; la resolución que hace una aplicación puede incluir cachés y otros mecanismos. Para un primer laboratorio sin salir del equipo usamos 127.0.0.1 y un puerto dinámico.
+
+Get-NetTCPConnection relaciona dirección, puerto, estado y proceso propietario. El resultado es una fotografía: una conexión breve puede desaparecer antes de medirla. Test-NetConnection permite una prueba TCP concreta. Diferenciá esa comprobación de ICMP, de una consulta DNS y de una respuesta HTTP. [W9, W10]
+
+El firewall tiene perfiles y reglas que dependen de política y contexto. Consultar Get-NetFirewallProfile con ActiveStore ayuda a observar configuración efectiva de perfiles. Un perfil no es un inventario de todas las decisiones posibles: importan reglas, interfaces, estado, aplicaciones y políticas. Este módulo no desactiva el firewall ni crea excepciones globales. Si una práctica necesita permitir tráfico entre VMs, se diseña una regla específica dentro del entorno de laboratorio y se prueba por separado. [W11]
+
+REGISTROS, DEFENDER Y ACTUALIZACIONES
+
+Event Viewer organiza registros por canales y proveedores. ID sin proveedor y canal puede ser ambiguo. Una investigación conserva timestamp con zona, equipo, proveedor, ID, RecordId y datos relevantes. El texto de Message puede variar por idioma y versión; por eso una búsqueda robusta aprovecha campos estructurados. Un evento no demuestra por sí solo intención o autoría.
+
+Get-WinEvent admite filtros por tabla hash, XPath o consultas XML. Filtrar por canal y tiempo antes de recuperar reduce volumen. Security puede requerir permisos que tu sesión no tenga y el evento puede depender de que una auditoría estuviera habilitada. Ausencia de un evento no demuestra ausencia de la acción. No se habilitan auditorías globales ni se borran registros para completar esta clase. [W12]
+
+4624 representa un inicio de sesión exitoso y 4625 un fallo en el contexto documentado del proveedor de auditoría. Hay que interpretar el tipo de inicio de sesión, la cuenta, el equipo donde se registró y otros campos. No todos los intentos se reflejan en cualquier equipo. Para practicar sin usar registros privados, este paquete trae JSONL sintético, que no es una exportación EVTX. El evento 4104 del conjunto representa contenido de un bloque PowerShell registrado; su generación depende de la configuración de registro y no se asume habilitada en tu PC. [W13, W20]
+
+Windows Security reúne distintas protecciones. Get-MpComputerStatus consulta estado de antimalware cuando el módulo está disponible; una propiedad aislada no certifica que el equipo esté limpio. En equipos con otro producto o políticas institucionales puede cambiar el modo operativo. No se fuerza su activación ni se deshabilita protección para realizar un ejercicio. [W14]
+
+Actualizar reduce exposición conocida, pero requiere considerar reinicios, compatibilidad y recuperación. La buena práctica de estudio es identificar versión, estado, fuente de actualización y si hay reinicio pendiente mediante la interfaz, y explicar cómo probar un cambio en una VM. No se instala una actualización ni se cambia una política del equipo real como parte de estos prácticos.
+
+BACKUP, RESTAURACIÓN Y CIFRADO
+
+Un backup sirve cuando puede restaurarse lo necesario dentro del tiempo y pérdida de datos tolerables. Sin una prueba de recuperación, solamente comprobaste que se creó algún archivo. Una copia en el mismo disco y accesible con la misma cuenta puede perderse junto con el original. La estrategia real considera otras ubicaciones, versiones, acceso y copias protegidas.
+
+RPO expresa cuánta pérdida de datos se tolera, medida como distancia temporal hacia el último punto recuperable. RTO expresa el tiempo objetivo de recuperación del servicio. Una restauración de archivos puede no recuperar una aplicación completa: también hacen falta configuración, permisos, dependencias y una prueba funcional. En el práctico hacemos una restauración pequeña a otra carpeta para entender el método sin tocar archivos reales.
+
+Un hash detecta diferencias de bytes frente a una referencia confiable; no cifra y no demuestra quién hizo el cambio. Si Windows PowerShell 5.1 y PowerShell 7 crean texto con codificaciones o BOM diferentes, los bytes pueden diferir aunque una pantalla se parezca. Por eso se compara el archivo existente y se explicita codificación al crear datos. [W15]
+
+BitLocker protege volúmenes frente a escenarios de acceso no autorizado, especialmente cuando el sistema está fuera de línea. No reemplaza permisos ni impide que una sesión autorizada lea sus archivos ya desbloqueados. Su administración completa se ofrece según edición; la función Device Encryption también puede estar disponible en equipos Home que cumplan requisitos. No confundas las interfaces o concluyas que todo Home carece de cifrado. Antes de cualquier cambio real se debe comprender la recuperación de claves; no actives, suspendas ni descifres unidades por este ejercicio. [W16, W17]
+
+ENTORNO EMPRESARIAL: AD DS, DOMINIO, GPO Y ENTRA
+
+AD DS organiza objetos como usuarios, equipos y grupos en un directorio y ofrece autenticación y administración relacionadas. Un controlador de dominio no es lo mismo que una PC cliente que participa del dominio. Dominios, unidades organizativas, grupos y políticas tienen funciones diferentes; aprender sus nombres no alcanza para diseñar permisos. [W18]
+
+Group Policy permite aplicar configuraciones según alcance y procesamiento. Una política local y una de dominio no equivalen a una preferencia elegida por el usuario en Configuración. Para diagnosticar una opción administrada necesitás entender quién controla la política, a quién se aplica y cómo observar su resultado. No se «corrige» una restricción institucional editando el Registro.
+
+Microsoft Entra ID es un servicio de identidad orientado a escenarios de nube, con roles, aplicaciones y formas de gestión propias. No es simplemente un controlador de dominio en Internet, y unir un dispositivo a Entra no es lo mismo que unirlo a AD DS. Pueden coexistir en arquitecturas híbridas. En este módulo se estudia la comparación y se razona sobre identidades; montar un dominio y políticas de prueba sería una continuación práctica en VMs con licencias y recursos disponibles. [W19]
+
+TABLA PARA CONECTAR CON LINUX
+
+Finalidad | Windows | Linux | Límite de la comparación
+Observar procesos | Administración de tareas, Get-Process | ps, top | Campos y unidades no son idénticos.
+Detener un proceso propio | Stop-Process con objeto/PID comprobado | señal a PID comprobado | La identidad puede cambiar y hay que limitar el objetivo.
+Observar servicios | Servicios, Get-Service | administrador de servicios de la distribución | Estado y modelo de inicio pueden diferir.
+Permisos de archivos | NTFS, DACL, SID, herencia | bits usuario/grupo/otros y ACL | chmod no representa todo NTFS.
+Red | Get-NetTCPConnection, Test-NetConnection | ss, herramientas de conexión | Una prueba de transporte no prueba toda la aplicación.
+Registros | Event Viewer, Get-WinEvent | journal/syslog según sistema | Formato, proveedor y políticas de registro difieren.
+Integridad | Get-FileHash | sha256sum | Misma función elegida sobre los mismos bytes produce comparación útil.
+Automatización | PowerShell | Bash u otras shells | PowerShell transmite objetos; Bash suele encadenar flujos de texto.
+
+PRÁCTICO W1 — INVENTARIO Y OBJETOS DE POWERSHELL
+
+Objetivo: identificar arquitectura y contexto de shell, navegar una carpeta de práctica y filtrar objetos. Tiempo inicial: 60–90 min. Sin elevación.
+
+Abrí PowerShell desde la carpeta windows del paquete. Conservá esta sesión para los seis prácticos. El siguiente bloque crea una carpeta nueva bajo el temporal del usuario y no modifica el paquete original:
+
+```powershell
+$ErrorActionPreference = 'Stop'
+$PaqueteWindows = (Get-Location).Path
+if (-not (Test-Path -LiteralPath (Join-Path $PaqueteWindows 'eventos-sinteticos.jsonl'))) {
+    throw 'Abrí PowerShell en la carpeta windows del paquete antes de continuar.'
+}
+$RaizWindowsLab = Join-Path ([IO.Path]::GetTempPath()) ('CursoWindows-' + [guid]::NewGuid().ToString('N'))
+$null = New-Item -ItemType Directory -Path $RaizWindowsLab -ErrorAction Stop
+$RaizWindowsLab = (Get-Item -LiteralPath $RaizWindowsLab -ErrorAction Stop).FullName
+$ArchivoW1 = Join-Path $RaizWindowsLab 'inventario-ficticio.txt'
+[IO.File]::WriteAllText($ArchivoW1, "Equipo=LAB-WIN`r`nDatos=ficticios`r`n", [Text.UTF8Encoding]::new($false))
+$PSVersionTable | Select-Object PSVersion, PSEdition
+Get-CimInstance Win32_OperatingSystem | Select-Object Caption, Version, BuildNumber, OSArchitecture
+Get-Item -LiteralPath $ArchivoW1 | Select-Object Name, Length, Extension, LastWriteTimeUtc
+Write-Output "Carpeta de práctica: $RaizWindowsLab"
+```
+
+Guiado: relacioná cada columna con una pregunta. El tamaño mostrado es de bytes del archivo, no la RAM de un proceso. Abrí la carpeta con el Explorador usando la ruta impresa y compará el archivo con Get-Item. Probá Get-Member sobre Get-Item para ver que el objeto tiene más propiedades que las visibles.
+
+Reto independiente: creá tres archivos de texto ficticios dentro de esta carpeta; mostrales nombre y tamaño, filtrá los que cumplan una condición elegida por vos y ordenalos. Escribí una frase sobre la diferencia entre filtrar datos y formatear la salida. Compará dir en CMD con Get-ChildItem en PowerShell sin suponer que sus parámetros sean intercambiables.
+
+Evidencia: versión de shell, arquitectura sin datos privados, ruta ficticia, comando de filtro y explicación. Comprensión: ¿Windows Terminal es una shell?, ¿dónde está el kernel en esta tarea?, ¿por qué la extensión no valida el formato? Rúbrica 10: entorno 2, navegación 2, objetos y filtro 4, explicación 2.
+
+PRÁCTICO W2 — NTFS, HERENCIA Y ACL DE UNA CARPETA NUEVA
+
+Objetivo: observar la diferencia entre reglas heredadas y explícitas, aplicar una DACL acotada y restaurar la original. Tiempo inicial: 90–120 min. Usar un volumen NTFS. No se cambia una carpeta existente de trabajo o del sistema.
+
+En el Explorador observá el sistema de archivos de la unidad donde está tu carpeta temporal. Si no es NTFS o no permite ACL, registrá el límite y usá una VM NTFS para esta parte. Los conceptos se pueden estudiar, pero no se cuenta una ACL aplicada sobre otro sistema de archivos como práctica equivalente.
+
+```powershell
+if (-not $RaizWindowsLab -or -not (Test-Path -LiteralPath $RaizWindowsLab -PathType Container)) {
+    throw 'Falta el montaje W1 en esta sesión.'
+}
+$TemporalW2 = [IO.Path]::GetFullPath([IO.Path]::GetTempPath()).TrimEnd('\')
+$RaizW2 = (Get-Item -LiteralPath $RaizWindowsLab).FullName
+if (-not $RaizW2.StartsWith($TemporalW2 + '\CursoWindows-', [StringComparison]::OrdinalIgnoreCase) -or
+    (Split-Path -Leaf $RaizW2) -notmatch '^CursoWindows-[0-9a-f]{32}$') {
+    throw 'La ruta resuelta no coincide con el temporal creado para el laboratorio.'
+}
+$CarpetaAclW2 = Join-Path $RaizW2 'W2-ACL'
+if (Test-Path -LiteralPath $CarpetaAclW2) { throw 'Usá un montaje nuevo: W2-ACL ya existe.' }
+$null = New-Item -ItemType Directory -Path $CarpetaAclW2
+if ((Get-Item -LiteralPath $CarpetaAclW2).FullName -ne (Join-Path $RaizW2 'W2-ACL')) {
+    throw 'El destino resuelto difiere del esperado.'
+}
+$AclAntesW2 = Get-Acl -LiteralPath $CarpetaAclW2
+$AclAntesW2 | Format-List Owner, AreAccessRulesProtected, AccessToString
+```
+
+Antes de continuar, anotá las entradas y comprobá en la interfaz cuáles son heredadas. El bloque siguiente crea reglas de control para tu SID actual, SYSTEM y Administradores; no prueba exclusividad frente a administradores. Tampoco cambia grupos ni cuentas. El propósito es estudiar una DACL explícita en la carpeta nueva. [W8]
+
+```powershell
+$SidActualW2 = [Security.Principal.WindowsIdentity]::GetCurrent().User.Value
+$AclNuevaW2 = [Security.AccessControl.DirectorySecurity]::new()
+$AclNuevaW2.SetAccessRuleProtection($true, $false)
+$HerenciaW2 = [Security.AccessControl.InheritanceFlags]'ContainerInherit,ObjectInherit'
+foreach ($SidTextoW2 in @($SidActualW2, 'S-1-5-18', 'S-1-5-32-544')) {
+    $ReglaW2 = [Security.AccessControl.FileSystemAccessRule]::new(
+        [Security.Principal.SecurityIdentifier]::new($SidTextoW2),
+        [Security.AccessControl.FileSystemRights]::FullControl,
+        $HerenciaW2,
+        [Security.AccessControl.PropagationFlags]::None,
+        [Security.AccessControl.AccessControlType]::Allow)
+    $null = $AclNuevaW2.AddAccessRule($ReglaW2)
+}
+Set-Acl -LiteralPath $CarpetaAclW2 -AclObject $AclNuevaW2 -ErrorAction Stop
+Get-Acl -LiteralPath $CarpetaAclW2 | Format-List Owner, AreAccessRulesProtected, AccessToString
+```
+
+Guiado: explicá qué cambió en la herencia y por qué se usan SID estables para las autoridades integradas. Crear un archivo aquí con tu cuenta prueba tu acceso, pero no prueba el de una segunda cuenta. En una VM con cuentas ficticias, la extensión consiste en configurar un grupo lector y comprobar desde esa cuenta las operaciones permitidas y denegadas; no se crean cuentas automáticamente en tu equipo real.
+
+Reto independiente: dibujá qué ocurriría si agregás lectura para una cuenta que ya recibe escritura por un grupo. Indicá qué entradas necesitarías revisar antes de afirmar una reducción de acceso. Diseñá una matriz de dos cuentas, dos carpetas y tres operaciones para la prueba en VM, sin resolverla con Everyone Full Control.
+
+Restauración guiada, en la misma sesión donde guardaste la ACL original:
+
+```powershell
+if ((Get-Item -LiteralPath $CarpetaAclW2).FullName -ne (Join-Path $RaizW2 'W2-ACL')) {
+    throw 'El destino dejó de coincidir con la carpeta prevista.'
+}
+Set-Acl -LiteralPath $CarpetaAclW2 -AclObject $AclAntesW2 -ErrorAction Stop
+Get-Acl -LiteralPath $CarpetaAclW2 | Format-List Owner, AreAccessRulesProtected, AccessToString
+```
+
+Evidencia: ACL antes, después y restaurada; interpretación de herencia; matriz de prueba. No entregues SID reales si preferís anonimizarlos; conservá sus relaciones. Rúbrica 10: alcance 2, lectura de ACL 3, herencia y contexto 3, recuperación 2. Error frecuente: sumar una regla y asumir que se eliminó un permiso heredado.
+
+PRÁCTICO W3 — UN PROCESO PROPIO Y SUS DIFERENCIAS CON SERVICIOS Y TAREAS
+
+Objetivo: observar un proceso controlado y terminar únicamente ese proceso; distinguirlo de un servicio o una tarea. Tiempo inicial: 60–90 min. No se detienen componentes del sistema.
+
+```powershell
+$EjecutableW3 = Join-Path $env:SystemRoot 'System32\WindowsPowerShell\v1.0\powershell.exe'
+if (-not (Test-Path -LiteralPath $EjecutableW3 -PathType Leaf)) { throw 'No se encontró Windows PowerShell.' }
+$ProcesoW3 = Start-Process -FilePath $EjecutableW3 -ArgumentList '-NoProfile', '-Command', 'Start-Sleep -Seconds 600' -WindowStyle Hidden -PassThru
+$InicioW3 = $ProcesoW3.StartTime
+$IdW3 = $ProcesoW3.Id
+Get-Process -Id $IdW3 | Select-Object Id, ProcessName, StartTime, CPU, WorkingSet64
+```
+
+Buscá solamente ese PID en Administración de tareas. Contrastá memoria y CPU con la definición de la métrica; no sumes campos diferentes como si fueran equivalentes. No se necesita abrir todos los procesos ni compartir sus nombres.
+
+Para cerrar la prueba se vuelve a comprobar identidad y momento de inicio:
+
+```powershell
+$ActualW3 = Get-Process -Id $IdW3 -ErrorAction SilentlyContinue
+if ($null -eq $ActualW3) {
+    Write-Output 'El proceso de prueba ya terminó; no se envió una señal.'
+} elseif ($ActualW3.ProcessName -eq 'powershell' -and $ActualW3.StartTime -eq $InicioW3) {
+    Stop-Process -InputObject $ActualW3 -ErrorAction Stop
+} else {
+    throw 'La identidad no coincide; no se termina ningún proceso.'
+}
+```
+
+Guiado: consultá Get-Service -Name EventLog para observar ese servicio sin cambiarlo. Abrí el Programador de tareas, elegí una tarea integrada de Microsoft visible y leé acción, desencadenador y cuenta, sin ejecutarla ni modificarla. Si el equipo restringe esa lectura, registralo.
+
+Reto independiente: prepará una tabla con programa, proceso, hilo, servicio y tarea programada; agregá un ejemplo propio para cada uno. Explicá por qué un PID por sí solo no basta y qué necesitás para atribuir un puerto a ese proceso. Proponé cómo observarías una espera por red sin terminarlo.
+
+Evidencia: PID de prueba, inicio, campos interpretados y comprobación de cierre; tabla conceptual. Rúbrica 10: control del proceso 3, métricas 2, distinciones 3, diagnóstico 2. Si ya terminó, esa observación es válida: no hay que escoger otro PID.
+
+PRÁCTICO W4 — TCP LOCAL, ESTADO Y FIREWALL
+
+Objetivo: relacionar escucha, conexión y proceso sin exponer un servicio a la red. Tiempo inicial: 60–90 min. El puerto lo asigna el sistema y la escucha se vincula solo a loopback.
+
+```powershell
+$EscuchaW4 = [Net.Sockets.TcpListener]::new([Net.IPAddress]::Loopback, 0)
+try {
+    $EscuchaW4.Start()
+    $PuertoW4 = $EscuchaW4.LocalEndpoint.Port
+    Write-Output "Puerto temporal de prueba: $PuertoW4"
+    Get-NetTCPConnection -LocalAddress '127.0.0.1' -LocalPort $PuertoW4 -State Listen |
+        Select-Object LocalAddress, LocalPort, State, OwningProcess
+    Test-NetConnection -ComputerName '127.0.0.1' -Port $PuertoW4 -InformationLevel Detailed
+} finally {
+    $EscuchaW4.Stop()
+}
+```
+
+El ejemplo comprueba TCP; no implementa HTTP ni entrega una página. El bloque finally cierra la escucha aunque una consulta falle. Si tu módulo no está disponible en PowerShell 7, probá la lectura en Windows PowerShell 5.1; no abras un puerto permanente ni desactives el firewall para adaptarlo.
+
+Guiado: observá los perfiles sin modificar nada:
+
+```powershell
+Get-NetFirewallProfile -PolicyStore ActiveStore |
+    Select-Object Name, Enabled, DefaultInboundAction, DefaultOutboundAction
+```
+
+Reto independiente: explicá qué verifica cada comando y qué no. Identificá qué proceso era dueño de la escucha. Diseñá tres pruebas diferentes para distinguir resolución de nombre, conexión TCP y respuesta de aplicación. Indicá qué información adicional pedirías si un equipo remoto no conecta mientras loopback sí funciona. No hace falta ejecutar pruebas externas para resolver el razonamiento.
+
+Evidencia: solo dirección/puerto de laboratorio y proceso relacionado; explicación de las tres capas. Rúbrica 10: TCP 3, proceso 2, capas de diagnóstico 3, lectura de políticas 2. Error frecuente: tomar ping o TCP exitoso como prueba de que toda la aplicación funciona.
+
+PRÁCTICO W5 — EVENTOS REALES ACOTADOS Y CASO SINTÉTICO
+
+Objetivo: interpretar proveedor, canal, ID y tiempo, construir una cronología y distinguir observación de hipótesis. Tiempo inicial: 90–120 min.
+
+Primero, en Event Viewer, abrí Windows Logs, System. Observá un evento accesible y sus vistas general/detalles; no borres ni exportes todo el registro. Como consulta equivalente acotada podés usar:
+
+```powershell
+$DesdeW5 = (Get-Date).AddDays(-7)
+Get-WinEvent -FilterHashtable @{LogName='System'; Level=2; StartTime=$DesdeW5} -MaxEvents 5 |
+    Select-Object TimeCreated, ProviderName, Id, RecordId, LevelDisplayName
+```
+
+Si no hay coincidencias o no tenés permiso, registrá ese resultado. No habilites auditorías ni provoques fallos de contraseña en tu cuenta para conseguir un evento. Esta consulta solo sirve para conocer el mecanismo: no determina si tu equipo sufrió un incidente.
+
+El caso que vas a entregar usa únicamente eventos-sinteticos.jsonl y contexto-eventos.txt, incluidos aquí. Los nombres, IP y acciones son ficticios. Los registros contienen un campo synthetic y no son EVTX, no tienen firmas del sistema ni procedencia independiente. No se cargan dentro del registro nativo de Windows.
+
+```powershell
+$RutaEventosW5 = Join-Path $PaqueteWindows 'eventos-sinteticos.jsonl'
+if (-not (Test-Path -LiteralPath $RutaEventosW5 -PathType Leaf)) { throw 'Falta el conjunto sintético del paquete.' }
+$EventosW5 = Get-Content -LiteralPath $RutaEventosW5 -Encoding UTF8 |
+    Where-Object { $_.Trim() -ne '' } |
+    ForEach-Object { $_ | ConvertFrom-Json }
+$EventosW5 | Select-Object timestamp_utc, provider, channel, event_id, record_id
+```
+
+Guiado: elegí una línea y separá cuenta, resultado, origen y equipo donde se habría registrado. Explicá por qué un número de ID no es suficiente sin contexto. Revisá el directorio ficticio del contexto antes de inferir roles.
+
+Reto independiente: ordená los eventos por tiempo; contá fallos solo del tipo correspondiente; correlacioná sesiones sin inventar una relación causal; redactá dos hipótesis y una evidencia que ayudaría a resolver cada una. Indicá qué datos faltan para saber quién usó físicamente la cuenta y si la actividad fue autorizada. Prepará un pase de guardia de hasta 200 palabras.
+
+Evidencia: consultas o procedimiento, tabla con record_id, hechos/hipótesis/límites. Rúbrica 10: campos y tiempo 2, consultas 2, correlación 2, hipótesis 2, comunicación 2. No se evalúa una acusación contundente: se evalúa una conclusión proporcionada a la evidencia.
+
+PRÁCTICO W6 — RECUPERAR DATOS Y EVALUAR CONTROLES
+
+Objetivo: comprobar una restauración pequeña y explicar qué controles sirven para cada riesgo. Tiempo inicial: 90–120 min. Solo afecta archivos nuevos bajo la raíz de práctica.
+
+```powershell
+if (-not $RaizWindowsLab -or -not (Test-Path -LiteralPath $RaizWindowsLab -PathType Container)) { throw 'Falta W1.' }
+$CarpetaW6 = Join-Path $RaizWindowsLab 'W6-recuperacion'
+if (Test-Path -LiteralPath $CarpetaW6) { throw 'Esta práctica requiere una carpeta nueva.' }
+$null = New-Item -ItemType Directory -Path $CarpetaW6
+$OriginalW6 = Join-Path $CarpetaW6 'original.txt'
+$CopiaW6 = Join-Path $CarpetaW6 'copia.txt'
+$RestauradoW6 = Join-Path $CarpetaW6 'restaurado.txt'
+[IO.File]::WriteAllText($OriginalW6, "Version ficticia inicial`r`n", [Text.UTF8Encoding]::new($false))
+Copy-Item -LiteralPath $OriginalW6 -Destination $CopiaW6 -ErrorAction Stop
+$ReferenciaW6 = (Get-FileHash -LiteralPath $OriginalW6 -Algorithm SHA256).Hash
+[IO.File]::WriteAllText($OriginalW6, "Version ficticia modificada`r`n", [Text.UTF8Encoding]::new($false))
+Copy-Item -LiteralPath $CopiaW6 -Destination $RestauradoW6 -ErrorAction Stop
+Get-FileHash -LiteralPath $OriginalW6, $CopiaW6, $RestauradoW6 -Algorithm SHA256 |
+    Select-Object Path, Hash
+```
+
+Guiado: antes de comparar, escribí tu predicción. Explicá qué prueba la comparación contra $ReferenciaW6 y qué no prueba esta copia sobre un desastre del disco. La restauración se escribió en otro nombre: el archivo modificado se conserva para analizarlo.
+
+Si Defender y sus cmdlets están disponibles, observá sin modificar:
+
+```powershell
+Get-Command Get-MpComputerStatus -ErrorAction SilentlyContinue
+Get-MpComputerStatus | Select-Object AMRunningMode, AntivirusEnabled, RealTimeProtectionEnabled, AntivirusSignatureLastUpdated
+```
+
+No ejecutes el segundo comando si el primero no existe. Si la lectura requiere permiso o una política impide consultarla, anotá el límite. Mirá Windows Security y Windows Update en su interfaz sin cambiar opciones ni iniciar una actualización durante el ejercicio.
+
+Reto independiente: el portal ficticio exige perder como máximo 30 min de datos y volver en 2 h. Diseñá un esquema de copias y una prueba funcional de recuperación; justificá qué datos, permisos y dependencias conservarías. Explicá cómo se relacionan backup, ACL, BitLocker, antimalware y actualización, sin tratarlos como sustitutos. Según tu edición y hardware, identificá qué opción de cifrado existe, sin activarla ni copiar claves de recuperación para entregar.
+
+Evidencia: comparación de archivos ficticios, procedimiento de restauración y propuesta RPO/RTO. Rúbrica 10: integridad 2, recuperación 3, alcance de la copia 2, controles y objetivos 3. Error frecuente: dar por probado un backup porque existe una copia o afirmar que el hash recupera el archivo.
+
+RESUMEN FINAL QUE TENÉS QUE PODER ARMAR
+
+Prepará una hoja con este recorrido: firmware y arranque → kernel y controladores → procesos/hilos/memoria → archivos y permisos → identidad y elevación → red y servicio → registro y diagnóstico → protección y recuperación. Para cada flecha agregá una relación concreta y una herramienta de observación. Por ejemplo, de servicio a red tenés que poder explicar qué proceso escucha, con qué cuenta y en qué dirección.
+
+Después redactá un caso de cinco párrafos: un usuario de Windows no puede abrir un documento del portal; la red parece disponible; hay eventos de autenticación; la base de datos responde; el archivo fue restaurado. Proponé el orden de comprobaciones y la evidencia de cada hipótesis. No inventes una única causa por el título del síntoma.
+
+Dominio demostrado: repetir los seis prácticos en otro montaje de archivos o con otro conjunto sintético, sin copiar una secuencia resuelta; explicar por qué cada paso prueba algo y qué queda abierto. La competencia práctica Windows queda pendiente hasta realizarla en Windows, aunque puedas resolver preguntas conceptuales desde otro sistema.
+
+REFERENCIAS MICROSOFT CONSULTADAS
+
+[W1] Windows PowerShell 5.1 y PowerShell 7: https://learn.microsoft.com/en-us/powershell/scripting/whats-new/differences-from-windows-powershell
+[W2] Protección del arranque: https://learn.microsoft.com/en-us/windows/security/operating-system-security/system-security/secure-the-windows-10-boot-process
+[W3] Procesos e hilos: https://learn.microsoft.com/en-us/windows/win32/procthread/about-processes-and-threads
+[W4] Espacio virtual: https://learn.microsoft.com/en-us/windows/win32/memory/virtual-address-space
+[W5] NTFS: https://learn.microsoft.com/en-us/windows-server/storage/file-server/ntfs-overview
+[W6] Control de acceso: https://learn.microsoft.com/en-us/windows/security/identity-protection/access-control/access-control
+[W7] UAC: https://learn.microsoft.com/en-us/windows/security/application-security/application-control/user-account-control/how-it-works
+[W8] Get-Acl y Set-Acl: https://learn.microsoft.com/en-us/powershell/module/microsoft.powershell.security/get-acl?view=powershell-5.1 y https://learn.microsoft.com/en-us/powershell/module/microsoft.powershell.security/set-acl?view=powershell-5.1
+[W9] TCP y proceso: https://learn.microsoft.com/en-us/powershell/module/nettcpip/get-nettcpconnection
+[W10] Diagnóstico de conexión: https://learn.microsoft.com/en-us/powershell/module/nettcpip/test-netconnection
+[W11] Perfiles de firewall: https://learn.microsoft.com/en-us/powershell/module/netsecurity/get-netfirewallprofile
+[W12] Eventos: https://learn.microsoft.com/en-us/powershell/module/microsoft.powershell.diagnostics/get-winevent
+[W13] Eventos 4624 y 4625: https://learn.microsoft.com/windows/security/threat-protection/auditing/event-4624 y https://learn.microsoft.com/en-us/previous-versions/windows/it-pro/windows-10/security/threat-protection/auditing/event-4625 . Para interpretar otros IDs, consultar su documentación con proveedor y canal; estas referencias no definen todo el catálogo.
+[W14] Estado antimalware: https://learn.microsoft.com/en-us/powershell/module/defender/get-mpcomputerstatus
+[W15] Hash de archivos: https://learn.microsoft.com/en-us/powershell/module/microsoft.powershell.utility/get-filehash
+[W16] BitLocker: https://learn.microsoft.com/en-us/windows/security/operating-system-security/data-protection/bitlocker/
+[W17] Device Encryption y ediciones: https://support.microsoft.com/en-us/windows/security/encryption/device-encryption-in-windows
+[W18] AD DS: https://learn.microsoft.com/en-us/windows-server/identity/ad-ds/get-started/virtual-dc/active-directory-domain-services-overview
+[W19] AD DS frente a Entra ID: https://learn.microsoft.com/en-us/entra/fundamentals/compare
+[W20] Registro de PowerShell y evento 4104: https://learn.microsoft.com/powershell/module/microsoft.powershell.core/about/about_logging
+
+ESTADO DE VERIFICACIÓN
+
+Se verificaron los conceptos y las opciones citadas en documentación Microsoft y se revisó la sintaxis de los bloques. No se cambiaron permisos, servicios, cuentas, firewall ni cifrado del equipo real. La ejecución de cada práctico queda para tu Windows o VM, con su edición, políticas y herramientas disponibles. Los datos de eventos incluidos son sintéticos y no se presentarán como EVTX real ni como evidencia de tu equipo.
+
+
+DATOS, PROGRAMACIÓN Y GESTIÓN EN EL REPASO ANUAL
+
+Este capítulo conecta Sistemas de Tratamiento de Datos y Lenguajes de Programación con el funcionamiento de una organización. Las explicaciones y ejemplos son elaboración docente propia. Del campus se leyó el programa de Datos, varias guías HTML y el ejemplo Java del carrito; los PDF internos de Programación y parte de la bibliografía continúan pendientes. Por eso no se atribuye este desarrollo palabra por palabra a los docentes ni se asegura haber reconstruido cada clase del año.
+
+DATOS E INFORMACIÓN
+
+Un dato es una representación registrada, como una fecha, un identificador o un código de estado. Para convertirlo en información necesitás una pregunta y contexto. El número 403 aislado no informa si hubo un problema de permisos web, un identificador de equipo o una cantidad. Un campo status=403 dentro de una respuesta HTTP ya permite interpretar una decisión del servidor, pero todavía no explica por sí solo la causa ni la intención del cliente.
+
+Un sistema de información combina personas, procedimientos, datos y tecnología. Una base de datos es uno de sus componentes. El sistema gestor de bases de datos o SGBD organiza operaciones sobre datos y aplica mecanismos de integridad, concurrencia, almacenamiento y recuperación. Un archivo CSV abierto por una persona no tiene automáticamente las mismas garantías que una transacción controlada por un SGBD.
+
+La calidad se evalúa en relación con el uso: exactitud, completitud, unicidad, coherencia, vigencia y procedencia. Si cada equipo escribe fechas en otra zona horaria, dos registros pueden parecer contradictorios aunque describan el mismo evento. Si se repite un evento por reintento de ingesta, contar filas no equivale a contar sucesos únicos. Conservá una clave del evento y distinguí hora del hecho de hora de recepción.
+
+Ejemplo: un registro dice que una cuenta inició sesión a las 12:00 UTC; otro muestra 09:00 con desplazamiento -03:00. No hay una diferencia de tres horas entre los hechos si ambos se refieren al mismo instante. La normalización de tiempo ayuda a relacionarlos, pero compartir horario no demuestra que un evento causó el otro.
+
+Para tu resumen: definí dato, información, SGBD y calidad con un ejemplo propio. Anotá qué contexto te faltaría antes de concluir que una fila indica un incidente.
+
+REPRESENTACIONES Y FORMATOS
+
+CSV representa registros y campos, pero no define por sí solo tipos universales. El identificador 0012 puede perder ceros si una herramienta lo interpreta como número. Un separador dentro de un campo necesita el tratamiento de comillas correspondiente. No partas una línea por cada coma sin considerar el formato: una descripción puede incluir comas, comillas y saltos de línea. Registrá delimitador y codificación al intercambiar archivos.
+
+JSON usa objetos, arreglos, cadenas, números, booleanos y null. En JSON una propiedad ausente y una propiedad con valor null no significan necesariamente lo mismo. JSONL suele guardar un objeto JSON por línea: es útil para procesar registros en secuencia, aunque cada sistema debe declarar su esquema. XML representa elementos, atributos y estructuras jerárquicas. YAML se usa a menudo para configuración; su legibilidad no elimina la necesidad de validar estructura y tipos ni justifica cargar datos no confiables mediante opciones que construyen objetos ejecutables.
+
+UTF-8 es una codificación de caracteres; no es un sistema de cifrado. Una fecha como 03/04/2026 es ambigua sin convención, mientras un formato acordado y una zona horaria explícita reducen interpretaciones distintas. La extensión de un archivo no garantiza ni su contenido ni su inocuidad.
+
+Una expresión regular describe patrones de texto. Sirve para localizar candidatos, extraer campos simples o validar un formato delimitado. No reemplaza un analizador del lenguaje cuando hay estructura compleja. Encontrar cuatro grupos de números separados por puntos no basta para validar una dirección IPv4: también hay rangos y contexto. Tampoco podés analizar de manera robusta cualquier JSON con un único grep.
+
+Mini práctica: definí un registro de acceso con siete campos, sus tipos, cuáles pueden faltar y la zona horaria. Representá dos registros en CSV y JSONL. Incluí una descripción con una coma y explicá cómo preservarías el mismo significado al convertirlos. No hay que usar datos personales reales.
+
+ESTRUCTURAS DE DATOS
+
+Un arreglo permite organizar elementos indexados; su utilidad depende del tipo de acceso y de cómo se almacene. Una lista enlazada organiza nodos mediante referencias y no ofrece automáticamente el mismo acceso por índice. Una pila sigue LIFO, último en entrar primero en salir; una cola sigue FIFO, primero en entrar primero en salir. Son políticas de acceso, no marcas de software. Una pila puede modelar deshacer operaciones; una cola puede organizar trabajos pendientes.
+
+Un árbol relaciona nodos mediante jerarquías. Una carpeta dentro de otra puede entenderse mediante una estructura jerárquica, aunque un sistema de archivos real tenga vínculos y otras características. Un índice de base de datos suele usar estructuras diseñadas para búsquedas eficientes. No todo árbol es un árbol binario, ni todo árbol binario garantiza búsquedas logarítmicas: su forma y sus reglas importan.
+
+La notación O describe cómo crece un costo respecto del tamaño de entrada bajo un modelo. Recorrer n elementos para comparar cada uno tiene crecimiento lineal O(n). Buscar por mitades en datos ordenados puede tener crecimiento O(log n), pero primero hay que cumplir la condición de orden y un acceso adecuado. Dos bucles anidados no implican siempre O(n²): mirá cuántas veces se ejecuta cada uno y de qué dependen sus límites.
+
+Ejemplo resuelto: para contar fallos de una lista, si inspeccionás cada uno de n eventos una sola vez, el número de comprobaciones es proporcional a n. Si para cada evento buscás su equipo recorriendo una segunda lista de m activos, el costo puede crecer como n por m. Una asociación por clave permite organizar el trabajo de otra forma, con costos y memoria que también deben evaluarse.
+
+Error frecuente: elegir una estructura porque es más avanzada. Elegila por operaciones, tamaño, restricciones y necesidad de mantener orden o unicidad. Para tu resumen, explicá qué estructura usarías para trabajos pendientes, operaciones a deshacer e identificación de un activo por clave.
+
+MODELO RELACIONAL Y CLAVES
+
+Una tabla representa filas con atributos definidos. Una clave candidata identifica de forma única una fila y es mínima respecto de esa propiedad. Elegís una como clave primaria. Una clave puede ser simple o compuesta. Un correo o un nombre no se vuelven identificadores estables solo por resultar legibles; pueden cambiar, repetirse o estar sujetos a reglas de negocio distintas.
+
+Una clave foránea vincula atributos de una tabla con una clave admitida de otra. Ayuda a impedir referencias huérfanas si está definida y se aplica. No demuestra que el dato describa la realidad: una fila puede referenciar un activo existente y aun así corresponder a un registro equivocado. La integridad referencial y la veracidad son problemas relacionados pero diferentes.
+
+El modelo exige identificadores presentes y únicos. En SQLite hay una excepción histórica: una columna TEXT PRIMARY KEY en una tabla ordinaria puede admitir NULL si no se agrega NOT NULL. Por eso el práctico declara TEXT NOT NULL PRIMARY KEY. No confundas la definición conceptual con todas las particularidades de un motor; verificá las restricciones efectivas del esquema que usás.
+
+Ejemplo: EQUIPO tiene equipo_id y nombre; EVENTO tiene evento_id, equipo_id y resultado. equipo_id en EVENTO relaciona cada registro con el equipo. Si el negocio exige un equipo por evento, además de la referencia necesitás impedir la ausencia del identificador. No supongas que una clave foránea prohíbe NULL cuando esa condición no está declarada.
+
+En SQLite se debe comprobar la aplicación de claves foráneas en la conexión usada. La documentación explica que su control está desactivado por defecto en la configuración habitual y se habilita mediante PRAGMA foreign_keys = ON fuera de una transacción activa. El práctico final lo declara. En otro SGBD comprobá sus reglas; no trasladamos cada peculiaridad de SQLite al resto.
+
+Un diagrama entidad-relación ayuda a definir entidades, atributos, relaciones y cardinalidades antes de escribir consultas. Una cuenta puede producir muchos eventos; un evento corresponde a una cuenta en un modelo sencillo. Si un mismo evento puede involucrar varias cuentas, la relación necesita otro diseño. Primero definí la regla del negocio; después elegí tablas.
+
+NORMALIZACIÓN CON UN CASO CONCRETO
+
+Imaginá una tabla de préstamos con préstamo_id, persona_id, persona_nombre, equipo_id y equipo_modelo. Si la misma persona tiene varios préstamos, su nombre aparece varias veces. Cambiarlo en una fila y olvidarlo en otra produce inconsistencia. Si el único préstamo de un equipo se borra, podrías perder la única información sobre su modelo: es una anomalía de eliminación.
+
+Normalizar organiza relaciones según dependencias. En una introducción, primera forma normal exige representar valores adecuados al dominio en una estructura relacional sin grupos repetidos que estén escondiendo otras entidades. Un campo con una lista de equipos separados por comas dificulta consultar y restringir cada relación. No interpretes atomicidad como una propiedad absoluta de toda cadena: depende del dominio y de las operaciones que el modelo necesita.
+
+Segunda forma normal evita dependencias parciales de atributos no clave respecto de una parte de una clave candidata compuesta. Tercera forma normal evita ciertas dependencias transitivas de atributos no clave. Para el primer recorrido, preguntate qué determina qué. Si persona_id determina persona_nombre y préstamo_id determina persona_id, el nombre pertenece a PERSONA, no debe repetirse como dato maestro dentro de cada préstamo.
+
+Un diseño sencillo separa PERSONA, EQUIPO y PRÉSTAMO, enlazados por identificadores. Esto reduce anomalías y exige consultas con relaciones. No significa que nunca se copie un valor: una factura puede conservar datos históricos como parte de su significado. Esa decisión debe ser explícita, no una duplicación accidental. Desnormalizar para rendimiento también requiere una estrategia para mantener coherencia.
+
+Mini práctica: una planilla tiene usuario_id, usuario_nombre, área_nombre, jefe_área, dispositivo_id y fecha_entrega. Escribí al menos tres dependencias y proponé tablas con claves. Explicá cómo se representa una segunda entrega del mismo equipo sin sobrescribir el hecho anterior. El práctico final usa otro conjunto para medir transferencia.
+
+SQL PARA RESPONDER PREGUNTAS
+
+SQL es declarativo: describís el resultado buscado y el gestor decide un plan de ejecución. CREATE y ALTER definen estructuras; INSERT, UPDATE y DELETE modifican datos; SELECT consulta. La clasificación DDL/DML/DQL ayuda a ordenar funciones, pero los nombres de categorías no reemplazan comprender qué cambia cada sentencia.
+
+SELECT elige expresiones de salida, FROM establece las fuentes y WHERE filtra filas. JOIN relaciona filas mediante condiciones; un INNER JOIN conserva coincidencias y un LEFT JOIN permite conservar filas de la izquierda aunque no haya una coincidencia. Si la tabla relacionada tiene varias filas por clave, el JOIN puede multiplicar resultados. Antes de usar DISTINCT para esconder duplicados, comprobá si la multiplicación representa la relación real.
+
+Ejemplo didáctico independiente del final:
+
+```sql
+SELECT e.nombre, v.instante, v.resultado
+FROM equipo AS e
+JOIN evento AS v ON v.equipo_id = e.equipo_id
+WHERE v.resultado = 'fallo'
+ORDER BY v.instante, v.evento_id;
+```
+
+La consulta relaciona cada evento con su equipo, filtra fallos y ordena el resultado de manera explícita. No existe un orden garantizado de presentación por el solo hecho de insertar filas en cierto orden. Para contar fallos por equipo, agrupás por los atributos necesarios y usás una agregación. WHERE filtra filas antes del agrupamiento; HAVING selecciona grupos según condiciones sobre el resultado agrupado.
+
+COUNT(*) cuenta filas; COUNT(campo) omite valores NULL de esa expresión. NULL representa ausencia o desconocimiento según el modelo. No se comprueba con campo = NULL: usás IS NULL. Comparaciones con NULL pueden producir un resultado desconocido, por lo que no conviene razonar sobre ellas como si todo fuera únicamente verdadero o falso.
+
+Una subconsulta puede aportar un conjunto o una condición. UNION combina resultados y elimina duplicados según sus reglas; UNION ALL conserva las filas, lo que puede ser necesario para no perder eventos. Una vista guarda una definición de consulta; no suponemos que todas las vistas sean tablas materializadas ni que impliquen una copia independiente de datos.
+
+Mini práctica sin solución: sobre la base del final, prepará una consulta de eventos por cuenta, otra de equipos sin coincidencias en un período y otra de grupos que superen un umbral definido por vos. Escribí la pregunta en castellano antes de escribir SQL y justificá las columnas usadas para relacionar.
+
+TRANSACCIONES, CONCURRENCIA Y RENDIMIENTO
+
+Una transacción agrupa operaciones con un resultado coherente. Atomicidad significa que se aplica la unidad según las garantías del gestor; consistencia se relaciona con mantener las reglas definidas; aislamiento controla cómo interactúan operaciones concurrentes; durabilidad busca que una confirmación sobreviva según las garantías de persistencia. ACID no significa que nunca haya fallos ni que desaparezca la necesidad de copias y recuperación.
+
+Ejemplo: descontar una unidad de stock y registrar su venta debe mantener una relación coherente. Si se descuenta y luego falla el registro, no querés dejar una operación a medio completar. BEGIN, COMMIT y ROLLBACK permiten expresar límites de transacción, pero las reglas exactas de errores, bloqueos y aislamiento dependen del SGBD. Un ROLLBACK de base de datos no deshace cualquier archivo que un programa haya modificado por afuera.
+
+Dos procesos que leen el mismo stock y luego escriben un valor calculado pueden perder una actualización. Este problema conecta Datos con la sincronización de SO II. Usar transacciones no basta si la lógica y el aislamiento elegidos permiten la condición que intentás evitar. Tenés que especificar qué operación debe ser atómica y probar el comportamiento concurrente.
+
+Un índice ayuda a localizar o recorrer datos mediante una estructura adicional. Cuesta espacio y trabajo al modificar la tabla. No es obligatorio que una consulta use el índice que imaginaste: influyen sus condiciones, estadísticas y alternativas. EXPLAIN QUERY PLAN en SQLite permite observar un plan, sin confundir ese texto con una medición completa del rendimiento real.
+
+SQLite admite varios lectores, pero una sola transacción de escritura simultánea. Es un ejemplo de por qué no extrapolar una configuración de laboratorio a todos los gestores. Para tu resumen compará bloqueo de proceso, bloqueo de transacción y cuello de botella de disco: pueden dar síntomas parecidos y requieren evidencias diferentes.
+
+SEGURIDAD, FORMATOS Y SERVICIOS DE DATOS
+
+Separá identidad, permisos y operación. Una cuenta de aplicación no necesita necesariamente privilegios de administración. Una consulta parametrizada mantiene separados valores e instrucciones. Validar que una cantidad sea un entero positivo protege una regla del negocio; parametrizar una consulta protege otra frontera. Una medida no sustituye a la otra.
+
+Los permisos del archivo de la base y los permisos internos del gestor pertenecen a capas diferentes. SQLite embebido no incorpora el mismo modelo de usuarios y GRANT de un servidor de base de datos. Por eso el caso de RBAC se discute como arquitectura y no se pide ejecutar GRANT en SQLite. Cifrado de disco, cifrado de comunicaciones y autorización de consultas también responden a riesgos distintos.
+
+Una auditoría registra operaciones para poder investigarlas, con una política de acceso, retención y protección. Guardar muchos logs sin identificar origen, reloj, evento y resultado puede dificultar en lugar de facilitar la investigación. Una copia necesita una restauración comprobada. Replicar una eliminación hacia otra instancia no equivale a conservar una copia recuperable anterior.
+
+NoSQL agrupa familias diversas de modelos y sistemas, como documentos, clave-valor o grafos. No significa que todos tengan las mismas garantías ni que ninguna consulta parezca SQL. CAP trata una tensión de consistencia y disponibilidad cuando hay una partición de red bajo su modelo; no es una regla de elegir dos propiedades libremente en toda situación. Para este repaso basta identificar qué puede ocurrir cuando nodos no pueden comunicarse y qué garantías declara el sistema elegido.
+
+ETL extrae, transforma y carga datos; la transformación debe tener trazabilidad y controles de calidad. Big Data alude a problemas y enfoques que cambian con escala, velocidad o variedad, no a un número mágico de filas. DBaaS entrega capacidades de base como servicio: el proveedor asume ciertas tareas, pero el cliente sigue definiendo datos, accesos y configuración bajo el contrato correspondiente.
+
+ALGORITMOS, TIPOS Y CONTROL DE FLUJO
+
+Un algoritmo describe pasos para transformar entradas en salidas con condiciones claras. Un programa los expresa en un lenguaje y un entorno. Pseudocódigo permite concentrarse en lógica sin depender de la sintaxis de C o Java. Para comprender un algoritmo necesitás identificar entradas válidas, estado inicial, condiciones, cambios y finalización.
+
+Una variable representa un valor mediante un tipo y reglas del lenguaje. Enteros, reales, caracteres, cadenas y booleanos no son intercambiables sin consecuencias. La división entera puede perder la parte fraccionaria. Una conversión o una lectura de texto requiere tratar entradas inválidas y rangos, en lugar de confiar en que todo texto recibido representa un número válido.
+
+Una condición selecciona caminos. Un bucle repite trabajo y necesita una condición de salida que efectivamente pueda alcanzarse. Una función expresa una tarea con parámetros, resultado y contrato. Separar lógica de validación, cálculo y presentación facilita razonar y comprobar. Tener muchas funciones no mejora un programa si las responsabilidades siguen mezcladas.
+
+Ejemplo resuelto en pseudocódigo, distinto del examen final:
+
+```text
+valores = [3, 1, 4]
+total = 0
+para cada valor en valores:
+    total = total + valor
+devolver total
+```
+
+El acumulador empieza en cero. Después de procesar cada elemento, representa la suma de lo que ya se recorrió. La traza queda total=3, luego 4 y finalmente 8. Explicar ese invariante es más útil que memorizar el último número. Si el acumulador se reinicia dentro del bucle, cambia el significado del programa.
+
+Mini práctica: diseñá un algoritmo que calcule una media solo con las entradas válidas e informe cuántas rechazó. Definí qué ocurre si no queda ninguna entrada válida. Escribí casos normal, vacío, límite y error antes de escribir una implementación.
+
+C, MEMORIA Y LÍMITES
+
+En C un arreglo tiene elementos de un tipo y un tamaño que la lógica debe respetar. En int medidas[3], los índices válidos para esos tres elementos son 0, 1 y 2. El bucle tiene que conservar esa condición. Un puntero representa una dirección bajo las reglas de tipos y memoria del lenguaje; conocer una dirección no garantiza que sea válido leerla o escribirla en cualquier momento.
+
+Al trabajar con cadenas en C hay que considerar el terminador y la capacidad disponible. No confundas cantidad de caracteres que querés representar con espacio realmente reservado. Los errores de límites, duración de los objetos y validación importan tanto por corrección como por seguridad. En esta etapa se leen y discuten ejemplos; no hace falta ejecutar un programa con accesos inválidos para reconocer el problema.
+
+Compilar transforma una representación del programa y enlaza componentes según el entorno; ejecutar crea actividad del programa dentro del sistema operativo. El compilador puede informar errores y advertencias, pero una compilación exitosa no demuestra que la lógica sea correcta. Un mismo algoritmo puede probarse en Windows o Linux con sus herramientas adecuadas. No se exige cambiar de sistema para comprenderlo.
+
+Para tu resumen dibujá relación entre código fuente, compilación, ejecutable, proceso, memoria y resultado. Explicá quién aplica la protección entre procesos y por qué un error lógico puede existir aunque no aparezca un error del compilador.
+
+OBJETOS, CLASES Y UML
+
+Una clase define estructura y comportamiento; un objeto es una instancia con estado. Encapsular no consiste solamente en escribir private: los métodos deben conservar reglas del objeto y controlar cómo se modifica su estado. Dar un setter irrestricto a cada atributo puede permitir los mismos estados inválidos que querías evitar.
+
+Composición expresa que un objeto usa o contiene otros. Herencia expresa una relación de especialización con contratos que deben seguir siendo válidos. Una interfaz define comportamientos esperados. No se usa herencia solamente para evitar copiar líneas; preguntate si una instancia del subtipo puede cumplir realmente el contrato del tipo esperado.
+
+El ejemplo Java leído del campus relaciona Producto, ItemCarrito, Carrito, Usuario y Main. Sirve para seguir cómo una acción de Usuario termina delegando en Carrito y en sus ítems. La explicación ampliada propone revisar cantidades, stock e identificación de productos. El texto del código fue leído, pero no se publicó ni modificó una solución académica.
+
+Identidad del dominio y igualdad de valores deben definirse. Un nombre puede repetirse y cambiar; un identificador puede elegirse para distinguir productos. En Java, comparar referencias no equivale a comprobar siempre el contenido de cadenas u objetos. La decisión de igualdad debe corresponder al modelo y mantenerse coherente con las colecciones que uses.
+
+UML permite comunicar estructura e interacciones mediante convenciones. Un diagrama de clases puede mostrar atributos, métodos, relaciones y multiplicidad. No es una imagen que demuestre que el programa cumple todo lo dibujado. Una secuencia ayuda a seguir quién llama a quién; un diagrama útil responde una pregunta del diseño.
+
+Ejercicio: dibujá un préstamo de equipo con Persona, Equipo y Préstamo. Definí tres estados válidos y dos inválidos; elegí métodos que impidan llegar a los inválidos. Relacioná esas reglas con restricciones de la base de datos y explicá cuáles debe comprobar también la aplicación.
+
+WEB, HTML, PHP Y FRONTERAS DE CONFIANZA
+
+HTML estructura un documento que interpreta el navegador. CSS describe presentación; JavaScript puede ejecutar comportamiento en el cliente. PHP se ejecuta normalmente del lado del servidor para producir respuestas u otras operaciones. Ver el HTML recibido no significa estar viendo todo el código del servidor.
+
+HTTP relaciona solicitudes y respuestas con métodos, rutas, cabeceras y cuerpos. El estado de una sesión puede mantenerse mediante identificadores y otros mecanismos; un token no se vuelve confiable por aparecer en una cabecera. El servidor valida identidad, autorización y reglas del negocio en cada operación relevante, aunque la interfaz ya haya ocultado una opción.
+
+Los datos cruzan fronteras: formulario, aplicación, base, archivo y navegador. La parametrización evita tratar valores como parte de instrucciones SQL. El tratamiento de salida según contexto evita interpretar datos como código del navegador. La autorización controla qué acción puede realizar cada identidad. Llamar sanitización a todo mezcla problemas distintos y dificulta verificar una corrección.
+
+Ejemplo: validar que una cantidad sea positiva en JavaScript ayuda al uso normal, pero el servidor debe comprobarla porque un cliente puede enviar otra solicitud. Si el mismo valor llega a SQL, también debe enviarse como parámetro. Si una descripción se vuelve a mostrar en HTML, necesita un tratamiento de salida apropiado. Son tres controles para tres lugares.
+
+Para tu resumen trazá una operación: clic en Windows o Linux, resolución de nombre, conexión protegida, solicitud, proceso servidor, consulta, respuesta y representación en el navegador. Identificá qué conoce cada capa y qué evidencia guardarías si el usuario informa un error.
+
+GESTIÓN DE SERVICIOS Y CONTEXTO INSTITUCIONAL
+
+Este apartado es un complemento docente propio. Gestión de Servicios de Información tenía secciones ocultas; no se inventa un resumen de su bibliografía. En Sociedad y Estado se leyeron consignas, no todos los textos originales. Las relaciones que siguen sirven para integrar conocimientos técnicos con responsabilidades y toma de decisiones.
+
+Un servicio ofrece un resultado a alguien, con recursos y responsables. Un activo es algo de valor para ese resultado: datos, sistemas, equipos, cuentas, capacidades o documentación. Una dependencia explica por qué un componente afecta a otro. Un portal puede depender de DNS, identidad, aplicación, base y conectividad; restaurar una sola máquina no garantiza recuperar el servicio.
+
+Un incidente interrumpe o degrada algo bajo el criterio adoptado. La gestión de problemas busca causas y prevención más allá de restaurar el funcionamiento inmediato. Un cambio introduce una modificación controlada; necesita alcance, aprobación apropiada, prueba, retorno y verificación. Un acuerdo de nivel de servicio expresa expectativas y mediciones; un indicador técnico tiene que relacionarse con un resultado que importe al usuario.
+
+Riesgo relaciona un escenario, probabilidad o posibilidad, consecuencias y controles en un contexto. Una vulnerabilidad no es el daño realizado; una amenaza no es necesariamente una persona ya identificada. La prioridad depende de exposición, valor del servicio y controles existentes, además de la severidad de una falla. Documentar quién acepta un riesgo importa cuando no se elimina de inmediato.
+
+Una institución distribuye autoridad y responsabilidad. El administrador técnico no decide automáticamente todos los usos legítimos de los datos. Una política fija criterios; un procedimiento explica cómo aplicarlos; una evidencia permite revisar qué pasó. Al analizar un incidente se distinguen hechos, hipótesis, impacto, acciones realizadas y decisiones que corresponden a otro rol.
+
+Las consignas leídas de Sociedad y Estado permiten practicar argumentación y evaluación de fuentes. En el resumen de esa materia, contrastá definiciones con los textos originales que te correspondan; no atribuyas a un autor una opinión que solo recordás del título. Al evaluar una noticia o una salida de IA, identificá autoría, fecha, evidencia, afirmación e inferencia. Una herramienta puede ayudar a organizar, pero la justificación de tu respuesta debe poder sostenerse con las fuentes.
+
+Caso breve: el equipo de soporte propone reiniciar una base para resolver lentitud. Antes de decidir, necesitás conocer impacto, horario, transacciones, evidencia de CPU/memoria/disco y un procedimiento de recuperación. La urgencia no elimina la necesidad de identificar el servicio y al responsable. Una respuesta profesional combina técnica y comunicación: qué observaste, qué falta, qué proponés y cómo comprobarías el resultado.
+
+CÓMO CONVERTIR ESTO EN TU RESUMEN FINAL
+
+Por cada unidad escribí en tus palabras: problema que resuelve, cinco conceptos relacionados, ejemplo propio, procedimiento reproducible, evidencia que esperarías, error frecuente y relación con otra materia. Comprobá que podés explicar el ejemplo sin leer. Agregá fuente del campus y estado de revisión, especialmente donde falte recuperar un PDF.
+
+No conviene reducir el resumen a una lista de comandos. Un comando cambia según plataforma; el concepto y la pregunta de diagnóstico permiten elegir el equivalente. Una consulta resuelta sin explicar claves o filas repetidas tampoco demuestra que se entendió el modelo. El final integrador te va a pedir justificar esas decisiones con datos nuevos.
+
+PREGUNTAS DE CIERRE DEL CAPÍTULO
+
+1. ¿Qué diferencia hay entre una fila duplicada y dos hechos iguales registrados con identificadores distintos?
+2. ¿Cómo pueden una clave foránea y una validación de aplicación proteger reglas diferentes?
+3. ¿Qué anomalía concreta elimina tu diseño normalizado y qué consultas vuelve necesarias?
+4. ¿Por qué un JOIN puede cambiar un conteo sin que haya más eventos reales?
+5. ¿Qué conserva una transacción y qué no puede deshacer por sí sola?
+6. ¿Qué evidencia usarías antes de agregar un índice?
+7. ¿Cómo justificás los límites y la terminación de un bucle?
+8. ¿Qué diferencia hay entre encapsular y agregar setters a todo?
+9. ¿Qué controles aplican en cliente, servidor y base, respectivamente?
+10. ¿Quién debe aprobar una recuperación que interrumpe un servicio importante y qué información necesita?
+
+REFERENCIAS Y PROCEDENCIA
+
+Programa de Datos leído: https://campus.fadena.undef.edu.ar/mod/resource/view.php?id=72403
+Código Java del campus leído: https://campus.fadena.undef.edu.ar/mod/resource/view.php?id=69538
+Inventario de Programación y guías SO II: inventarios/so2-programacion.json
+Estado de Sociedad/Gestión: inventarios/sociedad-gestion.json
+SQLite, claves foráneas: https://www.sqlite.org/foreignkeys.html
+SQLite, particularidades de PRIMARY KEY: https://www.sqlite.org/lang_createtable.html#the_primary_key
+SQLite, transacciones: https://www.sqlite.org/lang_transaction.html
+SQLite, planificador: https://www.sqlite.org/queryplanner.html
+Oracle, conceptos de objetos: https://docs.oracle.com/javase/tutorial/java/concepts/ . La página declara basarse en JDK 8; se usaron sus conceptos introductorios estables, no como guía de instalación ni de novedades de Java.
+Las explicaciones sobre lógica, diseño e integración son desarrollo docente propio. El detalle de apuntes internos pendientes se cotejará con sus originales al recuperarlos.

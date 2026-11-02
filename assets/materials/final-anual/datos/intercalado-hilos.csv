@@ -1,0 +1,7 @@
+paso,hilo,operacion,valor_entregado,contexto
+1,A,lee stock compartido,8,reserva 3 unidades
+2,B,lee stock compartido,8,reserva 2 unidades
+3,A,calcula valor local tras su reserva,,usa el valor que leyo
+4,B,calcula valor local tras su reserva,,usa el valor que leyo
+5,A,escribe su valor local en stock compartido,,sin exclusión mutua
+6,B,escribe su valor local en stock compartido,,sin exclusión mutua

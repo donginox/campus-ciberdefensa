@@ -1,0 +1,7 @@
+id,hostname,sistema,ip_prevista,prefijo,gateway_previsto,dns_previsto,funcion
+1,WS-LUCIA,Windows 11,10.60.10.25,26,10.60.10.1,10.60.30.10,puesto de estudiante
+2,WS-BRUNO,Windows 11,10.60.10.26,26,10.60.10.1,10.60.30.10,puesto docente
+3,PORTAL01,Linux,10.60.20.20,27,10.60.20.1,10.60.30.10,aplicacion HTTPS
+4,DB01,Linux,10.60.20.21,27,10.60.20.1,10.60.30.10,base de datos del portal
+5,DNS01,Linux,10.60.30.10,28,10.60.30.1,127.0.0.1,resolucion de nombres
+6,ADMIN01,Windows 11,10.60.30.8,28,10.60.30.1,10.60.30.10,operacion y auditoria

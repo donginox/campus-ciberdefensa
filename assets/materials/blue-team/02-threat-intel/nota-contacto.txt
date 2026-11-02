@@ -1,0 +1,1 @@
+Todo el enriquecimiento de este practico se hace offline con los archivos provistos. No consultar servicios de reputacion, DNS, WHOIS ni sandboxes con estos datos. Los dominios .test, IP de documentacion y referencias son ficticios. El objetivo es evaluar fuentes, vigencia y contexto, no obtener un veredicto real.

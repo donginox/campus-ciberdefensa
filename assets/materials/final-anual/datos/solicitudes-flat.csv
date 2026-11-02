@@ -1,0 +1,5 @@
+solicitud,cuenta,nombre,rol,puesto,puesto_ip,servicio,servicio_ip,finalidad_declarada
+SOL-101,lucia,Lucia Pereyra,estudiante,WS-LUCIA,10.60.10.25,PORTAL01,10.60.20.20,consulta de inscripciones propias
+SOL-102,bruno,Bruno Salas,docente,WS-BRUNO,10.60.10.26,PORTAL01,10.60.20.20,revision de curso asignado
+AUD-11,auditor,Auditoria Interna,auditoria,ADMIN01,10.60.30.8,PORTAL01,10.60.20.20,muestreo de auditoria autorizado
+SOL-103,lucia,Lucia Pereryra,estudiante,WS-LUCIA,10.60.10.25,PORTAL01,10.60.20.29,consulta de calendario

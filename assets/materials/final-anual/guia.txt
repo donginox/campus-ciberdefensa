@@ -1,0 +1,195 @@
+FINAL INTEGRADOR ANUAL DE SISTEMAS REDES DATOS Y SEGURIDAD
+
+Esta evaluación te permite comprobar si podés conectar las materias importantes del primer año, construir tu resumen final y trabajar en Windows y Linux. Las certificaciones tienen recorridos específicos aparte. Acá el criterio es comprender, ejecutar y explicar el conjunto.
+
+El caso, los archivos y las preguntas son elaboración docente propia. Se apoyan en los temas identificados en programas y guías accesibles del campus; no son un examen de UNDEF ni una reconstrucción de preguntas oficiales. La revisión integral de PDF, bibliografía y videos sigue parcial. No se atribuyen lecturas nuevas a materiales pendientes.
+
+Organización: siete estaciones, 100 puntos. Sesión A de 4 h 30 min: E1, E2 y E3. Sesión B de 4 h 30 min: E4 a E7. Después, defensa oral de 30 minutos. Las nueve horas incluyen lectura y entrega de borrador, no instalación de Windows, hipervisor o herramientas. Si hace falta preparar un entorno, se hace antes y se registra por separado. El tiempo es una referencia para el diagnóstico; primero importa una explicación correcta y después mejorar la fluidez.
+
+No hay solucionario. En la primera pasada podés consultar tus apuntes y documentación, pero anotá cada pista o ayuda. Para medir autonomía, repetimos después una variante nueva sin indicaciones del tutor. La memorización de este caso no demuestra dominio por sí sola.
+
+QUÉ REPRESENTA CADA PARTE DEL AÑO
+
+Sistemas Operativos I: arquitectura y recursos, memoria, archivos, virtualización y ejecución de programas. Sistemas Operativos II: procesos/hilos, herramientas, comunicación, sincronización y disponibilidad. Infraestructura de Telecomunicaciones: direccionamiento, capas, transporte, nombres y diagnóstico. Tratamiento de Datos: claves, relaciones, integridad, consultas y calidad de datos. Programación: seguimiento de estado, condiciones, invariantes y validación. Gestión/seguridad: activos, accesos, cambios, evidencias, riesgos, continuidad y comunicación. Sociedad y Estado aporta lectura crítica, responsabilidad y argumentación; se evalúa la claridad para separar evidencia, decisión y atribución, sin inventar una equivalencia con el programa completo de esa materia.
+
+ANTES DE EMPEZAR
+
+Leé LEEME.txt y datos/contexto.txt. Tené a mano las guías anuales y el módulo Windows, pero no busques una solución de este caso. Creá respuestas/ dentro de una copia de esta carpeta y conservá intactos los archivos de datos. Si verificás SHA256SUMS.txt, esa comprobación compara con la referencia recibida; no prueba una procedencia externa ni una cadena de custodia formal.
+
+Los IP y nombres de datos/ son un escenario, no blancos de red. Las pruebas reales se limitan a objetos creados por vos en tus equipos, loopback y VMs propias autorizadas. No hay que modificar la IP, el DNS, el firewall, las cuentas ni los permisos del sistema real para imitar la configuración ficticia.
+
+Necesitás Windows real o una VM propia para la ejecución Windows, tu Linux para la ejecución Linux y una herramienta SQLite para la base local. Una VM de Windows debe usar una imagen y licencia adecuadas; este paquete no incluye una licencia ni la instala. Si todavía falta un entorno, podés avanzar en la interpretación de los datos, pero la competencia de ejecución correspondiente queda pendiente.
+
+MONTAJE DE LA BASE LOCAL
+
+datos/datos.sql crea un esquema y datos ficticios. Se utiliza SQLite como herramienta portable de práctica; no afirma que DB01 ejecute SQLite en el escenario. La conexión de aplicación que aparece en flujos.csv corresponde a un servicio de base de datos del caso, y no se establece ninguna conexión real con esa IP.
+
+Opción con Python estándar: abrí la terminal EN ESTA carpeta final-anual, comprobá la ruta con pwd en Linux o Get-Location en PowerShell y ejecutá una sola línea. El modo xb detiene la operación si final_anual.sqlite ya existe. Así no se pisa una base anterior.
+
+En Linux:
+
+```bash
+python3 -c "from pathlib import Path; import sqlite3; p=Path('final_anual.sqlite'); p.open('xb').close(); c=sqlite3.connect(p); c.executescript(Path('datos/datos.sql').read_text(encoding='utf-8')); c.commit(); c.close()"
+```
+
+En Windows, cuando el comando python esté disponible:
+
+```powershell
+python -c "from pathlib import Path; import sqlite3; p=Path('final_anual.sqlite'); p.open('xb').close(); c=sqlite3.connect(p); c.executescript(Path('datos/datos.sql').read_text(encoding='utf-8')); c.commit(); c.close()"
+```
+
+Si ya existe esa base, usá otra copia nueva de la carpeta del ejercicio y no borres ni sobrescribas archivos para continuar. Si falla la carga SQL después de crear el archivo, registrá el error; no lo presentes como una base válida.
+
+Podés abrir la base con una interfaz SQLite o con su CLI si ya la tenés. Otra posibilidad es una sesión interactiva de Python:
+
+```python
+import sqlite3
+conexion = sqlite3.connect("file:final_anual.sqlite?mode=ro", uri=True)
+consulta = "SELECT name FROM sqlite_master WHERE type='table' ORDER BY name"
+filas = conexion.execute(consulta).fetchall()
+print(filas)
+conexion.close()
+```
+
+Ese ejemplo solo comprueba el acceso de lectura y permite ver las tablas; no resuelve las consultas de la estación E5. Para cada consulta propia podés abrir de nuevo una conexión de lectura o usar tu herramienta preferida. No se necesitan credenciales de una base externa.
+
+E1 — ENTENDER EL EQUIPO Y LOS PROCESOS
+
+Tiempo: 75 minutos. Máximo: 14 puntos. Mínimo de la estación: 7.
+Materias: SO I y II. Productos: una ficha comparativa y evidencias de tus dos sistemas.
+
+1. Explicá, con un ejemplo del portal, qué tareas corresponden a CPU, RAM, almacenamiento y sistema operativo. Distinguí memoria física, espacio de direcciones virtual y archivo de paginación o swap. Indicá por qué ver memoria ocupada no basta para concluir que falta RAM.
+2. Usando herramientas de lectura de tu Windows y tu Linux, elegí un proceso propio en cada uno. Registrá PID, proceso que lo inició cuando esté disponible, cuenta o contexto y una medida de uso de recursos. Aclarar unidad y alcance es parte de la respuesta.
+3. Iniciá en cada sistema un programa inocuo de práctica y observá la diferencia entre programa guardado y proceso en ejecución. Cerrá únicamente el que creaste, después de comprobar que sigue siendo el mismo. No finalices servicios ni procesos por un PID viejo.
+4. Explicá qué comparte un hilo con otros del mismo proceso y qué no es una máquina virtual. Leé datos/intercalado-hilos.csv, completá los valores locales y compartidos de cada paso y describí qué protegería una sección crítica. Proponé una estrategia de sincronización y un riesgo si la implementás mal.
+5. Para dos procesos que esperan recursos, proponé un ejemplo breve de interbloqueo y una forma de prevenirlo. Diferenciá esa situación de un proceso simplemente lento.
+
+Evidencia: tabla Windows/Linux, observaciones de los procesos propios, traza de los hilos y explicación. No compartas listas completas de programas o usuarios de tu equipo; alcanza la porción correspondiente a tu práctica.
+
+Rúbrica: arquitectura y memoria 3; proceso/hilo/virtualización y concurrencia 3; observación y cierre del proceso Windows 4; observación y cierre del proceso Linux 4. Los 8 puntos de ejecución requieren realizar las tareas en ambos sistemas. Una captura sintética no los reemplaza.
+
+E2 — WINDOWS CUENTAS PERMISOS Y REGISTROS
+
+Tiempo: 110 minutos. Máximo: 18 puntos. Mínimo: 9.
+Materias: sistemas y seguridad de equipos. Productos: análisis del archivo del caso y una carpeta de prueba real.
+
+1. Leé datos/acl-windows.txt. Para Lucía y Bruno, evaluá leer, modificar contenido y eliminar el archivo por acceso local y mediante el recurso compartido. Justificá cada conclusión con membresía, tipo de entrada y ruta de acceso. Si una conclusión requiere información no incluida, indicá exactamente cuál.
+2. Explicá la función de un SID, la herencia de permisos, un token de acceso y UAC. Diferenciá ser miembro de un grupo de administrar una sesión con elevación. No equipares una ACL NTFS completa con los tres grupos de bits rwx.
+3. En Windows, creá una carpeta nueva y un archivo ficticio en tu carpeta temporal. Usá un nombre único, anotá la ruta y verificá que se encuentre dentro de esa carpeta temporal antes de cambiar nada. Observá propietario, entradas, herencia y derechos usando GUI o PowerShell. Guardá la observación inicial.
+4. Aplicá sobre ESE archivo o carpeta un cambio acotado que puedas explicar y revertir; por ejemplo, una entrada explícita de lectura para la identidad de práctica adecuada. Primero describí qué querés lograr, qué derechos heredados ya existen y cómo verificarías el efecto. Agregar una entrada de lectura no demuestra por sí solo haber quitado permisos de escritura. Si no tenés una segunda cuenta de práctica, evaluá la ACL y registrá que no comprobaste acceso efectivo con otra cuenta. No crees cuentas reales para completar este final ni quites herencia del perfil o de carpetas del sistema.
+5. Revertí únicamente tu cambio de práctica y verificá el estado. No hace falta borrar la carpeta. Podés pedir una revisión de la ruta y del plan de modificación antes de ejecutarlo; esa ayuda queda registrada y la autonomía se comprueba después con otra variante.
+6. Interpretá datos/eventos-windows.xml: para cada evento, identificá equipo, hora, cuenta destino, tipo de inicio de sesión y resultado. Explicá por qué el ID de sesión del portal no puede igualarse automáticamente a un Logon ID Windows.
+7. Abrí el Visor de eventos o usá Get-WinEvent en tu Windows para observar un evento reciente de un canal al que ya tengas acceso, preferentemente System o Application. Entregá solamente canal, proveedor, ID, nivel y hora; no el mensaje si contiene datos privados. Si no podés leer Security, no cambies sus permisos ni la política de auditoría para este final. El XML entregado sigue siendo material de análisis y no un EVTX real.
+
+Rúbrica: análisis de acceso y conceptos 5; interpretación de eventos sintéticos 3; creación/observación/cambio acotado/reversión en carpeta Windows propia 7; lectura real de un evento local y explicación de sus límites 3. Para contar ejecución Windows, debe existir evidencia real de la carpeta y de un evento accesible; el análisis offline solamente obtiene los puntos de interpretación que corresponda.
+
+E3 — REDES CAPAS Y DIAGNÓSTICO
+
+Tiempo: 85 minutos. Máximo: 16 puntos. Mínimo: 8.
+Materia: Infraestructura de Telecomunicaciones, conectada con SO II.
+
+1. A partir de datos/activos.csv, dibujá las subredes de usuarios, aplicaciones e infraestructura. Para cada prefijo calculá dirección de red, máscara IPv4, cantidad de direcciones y rango utilizable en una subred convencional. No confundas cantidad de direcciones con equipos asignados.
+2. Contrastá datos/red-puesto.txt con el inventario y explicá una hipótesis comprobable para el primer síntoma. Proponé tres observaciones que pedirías antes de tocar la configuración. No apliques los valores del escenario a tu equipo real.
+3. Usá datos/politica-red.csv para analizar los flujos. Indicá la regla que debería decidir cada conexión de firewall y explicá si la observación coincide. Para un servicio que necesite resolver nombres, proponé la regla mínima adicional si la considerás necesaria y justificá origen, destino, protocolo, puerto y posición.
+4. Separá enlace, resolución de nombres, transporte y aplicación. Compará timeout y HTTP 503; explicá qué permite concluir cada observación y qué no. Ubicá Ethernet, IP, TCP/UDP, DNS, HTTP y TLS en un recorrido de datos, sin forzar una equivalencia exacta entre OSI y TCP/IP.
+5. Hacé una demostración real y acotada: un servidor HTTP benigno que sirva solo un directorio ficticio en 127.0.0.1 y un puerto alto disponible, y un cliente local que consulte un archivo existente y otro nombre inexistente. Puede ser en Windows o en Linux. Usá el montaje aprendido en las guías; verificá la escucha, el proceso y las respuestas. Cerrá ese servidor desde su terminal. No cambies el firewall ni expongas una carpeta personal para conseguirlo.
+6. Explicá cómo distinguirías una respuesta DNS de una entrada de hosts o una caché local. Proponé qué verías en una captura limitada a tu propio servicio; si no realizaste captura, no la declares hecha. Añadí una nota sobre qué cambiaría al usar IPv6 y por qué máscara IPv4, ARP e IPv6 no se trasladan sin ajustes.
+7. Un enlace ficticio bandalimitado con ruido blanco gaussiano tiene B = 24 kHz y una relación de potencias S/N = 63, expresada en forma lineal. Convertí esa relación a dB; estimá la capacidad con el modelo de Shannon-Hartley y expresala en bit/s. Mostrá unidades y procedimiento. Explicá si esa capacidad permite prometer una tasa útil de aplicación de 160 kbit/s, qué supuestos usaste y qué diferencia hay entre Hz, bit/s y latencia. No se pide medir un enlace real ni se dan por iguales capacidad teórica y rendimiento observado.
+
+Rúbrica: subredes y topología 3; diagnóstico por capas y política 3; nombres/transportes/IPv6 y límites 1; capacidad, S/N lineal/dB e interpretación con unidades 3; demostración HTTP propia, con escucha, dos respuestas y cierre 6. Son 10 puntos de teoría y 6 de ejecución. El escenario usa IPv4 para calcular; la comparación IPv6 es conceptual.
+
+E4 — CONSTRUIR UNA INVESTIGACIÓN REPRODUCIBLE
+
+Tiempo: 60 minutos. Máximo: 14 puntos. Mínimo: 7.
+Materias: sistemas, redes, tratamiento de datos y comunicación técnica.
+
+1. Leé datos/esquema-eventos.txt. Elegí un método reproducible para consultar datos/eventos.jsonl: PowerShell, Python estándar, una herramienta de registros o SQL después de una importación propia. Guardá la consulta o procedimiento y trabajá sobre una copia.
+2. Construí una cronología de los eventos relevantes para el encargo. Distinguí hora del evento y hora de ingreso al colector. Explicá cómo trataste posibles reingestas antes de contar operaciones.
+3. Correlacioná al menos dos fuentes mediante campos explícitos. Identificá una relación que el conjunto NO permita demostrar. No uses cercanía temporal como única prueba de causalidad.
+4. Separá tres hechos observables de sus hipótesis. Proponé al menos dos explicaciones del patrón que más merezca investigación y una evidencia adicional para contrastar cada explicación.
+5. Contrastá los eventos operativos con datos/cambios.txt. Explicá qué observaciones apoyan una actividad prevista, cuáles requieren aclaración y qué parte del cambio no puede certificarse con esta colección.
+6. Entregá un pase de guardia de hasta 200 palabras con tiempo UTC, fuentes e IDs, nivel de confianza, impacto posible y siguiente acción responsable. No atribuyas una acción a una persona solamente por IP, nombre de cuenta o autenticación exitosa.
+
+Rúbrica: distinción entre hechos, hipótesis y límites 4; calidad de la comunicación y de la evidencia pedida 2; consulta o filtrado reproducible 3; manejo del tiempo/reingesta 2; correlación explícita 3. No se necesita confirmar un ataque para aprobar: se necesita razonar con lo disponible.
+
+E5 — DATOS RELACIONES Y CONSULTAS SQL
+
+Tiempo: 90 minutos. Máximo: 16 puntos. Mínimo: 8.
+Materia: Sistemas de Tratamiento de Datos, conectada con registros y programación.
+
+1. Creá la base nueva siguiendo el montaje. Identificá claves primarias, foráneas, UNIQUE y CHECK. Dibujá las relaciones y explicá una anomalía que cada restricción intenta evitar. Distinguilas de una autorización de lectura o escritura de la cuenta que usa la base.
+2. Escribí una consulta que relacione cada exportación con su cuenta, rol, sesión, origen y hora de autenticación. Elegí las columnas y orden de salida que ayuden a una investigación. Explicá qué ocurriría con un JOIN mal elegido o una condición incompleta.
+3. Escribí una consulta para contar intentos de autenticación por origen y resultado. Justificá qué estás contando y por qué no usás todos los eventos que contienen la palabra failure como si fueran inicios de sesión.
+4. Mostrá todas las cuentas, incluidas las que no registran exportaciones. Tratá los valores NULL sin convertirlos en evidencia de que una actividad no pudo ocurrir fuera de la colección.
+5. A partir de datos/solicitudes-flat.csv, proponé una separación de entidades que reduzca repetición y anomalías de actualización. Detectá inconsistencias usando las fuentes disponibles, sin decidir cuál es verdadera solo por aparecer más veces. Explicá qué verificaciones pedirías al dueño del dato.
+6. Proponé una consulta parametrizada para buscar una cuenta ingresada por un operador. Escribí por separado la estructura SQL y el valor; explicá qué riesgo evita respecto de concatenar texto. No hace falta crear una aplicación web ni probar inyección contra otro sistema.
+7. Hacé una comprobación de integridad de claves foráneas con SQLite y registrá el procedimiento. No alteres las tablas ni los datos originales para forzar un resultado esperado.
+8. Ensayá una transacción sobre UNA COPIA nueva de tu base, con el nombre final_anual_transacciones.sqlite. Primero cerrá las conexiones a la base original, registrá su hash y guardá la copia sin sobrescribir un archivo existente. Confirmá en qué archivo estás antes de escribir. La unidad de trabajo del ensayo consiste en deshabilitar la cuenta ficticia bruno y marcar su sesión S002 como finalizada a las 10:30:00Z del escenario: ambas operaciones deben completarse juntas o dejar el estado anterior intacto. No modifiques los datos originales del caso ni ninguna cuenta real.
+   En un primer ensayo, provocá un error controlado en la segunda operación sin desactivar restricciones. Elegí y ejecutá cómo volver al estado anterior de TODA la unidad de trabajo y comprobalo con consultas; no supongas que el error revirtió automáticamente la primera operación. En un segundo ensayo sobre esa copia, completá la unidad y confirmala. Cerrá y reabrí la copia para verificar el estado confirmado y volvé a comprobar que el hash de la base original no cambió. Conservá las sentencias y resultados, sin incluir un solucionario prestado.
+   Explicá atomicidad, consistencia, aislamiento y durabilidad relacionándolas con este ensayo. Distinguí restricciones de la base e invariantes del negocio. Si probás una segunda conexión de lectura antes de confirmar, anotá qué observa y cuándo; si no hiciste esa observación, tratá el aislamiento como explicación conceptual, no como práctica demostrada. Registrá también qué diferencias de comportamiento puede tener una herramienta que confirme cada sentencia automáticamente.
+
+Rúbrica teórica, 6 puntos: modelo/integridad/normalización 4; ACID, invariantes y límites del ensayo 2. Rúbrica práctica, 10 puntos: creación y comprobación de la base 1; JOIN de exportaciones 2; conteo con criterio 1; inclusión de cuentas sin exportaciones y NULL 2; parametrización 1; copia preservada, fallo controlado, reversión y confirmación con reapertura 3. Se entregan consultas y resultados, no solamente una captura de filas. La distribución es aproximadamente 40% teoría y 60% práctica, dentro de los 16 puntos de la estación.
+
+E6 — LEER CÓDIGO Y COMPROBAR INVARIANTES
+
+Tiempo: 50 minutos. Máximo: 12 puntos. Mínimo: 6.
+Materia: Lenguajes de Programación, conectada con datos y procesos.
+
+1. Leé datos/codigo-revision.txt. Identificá entrada, salida, estado mutable, decisiones y contrato. Diferenciá una condición de validación de una transformación de estado.
+2. Completá una tabla de traza para cada llamada indicada, partiendo de una copia nueva del estado inicial: condición evaluada, retorno y estado final. No ejecutes las llamadas una detrás de otra salvo que lo declares como una prueba distinta.
+3. Identificá incumplimientos del contrato y proponé una corrección en pseudocódigo, C o Java. Justificá el orden de las validaciones y qué tendría que permanecer igual si la operación falla.
+4. Diseñá pruebas de frontera y un caso normal. Para cada una, escribí primero el resultado que el contrato exige y después cómo observarías si la implementación lo cumple. No hace falta compilar el fragmento para hacer una prueba de escritorio.
+5. Explicá por qué estas comprobaciones se conectan con la integridad de datos y qué nuevo problema aparecería si dos hilos modificaran el mismo producto. Separá ese problema del error de validación de un solo hilo.
+
+Rúbrica: contrato/flujo/estado 3; diagnóstico y corrección justificada 3; conexión con integridad y concurrencia 2; trazas y pruebas de escritorio reproducibles 4. La parte de ejecución de esta estación es la traza controlada; no se pide instalar un compilador ni ejecutar un programa vulnerable.
+
+E7 — GESTIÓN RIESGO Y RECUPERACIÓN
+
+Tiempo: 70 minutos. Máximo: 10 puntos. Mínimo: 5.
+Materias: gestión de servicios e información, seguridad y comunicación, como ampliación donde el programa de Gestión quedó inaccesible.
+
+1. Identificá activo, responsable, amenaza, vulnerabilidad, control, impacto y riesgo en dos problemas del caso. Explicá por qué esos términos no son sinónimos. Incluí una amenaza o falla accidental plausible, no solamente una acción maliciosa.
+2. Evaluá las alternativas de datos/recuperacion.csv a las 10:30:00Z del escenario. Calculá la antigüedad del último punto recuperable declarado y comparala con el RPO. Contrastá el tiempo estimado con el RTO y explicá qué otras fases podrían consumir parte de ese presupuesto. La estimación de una restauración no demuestra que el servicio ya fue recuperado y aceptado.
+3. Elegí una estrategia o proponé una combinación, con criterios técnicos, riesgo de credenciales, prueba de restauración y validación del servicio. Si una condición no alcanza para decidir, pedí la evidencia faltante.
+4. En una carpeta propia de práctica, creá un archivo con datos ficticios, guardá una copia de referencia y su hash, modificá una copia de trabajo y restaurala desde tu referencia. Verificá el resultado con el hash y el contenido. Puede ser en Windows o Linux. No utilices el original de un documento personal ni sobrescribas archivos de datos/.
+5. Priorizá tres acciones y asigná quién debería autorizarlas o ejecutarlas. Escribí un párrafo que un responsable no técnico pueda entender: qué sabemos, qué podría afectar al servicio y qué decisión necesitás. No confundas tu recomendación con una modificación ya realizada.
+
+Rúbrica: conceptos de riesgo y roles 2; cálculo y interpretación de RTO/RPO 3; decisión y comunicación proporcionada 2; restauración real de archivo ficticio y comprobación 3. Un hash por sí solo no sustituye una copia ni recupera los bytes originales.
+
+DEFENSA ORAL DE 30 MINUTOS
+
+El tutor elige una decisión de cada estación y te pide explicarla con tus palabras. Puede cambiar un dato pequeño: prefijo, grupo, condición del código, hora de backup o tipo de evento. No se necesita repetir toda la práctica, sino mostrar que entendés qué cambia y qué permanece igual.
+
+Prepará una explicación de: una diferencia Windows/Linux que sea relevante; una consulta SQL que hayas escrito; un camino de red; un hecho frente a una hipótesis; una condición de carrera; y una decisión de recuperación. Si no podés defender una evidencia presentada, esa competencia pasa a pendiente aunque el archivo esté completo.
+
+CRITERIO PARA CONSIDERARTE AFILADO
+
+Meta docente: 80/100, al menos la mitad de los puntos en CADA estación y cumplimiento de los requisitos de ejecución real. Es un criterio de este recorrido, no una nota de UNDEF ni una equivalencia con la escala de una certificación.
+
+Requisitos de ejecución: proceso propio observado y cerrado en Windows y Linux; carpeta/ACL y evento local Windows; servicio HTTP propio con cliente y cierre; consultas reproducibles de registros; base SQLite nueva con consultas propias y ensayo transaccional sobre una copia que preserve el original; traza de código; restauración de un archivo ficticio. Si no disponés de un entorno, se informa teoría evaluada y ejecución pendiente. La fortaleza en Linux no compensa cero práctica Windows; una buena explicación verbal no reemplaza SQL ejecutado.
+
+Registrar ayuda: con pista conceptual, con pista de herramienta, con estructura de comando o sin ayuda. La primera pasada sirve para detectar brechas. Antes de considerar la integración consolidada, resolvé una variante nueva sin ayuda y defendé sus decisiones. No uses dos veces exactamente las mismas preguntas como única prueba de preparación.
+
+Si falla un área: elegí el concepto o procedimiento concreto, retomá el capítulo anual correspondiente, hacé un ejercicio correctivo y repetí una variante de ESA estación. No hace falta rehacer todo lo que ya demostraste, pero tampoco esconder la brecha en un promedio general.
+
+ENTREGA Y RESUMEN FINAL
+
+Usá plantillas/informe-final.txt y plantillas/rubrica.csv. Para cada materia, completá plantillas/resumen-por-materia.txt con definiciones propias, relaciones, procedimientos, un caso, errores y pendientes. El resumen debe permitirte reconstruir el razonamiento; copiar una lista de herramientas no alcanza.
+
+Conservá: consultas, trazas, tablas de subredes, observaciones acotadas de Windows/Linux, informe y autoevaluación. No mandes contraseñas, claves, capturas de información personal ni registros completos del equipo. Los datos entregados son suficientes para el análisis ficticio.
+
+FUENTES Y ALCANCE
+
+Conexión curricular: programa SO I leído; programas de Telecomunicaciones y Tratamiento de Datos leídos; guías HTML accesibles de SO II y Programación; consignas accesibles de Sociedad y Estado. Las URL exactas y estados están en los inventarios generales del paquete. Este final es una ampliación propia, no una afirmación de que se revisó cada PDF de la cursada.
+
+Para interpretar los números 4624/4625 y los campos del XML se consultó la documentación oficial Microsoft. El XML es una selección didáctica de campos, no un evento nativo completo ni una exportación EVTX:
+https://learn.microsoft.com/en-us/windows/security/threat-protection/auditing/event-4624
+https://learn.microsoft.com/en-us/windows/security/threat-protection/auditing/event-4625
+
+Montaje y consultas SQLite: documentación del módulo estándar sqlite3 y SQLite. Las consultas de solución no están incluidas:
+https://docs.python.org/3/library/sqlite3.html
+https://www.sqlite.org/foreignkeys.html
+
+ESTADO DE ESTE FINAL
+
+Datos sintéticos y esquema preparados; relaciones y formatos comprobados en una base de prueba local del autor. No se ejecutaron las estaciones en tu Windows o Linux ni se evaluaron tus respuestas. Esos estados se actualizan cuando hagas el final.

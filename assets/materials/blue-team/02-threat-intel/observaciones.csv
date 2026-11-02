@@ -1,0 +1,9 @@
+obs_id,tipo,valor,first_seen,source_ref,contexto
+OBS01,dominio,verificacion-cuenta.test,2026-10-28T09:05:00Z,mensaje-01.eml; Message-ID AUR001,Enlace contenido en correo
+OBS02,ipv4,198.51.100.77,2026-10-28T09:06:10Z,evento EV010,Respuesta DNS sintetica local del caso
+OBS03,ipv4,203.0.113.25,2026-10-28T09:05:02Z,mensaje-01.eml Received,Origen indicado por el filtro del escenario
+OBS04,sha256,973ce02abde830ccf9d9a04389b41ed438099bc19a16ed08bdb3cd424aa4c776,2026-10-28T09:05:04Z,aviso-campus.txt; mensaje-01.eml,Adjunto de texto incluido; el hash no describe intencion
+OBS05,dominio,campus.aurora.test,2026-10-28T08:40:00Z,mensaje-02.eml,Portal habitual segun contexto interno
+OBS06,ipv4,203.0.113.44,2026-10-28T09:08:00Z,evento EV014,Origen de autenticaciones del caso
+OBS07,dominio,proveedor.test,2026-10-28T09:07:00Z,mensaje-03.eml,Dominio del remitente de un pedido comercial
+OBS08,dominio,notifica-seguridad.test,2026-10-28T09:05:00Z,mensaje-01.eml Return-Path,Dominio del sobre del correo

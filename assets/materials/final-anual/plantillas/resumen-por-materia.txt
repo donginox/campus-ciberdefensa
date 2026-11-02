@@ -1,0 +1,35 @@
+MI RESUMEN FINAL POR MATERIA
+
+Materia:
+Unidades o bloques incluidos:
+Fecha y versión de mi resumen:
+
+1. Qué problema resuelve esta materia
+Explicalo en no más de cinco líneas y conectalo con una tarea real.
+
+2. Conceptos que puedo explicar sin leer
+Para cada uno: definición propia, ejemplo, contraejemplo o límite y concepto previo que necesita.
+
+3. Mapa de relaciones
+Dibujá o describí cómo se conectan al menos seis conceptos. Escribí qué significa cada flecha; una lista de nombres no alcanza.
+
+4. Procedimientos que puedo ejecutar
+Objetivo / entorno / pasos / evidencia / interpretación / cómo recuperar el estado de práctica.
+Separá Windows, Linux y procedimientos independientes del sistema cuando corresponda.
+
+5. Un caso integrado resuelto por mí
+Pregunta inicial / fuentes / hipótesis / prueba / resultado / decisión / límite.
+
+6. Errores frecuentes y cómo los detecto
+Anotá al menos tres errores que cometiste o que ahora podés explicar.
+
+7. Preguntas que todavía no puedo responder
+Qué me falta / recurso exacto / práctica siguiente / criterio para darlo por aprendido.
+
+8. Procedencia
+Campus: nombre, semana/unidad, enlace exacto, qué leí realmente.
+Ampliación del tutor o fuente oficial adicional: título, enlace, concepto usado.
+Pendientes o inaccesibles: no los presento como material leído.
+
+9. Comprobación sin apuntes
+Elegí dos preguntas nuevas y una práctica nueva. Fecha, resultado y evidencia.

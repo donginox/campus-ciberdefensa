@@ -1,0 +1,29 @@
+ACL SINTÉTICAS PARA LEER, NO PARA IMPORTAR
+
+Ruta local del escenario: C:\AulaLab\Reportes\padron-demo.csv
+Recurso compartido del escenario: \\ADMIN01\Reportes\padron-demo.csv
+En este caso el recurso compartido reside en ADMIN01, el equipo Windows de operación del inventario. No es PORTAL01, que ejecuta la aplicación Linux. Para calcular permisos efectivos en este ejercicio, suponé que la conexión y la autenticación al recurso compartido ya se completaron: evaluá la combinación de NTFS y permisos compartidos. La accesibilidad de red se investiga por separado y no queda demostrada por una ACL.
+
+Grupos de las cuentas del caso:
+lucia: AULA\Estudiantes
+bruno: AULA\Docentes
+soporte: AULA\Operaciones
+
+DACL efectiva del archivo después de heredar desde su carpeta, en el orden simplificado que muestra la herramienta de colección:
+1. DENY, AULA\Estudiantes, Delete, explícita en el archivo.
+2. ALLOW, AULA\lucia, Write, explícita en el archivo.
+3. ALLOW, BUILTIN\Administrators, FullControl, heredada.
+4. ALLOW, NT AUTHORITY\SYSTEM, FullControl, heredada.
+5. ALLOW, AULA\Docentes, Modify, heredada.
+6. ALLOW, AULA\Estudiantes, ReadAndExecute, heredada.
+
+Permisos del recurso compartido, para acceso por red:
+AULA\Docentes: Read.
+AULA\Estudiantes: Change.
+AULA\Operaciones: FullControl.
+
+El propietario del archivo es AULA\soporte. Ser propietario no equivale a que cualquier operación esté concedida por esta lista de acceso. En el análisis se consideran estas entradas y las membresías declaradas; no se presumen otros grupos o privilegios de las cuentas.
+
+Las acciones a evaluar son leer contenido, modificar contenido y eliminar este archivo. No se pregunta por el efecto de permisos de borrado concedidos sobre la carpeta padre ni por privilegios especiales que no estén documentados: si los necesitás para otra conclusión, pedilos como evidencia faltante.
+
+Este archivo es un modelo didáctico. No representa una exportación literal de Get-Acl, icacls ni un análisis completo de todos los derechos NTFS posibles. Para la parte real del final, observá una carpeta temporal nueva de tu propio Windows y anotá los derechos que efectivamente encuentres allí.

@@ -1,0 +1,7 @@
+'use strict';
+const {contextBridge,ipcRenderer}=require('electron');
+const invoke=(method,arg)=>ipcRenderer.invoke('campus:'+method,arg);
+const subscribe=(channel,callback)=>{if(typeof callback!=='function')throw new TypeError('Se requiere una función.');const listener=(_event,data)=>callback(data);ipcRenderer.on(channel,listener);return ()=>ipcRenderer.removeListener(channel,listener);};
+contextBridge.exposeInMainWorld('campusDesktop',Object.freeze({
+ getAppInfo:()=>invoke('getAppInfo'),listProfiles:()=>invoke('listProfiles'),getActiveProfile:()=>invoke('getActiveProfile'),createProfile:name=>invoke('createProfile',name),selectProfile:id=>invoke('selectProfile',id),renameProfile:input=>invoke('renameProfile',input),saveProfile:input=>invoke('saveProfile',input),exportBackup:id=>invoke('exportBackup',id),importBackup:id=>invoke('importBackup',id),openMaterial:relative=>invoke('openMaterial',relative),exportMaterial:relative=>invoke('exportMaterial',relative),getSystemLabInfo:()=>invoke('getSystemLabInfo'),runSqlLab:input=>invoke('runSqlLab',input),checkForUpdates:()=>invoke('checkForUpdates'),installUpdate:()=>invoke('installUpdate'),readyToClose:()=>invoke('readyToClose'),onUpdateStatus:callback=>subscribe('campus:update-status',callback),onBeforeClose:callback=>subscribe('campus:before-close',callback)
+}));

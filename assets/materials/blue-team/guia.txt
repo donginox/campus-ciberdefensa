@@ -1,0 +1,312 @@
+PRÁCTICA DE BLUE TEAM PARA PREPARAR BTL1 DESDE KALI LINUX
+Material propio de estudio. Preparado el 30 de octubre de 2026.
+
+Este recorrido te hace investigar cuatro casos con evidencias listas: correo, inteligencia de amenazas, colección lógica de archivos y correlación de registros. Todos los datos, instituciones y personas son ficticios. No contiene malware ni requiere consultar servicios externos. El objetivo es que puedas justificar tus conclusiones y entregar una investigación reproducible.
+
+El contenido de esta carpeta es una ampliación docente propia, no material de UNDEF ni un banco de preguntas de BTL1. El examen oficial tiene otras condiciones y herramientas: completar estos casos no acredita cobertura completa ni garantiza aprobar. La práctica con artefactos Windows y un SIEM real sigue pendiente hasta que la ejecutes.
+
+ALINEACIÓN CON EL PROGRAMA OFICIAL
+
+La página oficial de BTL1 enumera fundamentos, phishing, inteligencia de amenazas, forense digital, SIEM y respuesta a incidentes. También incluye herramientas Windows y Splunk. Este paquete trabaja las cinco áreas prácticas sobre una base de fundamentos; no reemplaza los laboratorios oficiales. La fuente consultada es https://www.securityblue.team/certifications/blue-team-level-1, que actualmente redirige a https://www.centri.org/certifications/blue-team-level-1 .
+
+Los casos 1 y 2 practican análisis de evidencia y valoración de fuentes. El 3 introduce preservación y cronologías de archivos, con una colección lógica pequeña. El 4 integra investigación y respuesta usando registros normalizados. Leer JSON con Python o agrupar datos con SQLite es analítica local: NO equivale a operar un SIEM.
+
+REQUISITOS Y MÉTODO
+
+Usá tu Kali para abrir texto, calcular hashes y analizar los archivos. Para las primeras misiones alcanza la terminal, un editor de texto y Python 3. No necesitás sudo, una distribución nueva ni un servicio expuesto. No ejecutes herramientas sobre otros equipos: toda la práctica usa estos datos locales.
+
+Abrí una terminal en la carpeta blue-team del paquete. Conservá los originales y escribí las respuestas en una carpeta propia. Por ejemplo, podés crear respuestas/01-phishing, respuestas/02-threat-intel, respuestas/03-forense y respuestas/04-siem-ir. No reemplaces los archivos del caso.
+
+Antes de practicar, mirá qué versión de Python tenés con python3 --version. Si el paquete trae SHA256SUMS.txt, verificá desde blue-team con sha256sum -c SHA256SUMS.txt. Si aparece una diferencia, anotala y no regeneres la referencia para ocultarla. El manifiesto prueba igualdad con la referencia recibida, no procedencia independiente ni una cadena de custodia judicial.
+
+No hay solucionario. Primero hacé un intento y mostrale al tutor la evidencia que te llevó a cada conclusión. Si necesitás ayuda, se habilitan pistas graduales: concepto, herramienta y finalmente estructura del procedimiento. La evaluación toma en cuenta lo que podés explicar, no solamente el resultado.
+
+Organización sugerida: 2 a 4 horas por práctico, más la corrección. Podés dedicar más tiempo y repetir una misión equivalente. Estos tiempos son una estimación docente, no la duración de la preparación completa de BTL1.
+
+PRÁCTICO 1 — INVESTIGAR TRES CORREOS
+
+Objetivo
+
+Separar remitente visual, sobre SMTP, ruta de entrega, destinatario de respuesta, autenticación y contenido. Producir una recomendación fundamentada sin hacer clic en enlaces.
+
+Archivos
+
+- 01-phishing/mensaje-01.eml, mensaje-02.eml y mensaje-03.eml.
+- 01-phishing/contexto.csv, directorio ficticio de la organización.
+- 01-phishing/aviso-campus.txt, copia del único adjunto del conjunto.
+- plantilla-informe.txt para tu entrega.
+
+Preparación
+
+Leé contexto.csv y abrí los .eml como TEXTO. Podés usar less o un editor. Si usás un cliente de correo, mantené deshabilitada la carga remota y no respondas ni envíes mensajes. No necesitás renderizar el HTML: podemos inspeccionarlo como código fuente. Los dominios terminan en .test y las IP externas son rangos de documentación, pero no hace falta visitarlos para resolver el caso.
+
+Teoría antes de mirar los resultados
+
+El nombre que ves en From es una afirmación del mensaje. Return-Path refleja la dirección del sobre que informa este archivo; Reply-To puede dirigir tu respuesta a otro lugar. Los Received se agregan en los saltos de entrega: para evaluar confianza, partí del servidor receptor que conocés y distinguí sus observaciones de texto que un remitente pudo agregar antes del límite de confianza.
+
+SPF evalúa autorización del origen para identidades SMTP, no la intención del contenido. DKIM relaciona una firma con un dominio y con partes firmadas del mensaje; no prueba que el pedido comercial sea correcto. DMARC relaciona el dominio visible de From con un mecanismo autenticado alineado. Un resultado pass no convierte un mensaje en seguro: una cuenta legítima también puede usarse para un pedido indebido.
+
+En estos archivos, Authentication-Results y los X-Lab-* están inventados y etiquetados como SINTÉTICOS. No hay claves DNS reales ni firmas DKIM verificables. La tarea es interpretar los resultados que el gateway del escenario dice haber observado y explicar sus límites, NO validarlos criptográficamente. No subas los correos ni sus adjuntos a servicios públicos.
+
+Ejercicio guiado
+
+1. Elegí un correo y anotá su Message-ID, Date, From, Return-Path y Reply-To. No emitas todavía un veredicto.
+2. Ordená los saltos Received de ese correo y marcá cuál representa el límite de confianza del receptor según contexto.csv.
+3. Separá tres columnas: lo que dice el mensaje, lo que dice el gateway y lo que todavía no sabés.
+4. Si hay partes MIME, identificá texto plano, HTML y adjunto. Extraer texto no significa ejecutar su contenido.
+
+Si todavía no sabés inspeccionar MIME, este ejemplo usa sólo Python estándar y no abre enlaces. Ejecutalo desde blue-team y después repetí la observación con los otros archivos:
+
+```bash
+python3 - <<'PY'
+from email import policy
+from email.parser import BytesParser
+from pathlib import Path
+mensaje = BytesParser(policy=policy.default).parsebytes(Path('01-phishing/mensaje-01.eml').read_bytes())
+print('Message-ID:', mensaje['Message-ID'])
+for parte in mensaje.walk():
+    print(parte.get_content_type(), parte.get_content_disposition(), parte.get_filename())
+PY
+```
+
+Esto muestra estructura, no clasifica el correo ni verifica una firma.
+
+Misiones independientes
+
+A. Completá una ficha para cada correo con identidad visual, dominio del sobre, dirección de respuesta y mecanismo de autenticación declarado.
+B. Compará el texto visible de los enlaces con los destinos que aparecen en el HTML, sin abrirlos. Registrá ambos valores de manera segura, por ejemplo con [.] en lugar de puntos en un informe compartido.
+C. Verificá que el adjunto extraído y aviso-campus.txt sean iguales byte a byte mediante SHA-256. Anotá el método de extracción y el hash. No te alcanza el nombre del archivo.
+D. Clasificá cada pedido como compatible con el contexto, sospechoso o insuficiente para concluir. Justificá cada clasificación con evidencia concreta y límites.
+E. Elegí qué acciones recomendarías para cada mensaje: preservar, revisar el contexto, buscar mensajes similares o consultar un contacto del directorio. En el ejercicio sólo se redacta la recomendación; no se envía ningún mensaje real.
+F. Explicá por qué puede haber un pedido riesgoso incluso con SPF, DKIM y DMARC en pass.
+
+Preguntas de comprensión
+
+¿De qué identidad habla SPF? ¿Qué falta para verificar una firma DKIM real? ¿Por qué un Received viejo no tiene la misma confianza que el añadido por tu receptor? ¿Qué prueba un hash coincidente del adjunto? ¿Qué no se puede concluir sólo por tono urgente o por un resultado fail?
+
+Errores frecuentes
+
+Juzgar sólo por From o por una falta de ortografía; aceptar pass como veredicto; creer que todos los Received tienen el mismo origen confiable; abrir enlaces para “confirmar”; adjudicar una persona a una IP; confundir la copia del adjunto con una muestra maliciosa. Este adjunto es texto benigno.
+
+Entrega y evaluación, 10 puntos
+
+- 2: identifica correctamente las distintas identidades y conserva Message-ID.
+- 2: explica la ruta y el límite de confianza.
+- 2: interpreta autenticación y sus límites sin afirmar validaciones inexistentes.
+- 2: analiza contenido/MIME y verifica el adjunto sin ejecutarlo.
+- 2: recomienda acciones proporcionadas y expresa lo que falta comprobar.
+
+PRÁCTICO 2 — CONVERTIR OBSERVACIONES EN INTELIGENCIA ÚTIL
+
+Objetivo
+
+Construir una valoración de indicadores con contexto, vigencia y procedencia. Separar observación propia, afirmación de una fuente e inferencia del analista.
+
+Archivos
+
+- 02-threat-intel/observaciones.csv.
+- 02-threat-intel/feeds-sinteticos.json.
+- 02-threat-intel/nota-contacto.txt.
+- contexto.csv del práctico anterior y, cuando se indique, eventos del práctico 4.
+
+Teoría antes de enriquecer
+
+Una dirección, dominio o hash observado es un dato. Para convertirlo en un indicador útil necesitás contexto: dónde apareció, cuándo, asociado a qué actividad y con qué confianza. Una etiqueta de reputación es la afirmación de una fuente, no un hecho que herede automáticamente tu investigación.
+
+Dos informes pueden depender del mismo origen y no ser observaciones independientes. La antigüedad también importa: infraestructura compartida, cambios de dueño y datos de otro período reducen el alcance de una inferencia. No todos los tipos de indicadores justifican la misma acción: bloquear una IP compartida puede afectar recursos no relacionados.
+
+Los porcentajes confidence del archivo son etiquetas ficticias de cada fuente; no son probabilidades calibradas. Un hash sin información externa no demuestra que el archivo sea seguro. Tampoco vamos a atribuir un actor o país a partir de una coincidencia de infraestructura.
+
+Todo el enriquecimiento es offline. No hagas consultas DNS, WHOIS, reputación o sandbox con los valores del caso. Las referencias .test son parte de los datos; no son sitios que debas investigar. En una tarea real habría que decidir qué información puede salir a qué servicio antes de consultar o subir archivos.
+
+Ejercicio guiado
+
+1. Elegí una observación de observaciones.csv y encontrá su evidencia local de origen.
+2. Buscá si hay un informe que mencione exactamente ese valor y tipo. Registrar una coincidencia no es todavía recomendar un bloqueo.
+3. Compará first_seen, last_seen y published. Explicá qué significa cada tiempo y cuál usás para evaluar actualidad.
+4. Escribí una frase con tres partes: “observé…”, “la fuente afirma…” y “por ahora infiero…”.
+
+Misiones independientes
+
+A. Hacé una tabla de los indicadores con evidencia local, fuentes, origen independiente, antigüedad, relevancia para el caso, confianza propia y acción propuesta.
+B. Evaluá si podés contar todos los informes como corroboraciones independientes. Citá los campos que usaste.
+C. Proponé una acción para el dominio que investigás y otra para la IP asociada. Explicá impacto y condiciones de cada decisión.
+D. Identificá qué información del feed es demasiado antigua o incompleta para sostener una conclusión actual. No inventes una consulta para llenar el vacío.
+E. Decidí qué podés decir del hash del adjunto combinando reputación disponible y análisis local. Separá “sin datos” de “benigno”.
+F. Redactá una nota de inteligencia de 200 a 300 palabras para un SOC inicial: pregunta de investigación, hallazgos, confianza, acciones y evidencia pendiente. No atribuyas una organización criminal si los datos no alcanzan.
+
+Preguntas de comprensión
+
+¿Qué diferencia hay entre indicador, actividad y actor? ¿Qué cambia si dos fuentes copian un mismo reporte? ¿Por qué una coincidencia de IP no prueba control común? ¿Cuándo sería preferible observar antes que bloquear? ¿Qué significa que un dato no exista en un catálogo?
+
+Errores frecuentes
+
+Promediar etiquetas de confianza como probabilidades; considerar independiente toda fuente; perder el tiempo de la observación; bloquear infraestructura compartida sin analizar impacto; declarar inocuo un archivo desconocido; pegar indicadores privados en cualquier servicio.
+
+Entrega y evaluación, 10 puntos
+
+- 2: cada valoración se puede rastrear hasta evidencia local y una fuente identificada.
+- 2: evalúa independencia y vigencia.
+- 2: relaciona el indicador con actividad sin atribución injustificada.
+- 2: propone medidas con alcance e impacto claros.
+- 2: comunica confianza y preguntas pendientes en una nota breve.
+
+PRÁCTICO 3 — PRESERVAR Y ANALIZAR UNA COLECCIÓN LÓGICA
+
+Objetivo
+
+Registrar recepción, verificar integridad y construir una cronología limitada a lo que los archivos permiten demostrar. Distinguir tiempos del caso de metadatos creados al descargar este paquete.
+
+Archivos
+
+- 03-forense/recepcion.txt: alcance y procedencia didáctica.
+- 03-forense/originales/: colección sintética atribuida a dos equipos.
+- 03-forense/manifiesto-recepcion.csv: tamaño, SHA-256 y mtime del escenario.
+- 03-forense/control-anterior.csv: referencias de contenido de otro momento.
+- 04-siem-ir/cambios.csv: una ventana autorizada de mantenimiento.
+- plantilla-custodia.txt.
+
+Leé recepcion.txt antes de ejecutar herramientas. Esta colección NO es una imagen de disco, ni una imagen de memoria, ni una adquisición física. No incluye MFT, Registry, EVTX ni una base History nativa. El historial CSV es inventado. No practicaste todavía recuperación de borrados, slack, memoria o artefactos Windows por resolver esta carpeta.
+
+Teoría antes de tocar los archivos
+
+Preservar implica documentar lo recibido y evitar cambios innecesarios. Un manifiesto de hashes permite comprobar igualdad de bytes respecto de una referencia. No demuestra quién produjo esos bytes ni vuelve confiable una referencia sin procedencia. Trabajar en una copia ayuda a mantener separado el material recibido de tus resultados.
+
+Los tiempos de un sistema de archivos dependen del origen, método de adquisición y posterior copia. En este paquete se fijaron mtime como datos del escenario, pero tu sistema puede modificarlos al extraerlo. Para razonar sobre el caso usá los tiempos declarados en el manifiesto; registrá por separado cualquier diferencia que observe tu Kali. atime, ctime y fecha de creación del anfitrión no son tiempos del incidente.
+
+Un cambio de contenido respecto de una línea base requiere contexto. Puede estar autorizado, ser inesperado o no tener información suficiente. Correlacionar tiempos de dos archivos con un registro no demuestra por sí solo causa, autoría o integridad de la fuente.
+
+Ejercicio guiado
+
+1. Registrá quién recibe el paquete, cuándo lo recibe realmente, qué caso dice representar y cuál es su alcance. Conservá UTC del escenario separado de tu hora de trabajo.
+2. Verificá tamaño y SHA-256 de un archivo contra manifiesto-recepcion.csv usando herramientas de tu Kali. Registrá ruta completa relativa y resultado.
+3. Creá una copia de originales/ en tu carpeta de respuestas. Si ya existe una copia, no mezcles archivos sin registrar qué versión analizás.
+4. Abrí un archivo de texto de la copia y explicá qué podés observar directamente y qué proviene únicamente del manifiesto.
+
+Misiones independientes
+
+A. Verificá todos los archivos del manifiesto y documentá cualquier diferencia. No modifiques las referencias.
+B. Comprobá la relación entre el archivo de Descargas y el adjunto del práctico 1. Citá evidencia de contenido, no solamente nombres.
+C. Contrastá las referencias de control-anterior.csv con lo recibido. Para cada cambio que encuentres, explicá qué conocés y qué dato te faltaría para describir el contenido anterior.
+D. Armá una línea de tiempo de los archivos y registros pertinentes. Mantené una columna de procedencia y otra de precisión/límite del tiempo usado.
+E. Contrastá los cambios con la ventana y el alcance de cambios.csv. Una coincidencia temporal no reemplaza verificar el objeto y la acción autorizados.
+F. Redactá tres conclusiones: una observación demostrable, una hipótesis razonable y una afirmación que estos datos no permiten sostener.
+G. Volvé a verificar los originales al terminar, guardá tus resultados y completá el registro de manejo de evidencia.
+
+Preguntas de comprensión
+
+¿Qué diferencia hay entre colección lógica e imagen de disco? ¿Podés recuperar un archivo borrado que nunca se incluyó aquí? ¿Qué vale más para identificar una copia, nombre o hash? ¿El mtime prueba quién editó? ¿Qué demuestra realmente que un hash coincida? ¿Qué riesgos tiene importar como evidencia la fecha en que descomprimiste el ZIP?
+
+Errores frecuentes
+
+Editar originales; usar tiempos del anfitrión como tiempos del incidente; llamar imagen forense a una carpeta; afirmar ausencia de actividad porque no se incluyó un artefacto; asumir que todo cambio es malicioso; reconstruir un contenido anterior sólo a partir de su hash.
+
+Entrega y evaluación, 10 puntos
+
+- 2: registra alcance y manejo de la colección sin exagerarlo.
+- 2: verifica y documenta integridad antes/después.
+- 2: compara referencias y diferencia coincidencia de causalidad.
+- 2: produce cronología con procedencia y límites de tiempo.
+- 2: distingue hechos, hipótesis y capacidades todavía no practicadas.
+
+PRÁCTICO 4 — CORRELACIONAR EVENTOS Y PREPARAR UNA RESPUESTA
+
+Objetivo
+
+Investigar una señal cruzando correo, identidad, proxy, aplicación y contexto de cambios. Diseñar una regla de detección y un plan de respuesta, con un informe que otro analista pueda revisar.
+
+Archivos
+
+- 04-siem-ir/eventos.jsonl, registros estructurados del escenario.
+- 04-siem-ir/esquema.txt, semántica y límites.
+- 04-siem-ir/activos.csv y cambios.csv.
+- Evidencias de los tres prácticos anteriores.
+- plantilla-incidente.txt.
+
+Teoría antes de consultar
+
+Una plataforma SIEM incorpora datos, normaliza campos, permite búsquedas, aplica detecciones y gestiona alertas según su configuración. Estos archivos sólo cubren parte del razonamiento de investigación. Contar JSON en una terminal o SQLite no demuestra todavía ingesta, permisos, retención, alertas, dashboards ni operación de una plataforma real.
+
+ts representa cuándo ocurrió un evento del escenario. ingest_ts representa cuándo llegó al recolector. event_id identifica el evento original y permite distinguir entregas repetidas. No son intercambiables: primero entendé el esquema, después elegí cómo ordenar y contar.
+
+Un resultado de autenticación, un POST y una exportación son observaciones con alcances distintos. Sin cuerpo HTTP, verificación de identidad y contexto de autorización, no sabemos automáticamente qué datos se ingresaron o si hubo uso indebido. El proxy del escenario aporta metadatos HTTPS observados por una pasarela ficticia, no una captura que descifre TLS.
+
+La respuesta debe preservar evidencia, evaluar impacto, contener con autoridad, corregir la causa que se confirme, recuperar y revisar lo aprendido. Una recomendación de bloqueo o cierre de sesión no significa que ya se haya ejecutado ni que siempre sea la mejor primera acción.
+
+Ejercicio guiado
+
+1. Leé esquema.txt y definí una pregunta de investigación concreta.
+2. Abrí varias líneas de eventos.jsonl. Identificá campos comunes y campos exclusivos de un tipo de evento. La ausencia de un campo no significa cero ni false.
+3. Hacé un inventario de source y event_type con Python, jq si ya lo tenés, o una herramienta de análisis local. Documentá la versión y tu método. No hace falta instalar un stack completo.
+4. Encontrá un identificador que conecte un evento con un archivo del caso. Anotá la relación y explicá por qué el identificador es más útil que una semejanza de texto.
+
+Para comenzar a explorar sin instalar herramientas, este ejemplo lee el JSONL con Python estándar y muestra solamente los tipos de datos presentes. No elimina duplicados ni resuelve la investigación:
+
+```bash
+python3 - <<'PY'
+import json
+from pathlib import Path
+filas = [json.loads(linea) for linea in Path('04-siem-ir/eventos.jsonl').read_text(encoding='utf-8').splitlines() if linea.strip()]
+print('Fuentes:', sorted({fila['source'] for fila in filas}))
+print('Tipos:', sorted({fila['event_type'] for fila in filas}))
+print('Campos:', sorted({campo for fila in filas for campo in fila}))
+PY
+```
+
+Misiones independientes
+
+A. Evaluá entregas repetidas y explicá tu criterio para evitar dobles conteos. Conservá registros brutos y justificá cualquier deduplicación.
+B. Construí una cronología con tiempo del evento y llegada. Señalá qué cambia si ordenás por ingest_ts en lugar de ts.
+C. Relacioná la señal de correo con eventos de red, archivos y autenticación usando las claves disponibles. Indicá dónde hay una relación fuerte y dónde sólo cercanía temporal.
+D. Investigá sesiones y recursos consultados. Diferenciá un acceso remoto observado de una identidad o intención confirmada. No equipares not_recorded con ausencia de MFA.
+E. Revisá los cambios de configuración por separado y contrastalos con el ticket. No fuerces todos los hallazgos a una única historia si los datos no permiten vincularlos.
+F. Diseñá una regla “varios fallos seguidos de éxito para la misma cuenta/origen en una ventana”. Elegí umbral, ventana temporal, campos, exclusiones y tratamiento de duplicados. Probala contra el conjunto y documentá candidatos y limitaciones; no hay un umbral único que debas adivinar.
+G. Buscá un ejemplo de actividad compatible con uso habitual o mantenimiento. Explicá qué contexto reduce sospecha sin convertirlo en prueba absoluta.
+H. Proponé un plan de respuesta con responsables, evidencias a preservar, condiciones para contener y pasos de recuperación. Todas las acciones son propuestas: no se deshabilita ni bloquea ninguna cuenta o IP real.
+I. Entregá un informe de 500 a 800 palabras con resumen para una persona no técnica, cronología, hechos, hipótesis alternativas, alcance, confianza, acciones y evidencia faltante. Adjuntá las consultas o procedimientos que otro analista pueda repetir.
+
+Preguntas de comprensión
+
+¿Cuándo tenés un evento, una alerta o un incidente? ¿Por qué duplicados y retrasos afectan detecciones? ¿Qué necesitás para afirmar captura de credenciales o exfiltración? ¿Qué evidencia separa una acción autorizada de un uso indebido de una cuenta válida? ¿Por qué no atribuir por una IP? ¿Qué puede aportar un SIEM real que no aporta tu consulta local?
+
+Errores frecuentes
+
+Contar eventos sin entender su esquema; confundir hora de llegada y de ocurrencia; deducir contenido del POST por su tamaño; llamar malware a un texto adjunto; usar ausencia de un campo como una respuesta; presentar el informe como un ataque confirmado sin contrastar alternativas; describir una regla escrita como si estuviera desplegada.
+
+Entrega y evaluación, 10 puntos
+
+- 2: búsquedas y conteos reproducibles con manejo de duplicados/tiempo.
+- 2: correlación explícita y rastreable hasta eventos y archivos.
+- 2: regla definida y evaluada con falsos positivos y límites.
+- 2: respuesta proporcional, preservación y responsables.
+- 2: informe claro que distingue hechos, hipótesis y carencias.
+
+CUÁNDO AVANZAR Y QUÉ SIGUE PENDIENTE PARA BTL1
+
+Como criterio interno de tutoría, avanzamos cuando cada práctico alcanza al menos 8/10 y podés explicar las decisiones sin una solución a la vista. No es un corte oficial del examen. Un error conceptual importante se corrige y se vuelve a evaluar con datos equivalentes aunque el promedio sea alto.
+
+Práctica Windows y artefactos nativos — PENDIENTE hasta ejecutarla
+
+Kali sirve para análisis, pero no sustituye una sesión con Windows y sus formatos nativos. Usá una VM Windows propia con licencia/evaluación válida y snapshot, o el laboratorio Windows oficial de BTL1 si ya tenés acceso. No hace falta montar Active Directory antes de dominar lo básico.
+
+Tareas a realizar en esa práctica: generar actividad benigna controlada, guardar el horario y zona, localizar eventos reales en Event Viewer, exportar una selección a EVTX, volver a abrirla y explicar sus campos. Para un 4624, distinguir cuenta, equipo, tipo de inicio y claves de correlación según la documentación de Microsoft. No dar por producido un evento sólo por ejecutar una acción: depende de auditoría y contexto.
+
+Después, trabajar una adquisición o conjunto de artefactos nativos autorizado del curso con la herramienta indicada allí: preservar, verificar hashes, buscar actividad y expresar límites. Deben incluirse artefactos que esta carpeta NO ofrece, por ejemplo datos de navegador nativos, registro/artefactos Windows y, cuando el módulo correspondiente lo pida, disco o memoria. No se declara superada esta parte con los CSV sintéticos. Criterio de salida: informe y evidencia sobre formatos reales, repetibles desde la copia preservada.
+
+SIEM real — PENDIENTE hasta ejecutarlo
+
+La opción directa de alineación es el laboratorio SIEM de BTL1 al que el alumno tenga acceso. En una plataforma real, practicar ingesta/autorización del conjunto de estudio, comprobar el tiempo, reconocer sourcetype/esquema, buscar, correlacionar, definir una detección de práctica y registrar cómo se revisaría la alerta. No se instalan servicios ni se compra acceso con este paquete.
+
+Blue Team Labs Online, plataforma del mismo proveedor, ofrece retos descargables y laboratorios según el acceso disponible. Elegí una investigación apropiada después de dominar estas bases; es una plataforma de práctica, no reemplaza por sí sola enseñar las herramientas. Fuente: https://blueteamlabs.online/ .
+
+El repositorio oficial Splunk BOTS v3 es otra posibilidad para un entorno de investigación posterior: https://github.com/splunk/botsv3 . Está preindexado y sus instrucciones dependen de versiones antiguas y complementos específicos. Compatibilidad y preparación quedan pendientes; no instales versiones antiguas en tu equipo habitual para seguirlo automáticamente. No se descargó ni ejecutó ese conjunto en este trabajo.
+
+Evaluación integrada — PENDIENTE hasta que la hagas
+
+Después de corregir estos prácticos, se prepara otro caso con datos nuevos y sin pistas. Tendrás que elegir herramientas, manejar tiempos, investigar y entregar evidencia por tu cuenta. El tutor puede corregir al terminar; la preparación con ayuda no acredita todavía autonomía. Para un examen real se respetan sus reglas vigentes de recursos y asistencia.
+
+REGISTRO DE PROGRESO
+
+Actualizá progreso.csv con fecha, evidencia, puntaje, dudas y siguiente paso. Ese archivo es un registro editable y está excluido del manifiesto de originales; regenerar el paquete conserva el registro que ya exista. Al retomar una clase, el tutor revisa este registro y el último intento antes de aumentar la dificultad. “Material listo” y “competencia demostrada” son estados distintos: en esta entrega los prácticos están preparados y tu ejecución está pendiente.
+
+Las referencias y el alcance de verificación están en fuentes.txt. Las plantillas no incluyen conclusiones ni respuestas esperadas.

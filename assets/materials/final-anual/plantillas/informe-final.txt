@@ -1,0 +1,35 @@
+INFORME DEL FINAL INTEGRADOR ANUAL
+
+Nombre o alias:
+Fechas y horas de trabajo:
+Entornos reales utilizados: Windows / Linux / SQL / otros.
+Qué hice sin ayuda y en qué pedí una pista:
+
+RESUMEN EJECUTIVO
+Problemas demostrados, impacto posible y decisiones propuestas, en hasta 200 palabras.
+
+ESTACIONES
+Para cada estación: preguntas, respuesta propia, evidencia con ruta o ID, interpretación y límites.
+
+CRONOLOGÍA
+UTC / origen / ID / hecho observable / relación propuesta / nivel de confianza.
+
+HECHOS E HIPÓTESIS
+Hecho / evidencia / hipótesis alternativa / prueba que falta.
+
+PLAN DE ACCIÓN
+Prioridad / acción propuesta / responsable con autoridad / justificación / validación posterior.
+
+EJECUCIÓN REAL
+Sistema / tarea / objeto propio utilizado / resultado / evidencia sanitizada / estado final.
+No convertir datos sintéticos en una afirmación de ejecución en el equipo.
+
+AUTOEVALUACIÓN
+Puntos propuestos por estación y evidencia para cada criterio.
+Qué dominio necesita una clase correctiva.
+
+DEFENSA ORAL
+Preguntas del tutor y resumen de mi explicación.
+
+ANEXOS
+Consultas SQL, tablas propias, comandos relevantes y referencias. No contraseñas, claves ni capturas de datos privados.

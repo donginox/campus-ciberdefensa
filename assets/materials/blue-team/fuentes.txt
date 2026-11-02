@@ -1,0 +1,41 @@
+REFERENCIAS Y ESTADO DE VERIFICACIÓN
+Consulta: 30 de octubre de 2026.
+
+1. BTL1 del proveedor
+Entrada solicitada: https://www.securityblue.team/certifications/blue-team-level-1
+Redirección observada: https://www.centri.org/certifications/blue-team-level-1
+Página leída. Se verificaron las áreas generales, la presencia de herramientas Windows/Splunk y que la evaluación práctica no se reemplaza con un conjunto de registros. La FAQ consultada describe laboratorios oficiales y recomienda completarlos. Esta guía sólo usa esa alineación general; sus escenarios son propios.
+
+2. Blue Team Labs Online
+https://blueteamlabs.online/
+Página leída. Se verificó que el proveedor ofrece desafíos descargables y laboratorios de investigación, con accesos distintos. No se creó cuenta, compró acceso, descargó muestra ni ejecutó un laboratorio externo.
+
+3. Splunk BOTS v3
+https://github.com/splunk/botsv3
+README oficial leído. Se verificó que el conjunto se distribuye preindexado y declara versiones específicas antiguas de software/complementos. Se ofrece como extensión pendiente, no como instalación ya preparada ni como recomendación de desplegar esas versiones sin adaptar el entorno.
+
+4. SPF
+https://www.rfc-editor.org/rfc/rfc7208
+RFC de base y su estado leídos. Se usa para la distinción entre autorización de identidades SMTP y contenido del pedido. No se implementó un verificador SPF ni se consultó DNS.
+
+5. DKIM
+https://www.rfc-editor.org/rfc/rfc6376
+RFC de base y su estado leídos. Se usa para explicar la asociación de firma y dominio. No se generaron firmas DKIM válidas: los Authentication-Results de los mensajes son datos ficticios declarados en los X-Lab-*.
+
+6. DMARC
+https://www.rfc-editor.org/rfc/rfc9989
+Documento leído como referencia actual de DMARC. RFC 7489 aparece obsoleto y remite a RFC 9989/9990/9991; no se presenta 7489 como especificación vigente. En este nivel se trabaja interpretación de alineación, no implementación del estándar.
+
+7. Microsoft, evento 4624
+https://learn.microsoft.com/en-us/previous-versions/windows/it-pro/windows-10/security/threat-protection/auditing/event-4624
+Resultado oficial localizado y contenido de campos consultado. La URL moderna inicial devolvió error; se conserva la ruta oficial de documentación de versiones anteriores. Se usa para diseñar la extensión Windows pendiente. Ningún JSON de este paquete es EVTX ni equivale a un 4624 real.
+
+No se copiaron apuntes del campus, materiales extensos del proveedor ni preguntas de examen. No se ofrecen respuestas de certificación.
+
+VERIFICACIÓN DEL MATERIAL LOCAL
+
+Los correos se generaron como MIME usando email de Python estándar y serialización SMTP con finales de línea CRLF. Se revisa parseo, presencia de campos, igualdad del adjunto, coherencia de tiempos y resultados de autenticación declarados sintéticos.
+
+Los CSV/JSON/JSONL se validan al generar el paquete. Los hashes del manifiesto se contrastan con bytes reales. Las referencias de mensaje, archivo, tiempo, sesión y recurso se comprueban entre prácticos. Los dominios e IP se limitan a contexto ficticio, .test, rangos privados y bloques de documentación.
+
+Este control verifica consistencia del conjunto de estudio; no demuestra que el alumno haya resuelto las misiones. Las herramientas de Kali, los EVTX, las adquisiciones nativas y el SIEM real todavía no fueron ejecutados por el alumno.

@@ -1,0 +1,7 @@
+tipo,valor,contexto
+dominio_institucional,aurora.test,Institucion ficticia; autenticar dominio no prueba legitimidad del pedido
+portal_esperado,https://campus.aurora.test,Portal habitual del escenario
+gateway_confiable,mailgw.aurora.test,En este ejercicio representa el limite de confianza del receptor
+proveedor_conocido,proveedor.test,Proveedor ficticio registrado; cambios de pago requieren verificacion independiente
+contacto_proveedor_registrado,compras@proveedor.test,El directorio no registra gestion-pagos@proveedor.test
+usuario,lucia@aurora.test,Cuenta ficticia de estudiante y asistente de administracion

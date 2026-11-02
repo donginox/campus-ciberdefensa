@@ -1,0 +1,25 @@
+Return-Path: <compras@proveedor.test>
+Received: from filtro.aurora.test (filtro.aurora.test [10.60.0.6]) by
+ mailgw.aurora.test with ESMTP id AUR003; Wed, 28 Oct 2026 09:07:04 +0000
+Received: from smtp.proveedor.test (smtp.proveedor.test [203.0.113.35]) by
+ filtro.aurora.test with ESMTP id FIL003; Wed, 28 Oct 2026 09:07:02 +0000
+Authentication-Results: mailgw.aurora.test; spf=pass
+ smtp.mailfrom=proveedor.test; dkim=pass header.d=proveedor.test; dmarc=pass
+ header.from=proveedor.test
+X-Lab-Synthetic: yes; all identities and authentication results are invented
+X-Lab-DKIM-Note: Gateway results are synthetic; no verifiable signature or
+ real DNS key is supplied
+Date: Wed, 28 Oct 2026 09:07:00 +0000
+From: Compras Proveedor <compras@proveedor.test>
+Reply-To: gestion-pagos@proveedor.test
+To: Lucia Estudiante <lucia@aurora.test>
+Subject: Cambio urgente de instrucciones de pago
+Message-ID: <AUR003.20261028@laboratorio.test>
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: quoted-printable
+MIME-Version: 1.0
+
+Hola Lucia. Necesitamos que cambies el destino del pago de la orden OC-DEMO-4=
+2 a DEMO-CUENTA-NO-REAL hoy mismo. No llames al contacto habitual porque esta=
+ ocupado. Respondeme por este medio. Datos ficticios: no existe una cuenta ba=
+ncaria real ni debe hacerse pago alguno.

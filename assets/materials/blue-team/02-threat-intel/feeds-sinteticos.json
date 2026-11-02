@@ -1,0 +1,72 @@
+{
+  "synthetic": true,
+  "as_of": "2026-10-28T10:00:00Z",
+  "nota": "Fuentes ficticias offline. No representan reputacion real ni autorizan consultas externas. confidence es la declaracion de la fuente, no una probabilidad calibrada.",
+  "reports": [
+    {
+      "id": "CTI-A",
+      "source": "Boletin Alfa ficticio",
+      "source_origin": "RPT-ORIGEN-1",
+      "published": "2026-10-27T16:00:00Z",
+      "first_seen": "2026-10-25T10:00:00Z",
+      "last_seen": "2026-10-27T15:40:00Z",
+      "type": "domain",
+      "value": "verificacion-cuenta.test",
+      "assessment": "reportado como infraestructura de recoleccion de credenciales en una simulacion",
+      "confidence": 80,
+      "reference": "https://inteligencia-lab.test/reportes/RPT-ORIGEN-1"
+    },
+    {
+      "id": "CTI-B",
+      "source": "Agregador Beta ficticio",
+      "source_origin": "RPT-ORIGEN-1",
+      "published": "2026-10-27T18:00:00Z",
+      "first_seen": "2026-10-25T10:00:00Z",
+      "last_seen": "2026-10-27T15:40:00Z",
+      "type": "domain",
+      "value": "verificacion-cuenta.test",
+      "assessment": "republicacion de CTI-A; sin observacion independiente",
+      "confidence": 90,
+      "reference": "https://agregador-lab.test/ficha/201"
+    },
+    {
+      "id": "CTI-C",
+      "source": "Inventario de hosting ficticio",
+      "source_origin": "HOST-SNAP-77",
+      "published": "2026-10-28T08:00:00Z",
+      "first_seen": "2026-10-28T08:00:00Z",
+      "last_seen": "2026-10-28T08:00:00Z",
+      "type": "ipv4",
+      "value": "198.51.100.77",
+      "assessment": "hosting compartido con verificacion-cuenta.test y revista-comunitaria.test; no atribuye control comun",
+      "confidence": 70,
+      "reference": "https://hosting-lab.test/snap/77"
+    },
+    {
+      "id": "CTI-D",
+      "source": "Cache antigua ficticia",
+      "source_origin": "CACHE-ANT-4",
+      "published": "2026-04-10T00:00:00Z",
+      "first_seen": "2026-04-01T00:00:00Z",
+      "last_seen": "2026-04-09T00:00:00Z",
+      "type": "ipv4",
+      "value": "203.0.113.44",
+      "assessment": "salida compartida de un proveedor VPN del escenario en esa fecha; vigencia no confirmada",
+      "confidence": 60,
+      "reference": "https://cache-lab.test/vpn/44"
+    },
+    {
+      "id": "CTI-E",
+      "source": "Catalogo de hashes ficticio",
+      "source_origin": "HASH-SNAP-1",
+      "published": "2026-10-28T09:30:00Z",
+      "first_seen": "2026-10-28T09:30:00Z",
+      "last_seen": "2026-10-28T09:30:00Z",
+      "type": "sha256",
+      "value": "973ce02abde830ccf9d9a04389b41ed438099bc19a16ed08bdb3cd424aa4c776",
+      "assessment": "sin clasificacion disponible; ausencia de datos no equivale a benigno",
+      "confidence": 0,
+      "reference": "https://hashes-lab.test/ficha/1"
+    }
+  ]
+}

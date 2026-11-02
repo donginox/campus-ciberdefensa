@@ -1,0 +1,21 @@
+REGISTRO DE MANEJO DE MATERIAL DIDÁCTICO
+
+Caso declarado:
+Analista:
+Fecha/hora real y zona de recepción:
+Origen del paquete:
+Alcance de la colección y límites:
+Referencia de integridad recibida:
+Verificación inicial y resultado:
+Ubicación preservada:
+Ubicación de copia de análisis:
+
+Fecha/hora real | Persona | Acción | Archivo/origen | Destino | Motivo | Hash o referencia
+[Completar cada operación relevante]
+
+Herramientas y versiones:
+Tiempos del escenario frente a tiempos del anfitrión:
+Verificación final de originales y resultado:
+Conclusiones y límites:
+
+Este formulario introduce documentación del manejo. No convierte una colección sintética en evidencia judicial ni reemplaza procedimientos de una organización.

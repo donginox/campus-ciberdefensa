@@ -1,0 +1,17 @@
+CONTEXTO DEL CASO SINTÉTICO W5
+
+Los registros son datos didácticos creados para el ejercicio. No fueron extraídos de Windows y no constituyen un archivo EVTX. Cada línea JSON contiene synthetic=true.
+
+Organización ficticia: Aula Técnica Demo.
+Servidor de aplicación y autenticación del escenario: SRV-AULA-01.
+Estación de trabajo autorizada de la cuenta alumna.demo: WS-AULA-01, 10.24.0.21.
+Estación de soporte: WS-SOPORTE-01, 10.24.0.8.
+Cuenta soporte.demo: integrante del equipo de soporte ficticio.
+Cuenta alumna.demo: cuenta de práctica de una alumna ficticia.
+La cuenta soporte.demo tiene una ventana de revisión aprobada el 28/10/2026 entre 09:10:00Z y 09:20:00Z para observar procesos del servidor; no autoriza otras modificaciones.
+
+Todos los timestamps están en UTC y la Z conserva esa zona. Los eventos normalizados representan solamente campos elegidos del escenario; no incluyen todos los campos que tendrían los eventos nativos. Las IP 203.0.113.0/24 pertenecen a rangos usados en documentación; no hay que conectarse a ellas.
+
+No se conoce si la usuaria alumna.demo estaba usando una red externa autorizada. No se incluyeron datos de MFA, contenido de archivos exportados, inventario completo de sesiones ni validación del dispositivo remoto. Tu informe debe distinguir hechos, hipótesis y preguntas abiertas.
+
+El campo session_id es un identificador de correlación propio del conjunto normalizado, no una transcripción literal universal del evento Windows. Un valor null no debe tratarse como prueba de que no existió una sesión.

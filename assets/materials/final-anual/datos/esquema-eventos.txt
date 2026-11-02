@@ -1,0 +1,13 @@
+ESQUEMA DE LOS REGISTROS SINTÉTICOS
+
+event_id: identificador asignado en el origen. El colector puede recibir el mismo registro más de una vez.
+event_time: momento declarado del evento, en UTC.
+ingest_time: momento declarado de recepción en el colector, en UTC; puede diferir del momento del evento.
+host y source: equipo y origen lógico del dato.
+action/outcome: operación y resultado según ese sistema.
+request_id: referencia de una solicitud; session_id: sesión lógica del portal; auth_id/export_id/change_id: enlaces a la copia SQL o a cambios.txt.
+Campo ausente: no registrado en esta colección. No lo conviertas automáticamente en falso, cero o no ocurrido.
+
+El ID de una sesión del portal no es el Logon ID de Windows. No se declara una tabla que permita igualarlos. Una IP identifica un origen registrado, no a una persona. status=200 o success indica la respuesta del sistema, no que el uso estuviera autorizado por el responsable del negocio.
+
+Los dominios .test y las IP 203.0.113.0/24 son datos de documentación. No hay que resolverlos ni contactarlos. Los rangos privados 10.60.0.0/16 pertenecen solo al escenario y no autorizan pruebas sobre una red real con esas direcciones.

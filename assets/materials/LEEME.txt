@@ -1,0 +1,18 @@
+EMPEZÁ ACÁ
+
+Abrí indice.html en un navegador. Funciona sin conexión salvo los enlaces a materiales externos.
+El plan, la primera clase y cada cuaderno también están en texto plano.
+
+Orden: plan anual; teoría y comparación de sistemas; prácticos Windows y Linux; resumen propio; final integrador; preparación específica de certificaciones.
+Primero explicá el recorrido de una aplicación Windows que consulta un servidor Linux para identificar dudas. Las soluciones de los retos no están incluidas.
+
+El paquete contiene una guía teórica anual, seis prácticos Windows, los prácticos anteriores, un final integrador con datos listos y un inventario verificable del campus con lecturas y pendientes.
+La auditoría integral del campus sigue parcial: no confundas un título inventariado con un archivo leído.
+Tampoco es una acreditación de que ya estés preparado para rendir cinco exámenes.
+
+progreso.json empieza sin calificaciones ni prácticas aprobadas. Se actualiza con tus evidencias.
+dns_local.py es un helper didáctico de Python para loopback; se usa al llegar a redes.
+Los datos de blue-team son ficticios. No son registros de tu universidad ni de tu equipo.
+
+El montaje de Kali, VMs, capturas y plataformas externas se verifica al realizar cada ejercicio.
+No hay compras, cuentas creadas ni recordatorios automáticos asociados a este paquete.

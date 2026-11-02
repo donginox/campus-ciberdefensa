@@ -1,0 +1,8 @@
+orden,origen,destino,protocolo,puerto_destino,accion,proposito_declarado
+10,10.60.10.0/26,10.60.20.20/32,TCP,443,ALLOW,acceso al portal
+20,10.60.10.0/26,10.60.30.10/32,UDP,53,ALLOW,consultas DNS
+21,10.60.10.0/26,10.60.30.10/32,TCP,53,ALLOW,DNS por TCP
+30,10.60.20.20/32,10.60.20.21/32,TCP,5432,ALLOW,aplicacion a base de datos
+40,10.60.10.25/32,10.60.20.20/32,TCP,22,DENY,sin administracion SSH desde ese puesto
+50,10.60.10.0/26,10.60.20.0/27,ANY,*,DENY,resto del acceso desde usuarios a aplicaciones
+99,0.0.0.0/0,0.0.0.0/0,ANY,*,DENY,politica por defecto

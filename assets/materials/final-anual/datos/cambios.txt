@@ -1,0 +1,22 @@
+REFERENCIAS OPERATIVAS SINTÉTICAS
+
+CHG-040
+Ventana: 2026-11-16T08:50:00Z a 2026-11-16T09:10:00Z.
+Equipo: WS-LUCIA. Solicitante: soporte.
+Acción autorizada: revisar el perfil de red del puesto a raíz de un reporte de conectividad y aplicar una corrección documentada, si se confirma el desvío respecto del inventario.
+Condición de aceptación: acceso al portal y registro del valor anterior/nuevo por el operador.
+La colección recibida no incluye la ficha con los valores anterior/nuevo ni la aceptación firmada del usuario.
+
+CHG-041
+Ventana: 2026-11-16T10:00:00Z a 2026-11-16T10:15:00Z.
+Equipo: PORTAL01. Solicitante: soporte.
+Cuenta técnica prevista: svc_deploy.
+Acción autorizada: actualizar la aplicación y reiniciar portal-web.
+Condición de aceptación: comprobación de salud y prueba de función del portal.
+El ticket aprueba una ventana; no certifica por sí mismo los binarios instalados ni la ausencia de otros cambios.
+
+SOL-101
+Lucía pidió consultar sus inscripciones propias. La copia de la planilla contiene la finalidad declarada; no se adjuntó una política que determine cuántos registros corresponde exactamente exportar.
+
+AUD-11
+Se autorizó una muestra de auditoría desde ADMIN01 por la cuenta auditor durante la mañana. El encargo pide documentar la consulta y el destino de la copia. No se adjuntó una constancia de recepción del archivo exportado.

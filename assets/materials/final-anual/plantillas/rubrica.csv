@@ -1,0 +1,8 @@
+estacion,maximo,minimo,teoria_maxima,ejecucion_maxima,ejecucion_obligatoria
+E1 sistemas,14,7,6,8,Windows y Linux propios
+E2 Windows,18,9,8,10,carpeta temporal NTFS y evento local de lectura
+E3 redes,16,8,10,6,servicio HTTP propio y cliente
+E4 investigacion,14,7,6,8,consulta reproducible sobre datos locales
+E5 datos y SQL,16,8,6,10,base local nueva con consultas y ensayo transaccional sobre copia
+E6 programacion,12,6,8,4,traza y pruebas de escritorio reproducibles
+E7 gestion y recuperacion,10,5,7,3,restauracion de copia de un archivo ficticio

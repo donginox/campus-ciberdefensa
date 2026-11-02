@@ -1,0 +1,4 @@
+Todos los eventos son sinteticos. ts=tiempo del evento UTC; ingest_ts=tiempo de llegada UTC; event_id=identificador del evento original (una entrega repetida conserva el identificador). source identifica el origen simulado; endpoint_sim y dns_sim NO son Sysmon ni EVTX ni PCAP.
+Los campos dependen del evento; ausencia no equivale a false ni cero. bytes_out/bytes_in del proxy se refieren al cliente. bytes en export_report es el tamano del recurso del escenario. status HTTP no identifica intencion. El proxy simula visibilidad de metadatos HTTPS de una pasarela; no aporta cuerpo ni claves TLS.
+MFA not_recorded significa que este dataset NO informa el resultado; no demuestra ausencia ni exito de MFA. Las sesiones son de la aplicacion del caso, no LogonID de Windows.
+No se proveyeron un SIEM, reglas desplegadas, captura de red, malware, credenciales, datos bancarios ni informacion de personas reales.

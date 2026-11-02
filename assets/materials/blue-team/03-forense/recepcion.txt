@@ -1,0 +1,7 @@
+Caso AUR-028. Coleccion LOGICA SINTETICA de archivos atribuidos a WS-LUCIA y PORTAL01.
+Momento de coleccion del escenario: 2026-10-28T10:00:00Z.
+Momento de creacion del material didactico: 2026-10-30.
+No es una imagen forense ni evidencia obtenida de equipos reales. No incluye espacio no asignado, MFT, registro Windows, EVTX, memoria ni base nativa de navegador.
+Los mtime se fijaron como datos del escenario. Al descomprimir o copiar, pueden cambiar. Para razonar sobre el escenario usa el manifiesto; para probar integridad usa hashes y bytes. Los tiempos de creacion/ctime/atime del anfitrion NO son evidencia del caso.
+El archivo historial-sintetico.csv es una tabla creada para el ejercicio, NO una exportacion real ni una base History de un navegador.
+Copiar originales/ a una carpeta propia de analisis antes de trabajar. No editar originales/ ni los manifiestos.

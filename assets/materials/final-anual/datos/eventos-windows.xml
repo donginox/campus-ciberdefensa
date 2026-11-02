@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<EventosSinteticos aviso="XML didactico, no archivo EVTX y no evidencia real">
+  <Event xmlns="http://schemas.microsoft.com/win/2004/08/events/event">
+    <System>
+      <Provider Name="Microsoft-Windows-Security-Auditing" />
+      <EventID>4624</EventID><Version>2</Version><Level>0</Level>
+      <TimeCreated SystemTime="2026-11-16T08:45:00Z" />
+      <EventRecordID>3001</EventRecordID><Channel>Security</Channel><Computer>WS-LUCIA.aula.test</Computer>
+    </System>
+    <EventData>
+      <Data Name="TargetUserName">lucia</Data><Data Name="TargetDomainName">AULA</Data>
+      <Data Name="TargetLogonId">0x41a0</Data><Data Name="LogonType">2</Data>
+      <Data Name="IpAddress">127.0.0.1</Data><Data Name="IpPort">0</Data>
+      <Data Name="AuthenticationPackageName">Negotiate</Data>
+    </EventData>
+  </Event>
+  <Event xmlns="http://schemas.microsoft.com/win/2004/08/events/event">
+    <System>
+      <Provider Name="Microsoft-Windows-Security-Auditing" />
+      <EventID>4625</EventID><Version>0</Version><Level>0</Level>
+      <TimeCreated SystemTime="2026-11-16T08:58:00Z" />
+      <EventRecordID>3002</EventRecordID><Channel>Security</Channel><Computer>WS-LUCIA.aula.test</Computer>
+    </System>
+    <EventData>
+      <Data Name="TargetUserName">soporte</Data><Data Name="TargetDomainName">AULA</Data>
+      <Data Name="Status">0xC000006D</Data><Data Name="SubStatus">0xC000006A</Data>
+      <Data Name="LogonType">3</Data><Data Name="WorkstationName">ADMIN01</Data>
+      <Data Name="IpAddress">10.60.30.8</Data><Data Name="IpPort">51008</Data>
+      <Data Name="AuthenticationPackageName">Negotiate</Data>
+    </EventData>
+  </Event>
+</EventosSinteticos>

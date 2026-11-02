@@ -1,0 +1,56 @@
+Return-Path: <rebotes@notifica-seguridad.test>
+Received: from filtro.aurora.test (filtro.aurora.test [10.60.0.6]) by
+ mailgw.aurora.test with ESMTP id AUR001; Wed, 28 Oct 2026 09:05:04 +0000
+Received: from smtp.notifica-seguridad.test (smtp.notifica-seguridad.test
+ [203.0.113.25]) by filtro.aurora.test with ESMTP id FIL001; Wed, 28 Oct 2026
+ 09:05:02 +0000
+Authentication-Results: mailgw.aurora.test; spf=fail
+ smtp.mailfrom=notifica-seguridad.test; dkim=none; dmarc=fail
+ header.from=aurora.test
+X-Lab-Synthetic: yes; all identities and authentication results are invented
+X-Lab-DKIM-Note: Gateway results are synthetic; no verifiable signature or
+ real DNS key is supplied
+Date: Wed, 28 Oct 2026 09:05:00 +0000
+From: Mesa de Ayuda Aurora <avisos@aurora.test>
+Reply-To: soporte@verificacion-cuenta.test
+To: Lucia Estudiante <lucia@aurora.test>
+Subject: Validacion pendiente de tu acceso al campus
+Message-ID: <AUR001.20261028@laboratorio.test>
+MIME-Version: 1.0
+Content-Type: multipart/mixed; boundary="===============8864453372791456830=="
+
+--===============8864453372791456830==
+Content-Type: multipart/alternative;
+ boundary="===============5884323712501900729=="
+
+--===============5884323712501900729==
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: quoted-printable
+
+Hola Lucia. Tu acceso quedara suspendido hoy si no confirmas los datos de tu =
+cuenta. Ingresa a https://verificacion-cuenta.test/confirmar?rid=3DAUR028 ant=
+es de las 10:00 UTC. El mensaje es completamente ficticio. No ingreses creden=
+ciales reales.
+
+--===============5884323712501900729==
+Content-Type: text/html; charset="utf-8"
+Content-Transfer-Encoding: quoted-printable
+MIME-Version: 1.0
+
+<html><body><p>Hola Lucia. Tu acceso quedara suspendido hoy.</p><p><a href=3D=
+"https://verificacion-cuenta.test/confirmar?rid=3DAUR028">https://campus.auro=
+ra.test</a></p><p>Material sintetico de laboratorio.</p></body></html>
+
+--===============5884323712501900729==--
+
+--===============8864453372791456830==
+Content-Type: text/plain
+Content-Transfer-Encoding: base64
+Content-Disposition: attachment; filename="aviso-campus.txt"
+MIME-Version: 1.0
+
+TUFURVJJQUwgU0lOVEVUSUNPIERFIFBSQUNUSUNBClJlZmVyZW5jaWE6IEFVUi0wMjgKRXN0ZSBh
+cmNoaXZvIGVzIHRleHRvIGlub2ZlbnNpdm8geSBubyBjb250aWVuZSBpbnN0cnVjY2lvbmVzIGVq
+ZWN1dGFibGVzLgo=
+
+--===============8864453372791456830==--
