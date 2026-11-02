@@ -47,3 +47,13 @@ window.CompetencyHub.create({data,getStudy,getLabs,openLesson,openMission,naviga
 - Root: CI/buildconfig, main/preload/security/actions, app/indexintegration, runtime manifests/contentgeneration, validación y publicación.
 
 Nodo/JS TDD para comportamiento; Python unittest para servicio y smoke real en CI. Tests previos102 no se quitan. No Docker instalado en host: declarar prueba Docker real solo si ocurre en CI o equipo con motor. No navegador/servidor como bypass de restricción anterior file; los servidores aquí son objetivos propios de laboratorio, no un atajo de inspección de esa página.
+
+## Corrección de topología después de la prueba real
+
+La primera ejecución Docker de CI confirmó que Docker no publica puertos de contenedores conectados exclusivamente a una red internal: no tienen una red de gateway. La documentación del maintainer está en https://github.com/moby/moby/discussions/53256. Esta sección reemplaza las referencias anteriores a publish directamente en el objetivo.
+
+Cada receta tiene un objetivo sin puertos publicados, conectado solamente a su red bridge interna. Un proxy propio de la misma imagen incluida conecta esa red a una segunda bridge de acceso. Solo el proxy publica `127.0.0.1::8081`. El objetivo conserva el aislamiento de salida; el proxy tiene una ruta de salida pero su código únicamente reenvía HTTP al nombre/puerto fijos del objetivo validado. No acepta URL de destino, CONNECT, upgrades, redirecciones de backend ni configuraciones del alumno. El host no cambia firewall ni rutas.
+
+Proxy: `CAMPUS_LAB_MODE=proxy`, `CAMPUS_SEED=1`, `CAMPUS_TARGET_NAME=target-<24hex SHA256 del nombre del objetivo>`, `CAMPUS_TARGET_PORT=3000|8080`, `CAMPUS_TARGET_MODE=juice-shop|soc|database`. Imagen Config.ExposedPorts incluye 8080/tcp y8081/tcp; el objetivo propio escucha8080, proxy8081. `/_campus_proxy/health` verifica la identidad del proxy y que el backend real esté disponible. El objetivo conserva su nombre Docker anterior y añade ese alias DNS de31caracteres, porque el nombre de propiedad completo supera el límite DNS de una etiqueta. Los peers observados por el objetivo son los del proxy; siguen siendo peers HTTP reales y no actores de ataque inventados.
+
+Nombres proxy/edge: `<nombre del objetivo>-proxy` y `<nombre del objetivo>-edge`. Labels proxy añaden role=proxy, edge role=edge; internal/target conservan las labels anteriores. Proxy usa UID10001, readonly,512MiB,CPU1,PIDs128,capdropALL,nnp y cero mounts. Verificar ambos contenedores y ambas redes antes de cualquier control; internal solo puede contener sus dos IDs, edge solo el del proxy. Un recurso preproxy validado de una versión anterior permite detener/restablecer para migrar; no se adopta una red externa ni se habilita práctica insegura.

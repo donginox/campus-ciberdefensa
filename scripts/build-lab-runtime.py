@@ -69,7 +69,7 @@ def main():
     if (image.get("Os") != "linux" or image.get("Architecture") != "amd64" or
             config.get("User") != "10001:10001" or config.get("WorkingDir") != "/app" or
             config.get("Cmd") != ["python", "/app/server.py"] or config.get("Entrypoint") or
-            config.get("Volumes") or set(config.get("ExposedPorts", {})) != {"8080/tcp"}):
+            config.get("Volumes") or set(config.get("ExposedPorts", {})) != {"8080/tcp", "8081/tcp"}):
         raise ValueError("Built image configuration does not match the runtime contract")
     with tempfile.TemporaryDirectory(prefix="campus-docker-save-") as temporary:
         raw_archive = Path(temporary) / "runtime.tar"

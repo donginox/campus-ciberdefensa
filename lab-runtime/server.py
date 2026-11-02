@@ -362,10 +362,14 @@ def create_server(mode, seed, host="0.0.0.0", port=8080):
 
 
 if __name__ == "__main__":
-    server = create_server(os.environ.get("CAMPUS_LAB_MODE", "soc"), int(os.environ.get("CAMPUS_SEED", "1")))
-    try:
-        server.serve_forever()
-    except KeyboardInterrupt:
-        pass
-    finally:
-        server.server_close()
+    if os.environ.get("CAMPUS_LAB_MODE") == "proxy":
+        from proxy import serve_from_environment
+        serve_from_environment()
+    else:
+        server = create_server(os.environ.get("CAMPUS_LAB_MODE", "soc"), int(os.environ.get("CAMPUS_SEED", "1")))
+        try:
+            server.serve_forever()
+        except KeyboardInterrupt:
+            pass
+        finally:
+            server.server_close()

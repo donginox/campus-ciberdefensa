@@ -1,5 +1,6 @@
 *
 !server.py
+!proxy.py
 !dashboard.html
 !dashboard.js
 !dashboard.css

@@ -15,57 +15,7 @@ const clone = value => structuredClone(value);
 
 // Docker is external and unavailable on this host. This boundary fake models inspect
 // evidence and CLI state transitions; service requests below use actual loopback HTTP.
-function engine(publishedPort) {
-  const state = { calls: [], containers: new Map(), networks: new Map(), images: new Map(), ports: { 'soc-response': publishedPort, 'database-fundamentals': publishedPort }, loaded: false, wrongImage: false, nextId: 10 };
-  const image = { Id: IMAGE_ID, Os: 'linux', Architecture: 'amd64', RepoTags: ['campus-lab-runtime:1.0.0'], RepoDigests: [], Config: { Cmd: ['python', '/app/server.py'], Entrypoint: null, Env: ['PATH=/usr/local/bin:/usr/bin:/bin', 'PYTHON_VERSION=3.13.18', 'PYTHONDONTWRITEBYTECODE=1', 'PYTHONUNBUFFERED=1', 'CAMPUS_LAB_MODE=soc', 'CAMPUS_SEED=1'], User: '10001:10001', WorkingDir: '/app', Volumes: null, ExposedPorts: { '8080/tcp': {} } } };
-  state.runner = async (exe, argv, options) => {
-    assert.equal(exe, 'docker'); assert.equal(options.shell, false); assert.equal(options.windowsHide, true);
-    assert.equal(Object.keys(options.env).some(k => k.toUpperCase().startsWith('DOCKER_')), false);
-    state.calls.push([...argv]); let args = [...argv]; if (args[0] === '--context') args = args.slice(2);
-    const out = value => ({ stdout: JSON.stringify(value) });
-    const flag = name => args[args.indexOf(name) + 1];
-    if (args[0] === 'context' && args[1] === 'show') return { stdout: 'desktop-linux' };
-    if (args[0] === 'context' && args[1] === 'inspect') return out([{ Name: 'desktop-linux', Endpoints: { docker: { Host: 'npipe:////./pipe/dockerDesktopLinuxEngine' } } }]);
-    if (args[0] === 'version') return out({ Version: '28.5.1', Os: 'linux' });
-    if (args[0] === 'image' && args[1] === 'load') {
-      const contents = await fs.readFile(flag('--input'), 'utf8');
-      const id = { 'approved runtime archive': IMAGE_ID, 'approved runtime updated': NEXT_IMAGE_ID }[contents]; assert.ok(id, 'only test bundle bytes can load an image');
-      const loaded = { ...clone(image), Id: id };
-      if (id === NEXT_IMAGE_ID) loaded.Config.Env = loaded.Config.Env.map(e => e === 'PYTHON_VERSION=3.13.18' ? 'PYTHON_VERSION=3.13.19' : e);
-      state.images.set(id, loaded); state.loaded = true; return { stdout: 'Loaded image' };
-    }
-    if (args[0] === 'image' && args[1] === 'inspect') { const loaded = state.images.get(args[2]); if (!loaded) throw Error('not found'); return out([{ ...clone(loaded), Id: state.wrongImage ? 'sha256:' + '8'.repeat(64) : loaded.Id }]); }
-    if (['container', 'network'].includes(args[0]) && args[1] === 'ls') {
-      const name = flag('--filter').slice(6, -1).replace(/^\//, ''); const map = args[0] === 'container' ? state.containers : state.networks; const value = map.get(name);
-      return out(value ? [args[0] === 'container' ? { ID: value.Id, Names: name } : { ID: value.Id, Name: name }] : []);
-    }
-    if (['container', 'network'].includes(args[0]) && args[1] === 'inspect') {
-      const map = args[0] === 'container' ? state.containers : state.networks;
-      return out([clone([...map.values()].find(v => v.Id === args[2]))]);
-    }
-    if (args[0] === 'network' && args[1] === 'create') {
-      const labels = {}; for (let i = 0; i < args.length; i++) if (args[i] === '--label') { const [k, v] = args[++i].split('='); labels[k] = v; }
-      const network = { Id: (state.networks.size + 1).toString(16).repeat(64), Name: args.at(-1), Driver: flag('--driver'), Scope: 'local', Internal: args.includes('--internal'), EnableIPv6: false, Ingress: false, ConfigOnly: false, Options: {}, Containers: {}, Labels: labels };
-      state.networks.set(network.Name, network); return { stdout: network.Id };
-    }
-    if (args[0] === 'container' && args[1] === 'create') {
-      const source = state.images.get(args.at(-1)); assert.ok(source, 'container must use a loaded image ID'); const labels = {}; const overrides = [];
-      for (let i = 0; i < args.length; i++) { if (args[i] === '--label') { const [k, v] = args[++i].split('='); labels[k] = v; } else if (args[i] === '--env') overrides.push(args[++i]); }
-      const env = source.Config.Env.filter(e => !overrides.some(o => o.split('=')[0] === e.split('=')[0])).concat(overrides);
-      const network = state.networks.get(flag('--network')); const binding = flag('--publish').split(':');
-      const c = { Id: (state.nextId++).toString(16).padStart(64, '0'), Name: '/' + flag('--name'), Image: source.Id, Config: { ...clone(source.Config), Env: env, Image: source.Id, Labels: labels }, Mounts: [], State: { Running: false, Status: 'created', Dead: false, Paused: false, Restarting: false },
-        HostConfig: { Privileged: false, PublishAllPorts: false, AutoRemove: false, ReadonlyRootfs: args.includes('--read-only'), Memory: flag('--memory') === '512m' ? 536870912 : 0, MemorySwap: flag('--memory-swap') === '512m' ? 536870912 : 0, NanoCpus: Number(flag('--cpus')) * 1e9, PidsLimit: Number(flag('--pids-limit')), CapDrop: [flag('--cap-drop')], CapAdd: null, SecurityOpt: [flag('--security-opt')], RestartPolicy: { Name: flag('--restart'), MaximumRetryCount: 0 }, PidMode: '', IpcMode: 'private', UTSMode: '', UsernsMode: '', CgroupnsMode: 'private', Runtime: 'runc', Isolation: '', NetworkMode: network.Name, PortBindings: { [binding[2] + '/tcp']: [{ HostIp: binding[0], HostPort: binding[1] }] }, Binds: null, Mounts: null, VolumesFrom: null, Devices: [], DeviceRequests: null, DeviceCgroupRules: null, Links: null, ExtraHosts: null, Dns: [], DnsOptions: [], DnsSearch: [], GroupAdd: null, Sysctls: null, StorageOpt: null, Ulimits: null, CgroupParent: '', CpusetCpus: '', CpusetMems: '', ContainerIDFile: '', VolumeDriver: '', CpuQuota: 0, CpuPeriod: 0, CpuShares: 0, OomKillDisable: false, MemoryReservation: 0 },
-        NetworkSettings: { Ports: {}, Networks: { [network.Name]: { NetworkID: '', Aliases: null, Links: null, IPAMConfig: null, DriverOpts: null } } } };
-      state.containers.set(c.Name.slice(1), c); return { stdout: c.Id };
-    }
-    const c = [...state.containers.values()].find(v => v.Id === args.at(-1));
-    if (args[0] === 'container' && args[1] === 'start') { assert.ok(c); const n = state.networks.get(c.HostConfig.NetworkMode); c.State.Running = true; c.State.Status = 'running'; c.NetworkSettings.Ports = { '8080/tcp': [{ HostIp: '127.0.0.1', HostPort: String(state.ports[c.Config.Labels[PREFIX + 'lab']]) }] }; c.NetworkSettings.Networks[n.Name].NetworkID = n.Id; n.Containers[c.Id] = { Name: c.Name.slice(1) }; return { stdout: c.Id }; }
-    if (args[0] === 'container' && args[1] === 'stop') { assert.ok(c); c.State.Running = false; c.State.Status = 'exited'; c.NetworkSettings.Ports = {}; return { stdout: c.Id }; }
-    if (args[0] === 'container' && args[1] === 'rm') { assert.ok(c); delete state.networks.get(c.HostConfig.NetworkMode).Containers[c.Id]; state.containers.delete(c.Name.slice(1)); return { stdout: c.Id }; }
-    throw Error('Unexpected Docker operation ' + JSON.stringify(args));
-  };
-  return state;
-}
+const { createDockerEngine: engine } = require('./helpers/fake-lab-docker.cjs');
 async function fixture(t) {
   const dir = await fs.mkdtemp(path.join(os.tmpdir(), 'campus-mission-')); t.after(() => fs.rm(dir, { recursive: true, force: true }));
   const runtimeDir = path.join(dir, 'assets'); await fs.mkdir(runtimeDir);
@@ -77,6 +27,7 @@ async function fixture(t) {
     let raw = ''; for await (const chunk of req) raw += chunk; const body = raw ? JSON.parse(raw) : null; service.calls.push({ method: req.method, path: req.url, body, headers: req.headers });
     if (service.onRequest) service.onRequest(req.url);
     const send = value => { res.setHeader('Content-Type', 'application/json'); res.end(JSON.stringify(value)); };
+    if (req.url === '/_campus_proxy/health') return send(service.getProxyHealth ? service.getProxyHealth() : docker.proxyHealthByPort.get(server.address().port));
     if (service.redirects) { res.statusCode = 302; res.setHeader('Location', 'http://example.invalid/private'); return res.end(); }
     if (service.oversized) return res.end('x'.repeat(530000));
     if (req.url === '/health') { if (!service.ready) { res.statusCode = 503; return send({ error: 'starting' }); } return send({ service: 'campus-lab-runtime', protocolVersion: 1, mode: service.mode, caseId: service.caseId, ready: service.healthReady }); }
@@ -107,12 +58,18 @@ test('catalog exposes three independent recipes and rejects unknown recipe befor
 });
 test('runtime archive is verified, loaded by exact ImageID and started with isolated bounded configuration', async t => {
   const { manager, docker, service } = await fixture(t);
+  await fs.mkdir(manager.dataDir); await fs.writeFile(path.join(manager.dataDir, 'real-labs-instance.json'), JSON.stringify({ version: 1, instanceId: PROFILE }));
   const running = await manager.start(PROFILE, 'soc-response');
   assert.equal(running.state, 'running'); assert.equal(running.id, 'soc-response'); assert.equal(running.serviceHealth.caseId, 'case-1'); assert.equal(running.capabilities.replay, true); assert.equal(running.capabilities.query, false);
-  const c = [...docker.containers.values()][0]; const n = [...docker.networks.values()][0];
+  const c = docker.container; const n = docker.net; const proxy = docker.proxy;
   assert.equal(c.Config.Image, IMAGE_ID); assert.equal(c.Config.User, '10001:10001'); assert.equal(c.HostConfig.ReadonlyRootfs, true); assert.equal(c.HostConfig.Memory, 536870912); assert.equal(c.HostConfig.PidsLimit, 128); assert.equal(n.Internal, true); assert.equal(c.Config.Labels[PREFIX + 'lab'], 'soc-response'); assert.match(c.Name, /-soc-response$/); assert.match(n.Name, /-soc-response-internal$/);
+  assert.deepEqual(c.HostConfig.PortBindings, {}); assert.deepEqual(Object.keys(c.NetworkSettings.Networks), [n.Name]);
+  assert.equal(proxy.Config.Image, IMAGE_ID); assert.equal(proxy.Config.User, '10001:10001'); assert.equal(proxy.HostConfig.Memory, 536870912); assert.equal(proxy.HostConfig.PidsLimit, 128); assert.equal(proxy.HostConfig.ReadonlyRootfs, true);
+  assert.equal(docker.edge.Internal, false); assert.deepEqual(Object.keys(proxy.NetworkSettings.Networks).sort(), [n.Name, docker.edge.Name].sort()); assert.deepEqual(Object.keys(docker.edge.Containers), [proxy.Id]); assert.deepEqual(Object.keys(n.Containers).sort(), [c.Id, proxy.Id].sort());
+  assert.deepEqual(proxy.HostConfig.PortBindings, { '8081/tcp': [{ HostIp: '127.0.0.1', HostPort: '' }] });
+  assert.ok(proxy.Config.Env.includes('CAMPUS_LAB_MODE=proxy')); assert.ok(proxy.Config.Env.includes('CAMPUS_TARGET_NAME=target-40fb5066e8994674f3915660')); assert.deepEqual(c.NetworkSettings.Networks[n.Name].Aliases, ['target-40fb5066e8994674f3915660']); assert.ok(proxy.Config.Env.includes('CAMPUS_TARGET_PORT=8080')); assert.ok(proxy.Config.Env.includes('CAMPUS_TARGET_MODE=soc'));
   assert.ok(c.Config.Env.includes('CAMPUS_LAB_MODE=soc')); assert.match(c.Config.Env.find(e => e.startsWith('CAMPUS_SEED=')), /^CAMPUS_SEED=[1-9]\d*$/);
-  assert.equal(docker.calls.some(a => a.includes('pull')), false); assert.equal(service.calls[0].path, '/health');
+  assert.equal(docker.calls.some(a => a.includes('pull')), false); assert.equal(service.calls[0].path, '/_campus_proxy/health');
 });
 test('missing or altered bundled assets refuse load and creation without disabling legacy recipe catalog', async t => {
   const { manager, runtimeDir, docker } = await fixture(t);
@@ -178,7 +135,7 @@ test('contain requires a typed acknowledgement of the requested actor', async t 
   await assert.rejects(manager.contain(PROFILE, 'soc-response', 'sonda'));
 });
 test('SOC and SQLite resources stay separate and resetting one preserves the other session', async t => {
-  const soc = await fixture(t), db = await fixture(t); db.service.mode = 'database'; soc.docker.ports['database-fundamentals'] = db.serverPort;
+  const soc = await fixture(t), db = await fixture(t); db.service.mode = 'database'; soc.docker.ports['database-fundamentals'] = db.serverPort; db.service.getProxyHealth = () => soc.docker.proxyHealthByPort.get(db.serverPort);
   const { manager, docker } = soc;
   await manager.start(PROFILE, 'soc-response'); await manager.start(PROFILE, 'database-fundamentals');
   const resources = [...docker.containers.values()]; const socContainer = resources.find(c => c.Config.Labels[PREFIX + 'lab'] === 'soc-response'); const dbContainer = resources.find(c => c.Config.Labels[PREFIX + 'lab'] === 'database-fundamentals');
@@ -186,7 +143,8 @@ test('SOC and SQLite resources stay separate and resetting one preserves the oth
   const dbId = dbContainer.Id; const before = mutations(docker).length;
   assert.equal((await manager.reset(PROFILE, 'soc-response')).state, 'running'); assert.equal((await manager.status(PROFILE, 'database-fundamentals')).state, 'running');
   const changed = mutations(docker).slice(before); assert.equal(changed.some(a => a.includes(dbId)), false); assert.equal([...docker.containers.values()].find(c => c.Id === dbId).State.Running, true);
-  assert.deepEqual(Object.keys(docker.networks.get(dbContainer.HostConfig.NetworkMode).Containers), [dbId]);
+  const dbProxy = [...docker.containers.values()].find(c => c.Config.Labels[PREFIX + 'lab'] === 'database-fundamentals' && c.Config.Labels[PREFIX + 'role'] === 'proxy');
+  assert.deepEqual(Object.keys(docker.networks.get(dbContainer.HostConfig.NetworkMode).Containers).sort(), [dbId, dbProxy.Id].sort());
 });
 test('a bundled runtime update keeps verified old targets stoppable and resets only that target onto the new image', async t => {
   const { manager, docker, runtimeDir, manifest, service } = await fixture(t);
@@ -200,7 +158,7 @@ test('a bundled runtime update keeps verified old targets stoppable and resets o
   const stopped = await updated.stop(PROFILE, 'soc-response'); assert.equal(stopped.state, 'runtime_update'); assert.equal(stopped.capabilities.stop, false); assert.equal(stopped.capabilities.reset, true);
   const reset = await updated.reset(PROFILE, 'soc-response'); assert.equal(reset.state, 'running'); assert.equal(reset.imageVersion, '1.1.0');
   const replacement = [...docker.containers.values()][0]; assert.notEqual(replacement.Id, old.Id); assert.equal(replacement.Image, NEXT_IMAGE_ID); assert.ok(replacement.Config.Env.includes('PYTHON_VERSION=3.13.19'));
-  assert.equal(mutations(docker).filter(a => a.includes('rm')).length, 1);
+  assert.equal(mutations(docker).filter(a => a.includes('rm')).length, 2);
 });
 test('runtime updates never adopt an old image ID without recorded prior verification', async t => {
   const { manager, docker, runtimeDir, manifest } = await fixture(t); await manager.start(PROFILE, 'soc-response'); await upgradeBundle(runtimeDir, manifest);
@@ -223,4 +181,29 @@ test('corrupt or foreign-instance runtime history never grants recovery control'
     for (const method of ['status', 'stop', 'reset']) { const result = await manager[method](PROFILE, 'soc-response'); assert.equal(result.state, 'unsafe'); assert.equal(result.capabilities.reset, false); }
   }
   assert.equal(mutations(docker).length, before);
+});
+test('proxy or edge drift blocks the entire lab before any mutation or service request', async t => {
+  const changes = [
+    d => { d.proxy.Config.Env.push('CAMPUS_TARGET_NAME=foreign'); },
+    d => { d.proxy.HostConfig.PortBindings['8081/tcp'][0].HostIp = '0.0.0.0'; },
+    d => { d.proxy.HostConfig.ReadonlyRootfs = false; },
+    d => { d.proxy.Config.Labels[PREFIX + 'role'] = 'foreign'; },
+    d => { d.edge.Containers['f'.repeat(64)] = { Name: 'foreign' }; },
+    d => { d.net.Containers['f'.repeat(64)] = { Name: 'foreign' }; },
+    d => { d.container.NetworkSettings.Networks[d.net.Name].Aliases.push('foreign'); },
+    d => { d.container.NetworkSettings.Networks[d.edge.Name] = { NetworkID: d.edge.Id }; }
+  ];
+  for (const change of changes) {
+    const { manager, docker, runtimeDir, service } = await fixture(t); await manager.start(PROFILE, 'soc-response'); change(docker);
+    const diagnostics = [], checked = new RealLabManager({ dataDir: manager.dataDir, runtimeDir, runner: docker.runner, onDiagnostic: error => diagnostics.push(error.stack) });
+    const before = mutations(docker).length, requests = service.calls.length;
+    for (const method of ['status', 'start', 'stop', 'reset']) { const result = await checked[method](PROFILE, 'soc-response'); assert.equal(result.state, 'unsafe'); assert.ok(Object.values(result.capabilities).every(v => !v)); }
+    await assert.rejects(checked.events(PROFILE, 'soc-response')); assert.equal(mutations(docker).length, before); assert.equal(service.calls.length, requests); assert.ok(diagnostics.length >= 4); assert.ok(diagnostics.every(stack => stack.includes('real-labs.cjs')));
+  }
+});
+test('paused or dead proxy cannot publish a ready URL and dead proxy offers validated reset', async t => {
+  const { manager, docker } = await fixture(t); await manager.start(PROFILE, 'soc-response'); docker.proxy.State.Paused = true;
+  const paused = await manager.status(PROFILE, 'soc-response'); assert.equal(paused.state, 'starting'); assert.equal(paused.url, undefined); assert.equal(paused.capabilities.open, false);
+  docker.proxy.State.Paused = false; docker.proxy.State.Running = false; docker.proxy.State.Dead = true; docker.proxy.State.Status = 'dead'; docker.proxy.NetworkSettings.Ports = {};
+  const dead = await manager.status(PROFILE, 'soc-response'); assert.equal(dead.state, 'error'); assert.equal(dead.capabilities.reset, true); assert.equal(dead.capabilities.start, false); assert.equal(dead.url, undefined); assert.equal((await manager.reset(PROFILE, 'soc-response')).state, 'running');
 });

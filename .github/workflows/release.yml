@@ -10,7 +10,7 @@ permissions:
   actions: read
 concurrency:
   group: desktop-${{ github.ref }}
-  cancel-in-progress: false
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 jobs:
   lab-runtime:
     runs-on: ubuntu-24.04
@@ -22,6 +22,7 @@ jobs:
       - name: Test real HTTP and SQLite runtime
         run: |
           python3 tests/python-runtime.py -v
+          python3 tests/python-runtime-proxy.py -v
           python3 tests/python-runtime-build.py -v
       - name: Build immutable local lab archive
         run: python3 scripts/build-lab-runtime.py --version "0.1.${GITHUB_RUN_NUMBER}" --output-dir .local/lab-runtime

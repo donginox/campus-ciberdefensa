@@ -19,7 +19,7 @@ class AssetsUnavailable extends Error {}
 const IMAGE_ID = /^sha256:[a-f0-9]{64}$/;
 const CASE_ID = /^[A-Za-z0-9][A-Za-z0-9_.:-]{0,127}$/;
 const ACTORS = new Set(['sonda', 'visitante', 'operador']);
-const HTTP_PATHS = new Set(['/health', '/api/case', '/api/events', '/login', '/catalog', '/admin', '/api/query', '/api/assess', '/api/control']);
+const HTTP_PATHS = new Set(['/_campus_proxy/health', '/health', '/api/case', '/api/events', '/login', '/catalog', '/admin', '/api/query', '/api/assess', '/api/control']);
 const MAX_RESPONSE = 512 * 1024;
 function defaultRunner(exe, args, options) {
   return new Promise((resolve, reject) => execFile(exe, args, options, (error, stdout, stderr) => error ? reject(error) : resolve({ stdout, stderr })));
@@ -33,10 +33,11 @@ function port(value) { return typeof value === 'string' && /^\d{4,5}$/.test(valu
 function one(value) { requireSafe(Array.isArray(value) && value.length === 1 && value[0] && typeof value[0] === 'object'); return value[0]; }
 
 class RealLabManager {
-  constructor({ dataDir, runner = defaultRunner, platform = process.platform, runtimeDir = path.join(__dirname, '..', '.local', 'lab-runtime') }) {
-    if (typeof dataDir !== 'string' || !path.isAbsolute(dataDir) || typeof runner !== 'function' || typeof runtimeDir !== 'string' || !path.isAbsolute(runtimeDir)) throw new Error('Configuración del laboratorio inválida.');
-    this.dataDir = path.resolve(dataDir); this.runner = runner; this.platform = platform; this.runtimeDir = path.resolve(runtimeDir);
+  constructor({ dataDir, runner = defaultRunner, platform = process.platform, runtimeDir = path.join(__dirname, '..', '.local', 'lab-runtime'), onDiagnostic }) {
+    if (typeof dataDir !== 'string' || !path.isAbsolute(dataDir) || typeof runner !== 'function' || typeof runtimeDir !== 'string' || !path.isAbsolute(runtimeDir) || onDiagnostic !== undefined && typeof onDiagnostic !== 'function') throw new Error('Configuración del laboratorio inválida.');
+    this.dataDir = path.resolve(dataDir); this.runner = runner; this.platform = platform; this.runtimeDir = path.resolve(runtimeDir); this.onDiagnostic = onDiagnostic;
   }
+  _diagnostic(error) { if (error instanceof Unsafe && this.onDiagnostic) { try { this.onDiagnostic({ name: 'Unsafe', message: error.message, stack: error.stack }); } catch {} } }
   _serialize(operation) {
     const previous = queues.get(this.dataDir) || Promise.resolve();
     const next = previous.catch(() => {}).then(operation); queues.set(this.dataDir, next);
@@ -84,7 +85,9 @@ class RealLabManager {
     requireSafe(value?.version === 1 && UUID.test(value.instanceId));
     const stem = `campus-${value.instanceId}-${profile}`;
     const seed = createHash('sha256').update(`${profile}:${recipe.id}`).digest().readUInt32BE(0) % 2147483647 + 1;
-    return { container: `${stem}-${recipe.id}`, network: recipe.id === 'juice-shop' ? `${stem}-internal` : `${stem}-${recipe.id}-internal`, seed, labels: { [PREFIX + 'owner']: OWNER, [PREFIX + 'instance']: value.instanceId, [PREFIX + 'profile']: profile, [PREFIX + 'lab']: recipe.id } };
+    const labels = { [PREFIX + 'owner']: OWNER, [PREFIX + 'instance']: value.instanceId, [PREFIX + 'profile']: profile, [PREFIX + 'lab']: recipe.id };
+    const container = `${stem}-${recipe.id}`, targetDns = 'target-' + createHash('sha256').update(container).digest('hex').slice(0, 24);
+    return { container, targetDns, proxy: `${stem}-${recipe.id}-proxy`, network: recipe.id === 'juice-shop' ? `${stem}-internal` : `${stem}-${recipe.id}-internal`, edge: `${stem}-${recipe.id}-edge`, seed, labels, proxyLabels: { ...labels, [PREFIX + 'role']: 'proxy' }, edgeLabels: { ...labels, [PREFIX + 'role']: 'edge' } };
   }
   async _hash(file) {
     const hash = createHash('sha256'); let size = 0;
@@ -163,7 +166,7 @@ class RealLabManager {
   _runtimeImage(image, assets) {
     requireSafe(image.Id === assets.imageId && image.Os === 'linux' && image.Architecture === 'amd64' && image.Config);
     const c = image.Config;
-    requireSafe(equal(c.Cmd, ['python', '/app/server.py']) && c.Entrypoint === null && c.User === '10001:10001' && c.WorkingDir === '/app' && empty(c.Volumes) && equal(Object.keys(c.ExposedPorts || {}), ['8080/tcp']));
+    requireSafe(equal(c.Cmd, ['python', '/app/server.py']) && c.Entrypoint === null && c.User === '10001:10001' && c.WorkingDir === '/app' && empty(c.Volumes) && (equal(Object.keys(c.ExposedPorts || {}).sort(), ['8080/tcp', '8081/tcp']) || Boolean(assets.config) && equal(Object.keys(c.ExposedPorts || {}), ['8080/tcp'])));
     requireSafe(Array.isArray(c.Env) && c.Env.every(e => typeof e === 'string' && /^[A-Za-z_][A-Za-z0-9_]*=/.test(e)));
     const keys = c.Env.map(e => e.split('=')[0]); requireSafe(new Set(keys).size === keys.length);
     for (const value of ['PYTHONDONTWRITEBYTECODE=1', 'PYTHONUNBUFFERED=1', 'CAMPUS_LAB_MODE=soc', 'CAMPUS_SEED=1']) requireSafe(c.Env.includes(value));
@@ -171,6 +174,9 @@ class RealLabManager {
   }
   _environment(image, recipe, resources) {
     return image.Config.Env.filter(value => !value.startsWith('CAMPUS_LAB_MODE=') && !value.startsWith('CAMPUS_SEED=')).concat(`CAMPUS_LAB_MODE=${recipe.mode}`, `CAMPUS_SEED=${resources.seed}`);
+  }
+  _proxyEnvironment(image, recipe, resources) {
+    return image.Config.Env.filter(value => !value.startsWith('CAMPUS_LAB_MODE=') && !value.startsWith('CAMPUS_SEED=')).concat('CAMPUS_LAB_MODE=proxy', 'CAMPUS_SEED=1', `CAMPUS_TARGET_NAME=${resources.targetDns}`, `CAMPUS_TARGET_PORT=${recipe.port}`, `CAMPUS_TARGET_MODE=${recipe.mode || 'juice-shop'}`);
   }
   _labels(actual, expected) { requireSafe(actual && Object.entries(expected).every(([key, value]) => actual[key] === value)); }
   async _lookup(type, name, context) {
@@ -184,78 +190,93 @@ class RealLabManager {
     requireSafe(inspected.Id === identity && inspected.Name === (type === 'container' ? '/' : '') + name);
     return inspected;
   }
-  _network(network, resources, container) {
-    this._labels(network.Labels, resources.labels);
-    requireSafe(network.Driver === 'bridge' && network.Scope === 'local' && network.Internal === true && network.EnableIPv6 === false && network.Ingress === false && !network.ConfigOnly && empty(network.Options));
+  _network(network, labels, members, internal) {
+    this._labels(network.Labels, labels);
+    requireSafe(network.Driver === 'bridge' && network.Scope === 'local' && network.Internal === internal && network.EnableIPv6 === false && network.Ingress === false && !network.ConfigOnly && empty(network.Options));
     requireSafe(network.Containers && typeof network.Containers === 'object' && !Array.isArray(network.Containers));
-    requireSafe(Object.keys(network.Containers).every(identity => identity === container?.Id));
+    requireSafe(Object.keys(network.Containers).every(identity => members.includes(identity)));
   }
-  async _container(container, network, resources, context, recipe, assets) {
-    this._labels(container.Config?.Labels, resources.labels);
-    const reference = recipe.mode ? assets.imageId : IMAGE;
+  async _container(container, network, resources, context, recipe, assets, { proxy = false, edge, legacy = false } = {}) {
+    this._labels(container.Config?.Labels, proxy ? resources.proxyLabels : resources.labels);
+    const reference = proxy || recipe.mode ? assets.imageId : IMAGE;
     requireSafe(container.Config?.Image === reference && RESOURCE_ID.test(container.Id));
     const image = one(await this._run(['image', 'inspect', reference], { context, json: true }));
-    if (recipe.mode) this._runtimeImage(image, assets);
+    if (proxy || recipe.mode) this._runtimeImage(image, assets);
     else requireSafe(Array.isArray(image.RepoDigests) && image.RepoDigests.includes(IMAGE) && image.Config);
     requireSafe(image.Id === container.Image);
     for (const key of ['Cmd', 'Entrypoint', 'User', 'WorkingDir']) requireSafe(equal(container.Config[key], image.Config[key]));
-    const expectedEnv = recipe.mode ? this._environment(image, recipe, resources) : image.Config.Env || [];
+    const expectedEnv = proxy ? this._proxyEnvironment(image, recipe, resources) : recipe.mode ? this._environment(image, recipe, resources) : image.Config.Env || [];
     requireSafe(equal([...(container.Config.Env || [])].sort(), [...expectedEnv].sort()));
+    requireSafe(equal(container.Config.ExposedPorts, image.Config.ExposedPorts));
     requireSafe(Array.isArray(container.Mounts) && container.Mounts.length === 0 && empty(container.Config.Volumes));
     const host = container.HostConfig;
     requireSafe(host && host.Privileged === false && host.PublishAllPorts === false && host.AutoRemove === false);
-    requireSafe(host.ReadonlyRootfs === Boolean(recipe.mode));
-    requireSafe(host.Memory === recipe.memoryBytes && host.MemorySwap === recipe.memoryBytes && host.NanoCpus === 1000000000 && host.PidsLimit === recipe.pids);
+    const budget = proxy ? getRecipe('soc-response') : recipe;
+    requireSafe(host.ReadonlyRootfs === Boolean(proxy || recipe.mode));
+    requireSafe(host.Memory === budget.memoryBytes && host.MemorySwap === budget.memoryBytes && host.NanoCpus === 1000000000 && host.PidsLimit === budget.pids);
     requireSafe(equal(host.CapDrop, ['ALL']) && empty(host.CapAdd) && equal(host.SecurityOpt, ['no-new-privileges:true']));
     requireSafe(host.RestartPolicy?.Name === 'no' && host.RestartPolicy.MaximumRetryCount === 0);
     requireSafe(host.PidMode === '' && host.IpcMode === 'private' && host.UTSMode === '' && host.UsernsMode === '');
     requireSafe(['', 'private'].includes(host.CgroupnsMode) && ['', 'runc'].includes(host.Runtime) && ['', 'default'].includes(host.Isolation));
-    for (const key of ['Binds', 'Mounts', 'VolumesFrom', 'Devices', 'DeviceRequests', 'DeviceCgroupRules', 'Links', 'ExtraHosts', 'Dns', 'DnsOptions', 'DnsSearch', 'GroupAdd', 'Sysctls', 'StorageOpt', 'Ulimits']) requireSafe(empty(host[key]));
+    for (const key of ['Binds', 'Mounts', 'Tmpfs', 'VolumesFrom', 'Devices', 'DeviceRequests', 'DeviceCgroupRules', 'Links', 'ExtraHosts', 'Dns', 'DnsOptions', 'DnsSearch', 'GroupAdd', 'Sysctls', 'StorageOpt', 'Ulimits']) requireSafe(empty(host[key]));
     requireSafe(!host.CgroupParent && !host.CpusetCpus && !host.CpusetMems && !host.ContainerIDFile && !host.VolumeDriver);
     requireSafe(!host.CpuQuota && !host.CpuPeriod && !host.CpuShares && !host.OomKillDisable && !host.MemoryReservation);
     const bindings = host.PortBindings;
-    const servicePort = `${recipe.port}/tcp`;
-    requireSafe(bindings && equal(Object.keys(bindings), [servicePort]));
-    const binding = one(bindings[servicePort]);
-    requireSafe(binding.HostIp === '127.0.0.1' && (binding.HostPort === '' || binding.HostPort === '0' || port(binding.HostPort)));
+    const servicePort = `${proxy ? 8081 : recipe.port}/tcp`;
+    let binding;
+    if (proxy || legacy) { requireSafe(bindings && equal(Object.keys(bindings), [servicePort])); binding = one(bindings[servicePort]); requireSafe(binding.HostIp === '127.0.0.1' && (binding.HostPort === '' || binding.HostPort === '0' || port(binding.HostPort))); }
+    else requireSafe(empty(bindings));
     const connections = container.NetworkSettings?.Networks;
-    requireSafe(connections && equal(Object.keys(connections), [resources.network]));
-    const endpointId = connections[resources.network].NetworkID;
-    // Docker has not joined the endpoint yet after `container create`.
-    requireSafe(endpointId === network.Id || (endpointId === '' && container.State?.Status === 'created' && container.State.Running === false && host.NetworkMode === resources.network));
-    requireSafe([resources.network, network.Id].includes(host.NetworkMode));
+    const expectedNetworks = proxy ? [resources.network, resources.edge] : [resources.network];
+    requireSafe(connections && equal(Object.keys(connections).sort(), expectedNetworks.slice().sort()));
+    for (const name of expectedNetworks) {
+      const connection = connections[name]; requireSafe(connection && typeof connection === 'object');
+      const endpointId = connection.NetworkID, expected = name === resources.network ? network : edge; requireSafe(expected && (endpointId === expected.Id || endpointId === '' && container.State?.Status === 'created' && container.State.Running === false));
+      const allowedAliases = [container.Name.slice(1), container.Id, container.Id.slice(0, 12), container.Config.Hostname, ...(!proxy ? [resources.targetDns] : [])].filter(Boolean);
+      for (const key of ['Aliases', 'DNSNames']) requireSafe(connection[key] == null || Array.isArray(connection[key]) && connection[key].every(alias => allowedAliases.includes(alias)));
+      if (!proxy && !legacy) requireSafe(Array.isArray(connection.Aliases) && connection.Aliases.includes(resources.targetDns));
+      for (const key of ['Links', 'IPAMConfig', 'DriverOpts']) requireSafe(empty(connection[key]));
+    }
+    requireSafe((proxy ? [resources.edge, edge.Id] : [resources.network, network.Id]).includes(host.NetworkMode));
     const effective = container.NetworkSettings?.Ports;
-    requireSafe(empty(effective) || equal(Object.keys(effective), [servicePort]));
+    requireSafe(empty(effective) || Object.keys(effective).every(key => Object.hasOwn(image.Config.ExposedPorts || {}, key)));
     let published;
-    if (!empty(effective) && effective[servicePort] !== null) {
+    for (const [key, value] of Object.entries(effective || {})) requireSafe(value === null || (binding && key === servicePort));
+    if (binding && !empty(effective) && effective[servicePort] != null) {
       published = one(effective[servicePort]); requireSafe(published.HostIp === '127.0.0.1' && port(published.HostPort));
       requireSafe(binding.HostPort === '' || binding.HostPort === '0' || binding.HostPort === published.HostPort);
     }
     requireSafe(container.State && typeof container.State.Running === 'boolean' && typeof container.State.Status === 'string');
-    if (container.State.Running) requireSafe(published);
+    if (container.State.Running && binding) requireSafe(published);
     return published?.HostPort;
   }
   async _read(resources, context, recipe, assets) {
     const container = await this._lookup('container', resources.container, context);
+    const proxy = await this._lookup('container', resources.proxy, context);
     const network = await this._lookup('network', resources.network, context);
-    requireSafe(!container || network);
-    if (network) this._network(network, resources, container);
+    const edge = await this._lookup('network', resources.edge, context);
+    requireSafe((!container || network) && (!proxy || container && network && edge));
+    if (network) this._network(network, resources.labels, [container?.Id, proxy?.Id].filter(Boolean), true);
+    if (edge) this._network(edge, resources.edgeLabels, [proxy?.Id].filter(Boolean), false);
     const runtime = container && recipe.mode ? await this._runtimeForContainer(container, assets, resources) : assets;
-    const published = container ? await this._container(container, network, resources, context, recipe, runtime) : undefined;
-    return { container, network, published, runtime, outdated: Boolean(container && recipe.mode && runtime.imageId !== assets.imageId) };
+    const proxyRuntime = proxy ? await this._runtimeForContainer(proxy, assets, resources) : assets;
+    const legacy = Boolean(container && !empty(container.HostConfig?.PortBindings)); requireSafe(!proxy || !legacy);
+    if (container) await this._container(container, network, resources, context, recipe, runtime, { legacy });
+    const published = proxy ? await this._container(proxy, network, resources, context, recipe, proxyRuntime, { proxy: true, edge }) : undefined;
+    return { container, proxy, network, edge, published, runtime, proxyRuntime, targetDns: resources.targetDns, outdated: Boolean(legacy || container && recipe.mode && runtime.imageId !== assets.imageId || proxy && proxyRuntime.imageId !== assets.imageId) };
   }
   async _snapshot(current, engine, recipe, assets) {
-    const snapshot = { id: recipe.id, state: 'missing', message: 'El objetivo aún no se creó.', imageVersion: assets?.version || recipe.imageVersion, engine: engine.version };
-    const withCapabilities = value => ({ ...value, capabilities: capabilities(recipe, value.state) });
+    const snapshot = { id: recipe.id, state: 'missing', message: 'El objetivo aún no se creó.', imageVersion: recipe.mode ? assets.version : recipe.imageVersion, engine: engine.version };
+    const withCapabilities = value => ({ ...value, capabilities: { ...capabilities(recipe, value.state), stop: Boolean(current.container?.State.Running || current.proxy?.State.Running) } });
     if (!current.container) return withCapabilities(snapshot);
     const state = current.container.State;
-    if (current.outdated) return { ...snapshot, state: 'runtime_update', imageVersion: current.runtime.version, availableVersion: assets.version, canReset: true, message: 'Hay un runtime incluido más reciente. Restablece este objetivo para practicar con la versión actual; las evidencias guardadas se conservan.', capabilities: { ...capabilities(recipe, 'unsafe', false), stop: state.Running, reset: true } };
-    if (state.Dead || state.Status === 'dead') return withCapabilities({ ...snapshot, state: 'error', canReset: true, message: 'El contenedor no puede iniciarse. Restablece el objetivo para volver a crearlo.' });
-    if (state.Paused || state.Restarting || state.Status === 'restarting') return withCapabilities({ ...snapshot, state: 'starting', message: 'El contenedor no está disponible para abrir.' });
-    if (!state.Running) return withCapabilities({ ...snapshot, state: 'stopped', message: recipe.ephemeral ? 'Objetivo detenido. La sesión en memoria se reinicia al arrancar; las evidencias guardadas se conservan.' : 'Objetivo detenido. Conserva su estado hasta restablecerlo.' });
+    if (current.outdated) return { ...snapshot, state: 'runtime_update', imageVersion: recipe.mode ? current.runtime.version : recipe.imageVersion, availableVersion: assets.version, canReset: true, message: 'Restablece este objetivo para usar el acceso local y el runtime actuales; las evidencias guardadas se conservan.', capabilities: { ...capabilities(recipe, 'unsafe', false), stop: state.Running || Boolean(current.proxy?.State.Running), reset: true } };
+    if (state.Dead || state.Status === 'dead' || current.proxy?.State.Dead || current.proxy?.State.Status === 'dead') return withCapabilities({ ...snapshot, state: 'error', canReset: true, message: 'El contenedor no puede iniciarse. Restablece el objetivo para volver a crearlo.' });
+    if ([state, current.proxy?.State].some(s => s && (s.Paused || s.Restarting || s.Status === 'restarting'))) return withCapabilities({ ...snapshot, state: 'starting', message: 'El contenedor no está disponible para abrir.' });
+    if (!state.Running || !current.proxy?.State.Running) return withCapabilities({ ...snapshot, state: 'stopped', message: recipe.ephemeral ? 'Objetivo detenido. La sesión en memoria se reinicia al arrancar; las evidencias guardadas se conservan.' : 'Objetivo detenido. Conserva su estado hasta restablecerlo.' });
     let serviceHealth;
-    if (recipe.mode) {
-      try { serviceHealth = await this._health(current.published, recipe); }
+    {
+      try { const proxyHealth = await this._proxyHealth(current.published, recipe, current.targetDns); serviceHealth = recipe.mode ? await this._health(current.published, recipe) : proxyHealth; }
       catch (error) { if (error instanceof Unsafe) throw error; return withCapabilities({ ...snapshot, state: 'starting', serviceHealth: { ready: false }, message: 'El contenedor está encendido; el servicio todavía no está listo.' }); }
     }
     return withCapabilities({ ...snapshot, state: 'running', message: 'Contenedor Linux encendido; puede seguir activo al cerrar el campus.', url: `http://127.0.0.1:${current.published}/`, ...(serviceHealth ? { serviceHealth } : {}) });
@@ -268,45 +289,52 @@ class RealLabManager {
       const { doctor, context } = await this._doctor();
       if (!doctor.ready) return { ...base, state: 'unavailable', message: doctor.message };
       try {
-        const assets = recipe.mode ? await this._assets() : null;
+        const assets = await this._assets();
         const resources = await this._resources(profile, recipe);
         let current = await this._read(resources, context, recipe, assets);
         if (operation === 'status') return await this._snapshot(current, doctor, recipe, assets);
         if (operation === 'start' && current.outdated) return await this._snapshot(current, doctor, recipe, assets);
         // A mismatched service identity must not authorize a subsequent mutation.
-        if (current.container?.State.Running && recipe.mode && !current.outdated) await this._snapshot(current, doctor, recipe, assets);
+        if (current.container?.State.Running && current.proxy?.State.Running && !current.outdated) await this._snapshot(current, doctor, recipe, assets);
         if (operation === 'stop') {
-          if (current.container?.State.Running) await this._run(['container', 'stop', '--time', '10', current.container.Id], { context, timeout: 25000 });
+          for (const role of ['proxy', 'container']) { current = await this._read(resources, context, recipe, assets); if (current[role]?.State.Running) await this._run(['container', 'stop', '--time', '10', current[role].Id], { context, timeout: 25000 }); }
           return await this._snapshot(await this._read(resources, context, recipe, assets), doctor, recipe, assets);
         }
         if (operation === 'reset' && current.container) {
-          if (current.container.State.Running) await this._run(['container', 'stop', '--time', '10', current.container.Id], { context, timeout: 25000 });
-          current = await this._read(resources, context, recipe, assets);
-          requireSafe(current.container && current.container.State.Running === false);
-          await this._run(['container', 'rm', current.container.Id], { context });
+          for (const role of ['proxy', 'container']) { current = await this._read(resources, context, recipe, assets); if (current[role]?.State.Running) await this._run(['container', 'stop', '--time', '10', current[role].Id], { context, timeout: 25000 }); }
+          for (const role of ['proxy', 'container']) { current = await this._read(resources, context, recipe, assets); if (current[role]) { requireSafe(current[role].State.Running === false); await this._run(['container', 'rm', current[role].Id], { context }); } }
           current = await this._read(resources, context, recipe, assets);
         }
-        if (!current.container && recipe.mode) await this._load(assets, context, resources);
-        if (!current.network) {
-          const labels = Object.entries(resources.labels).flatMap(([key, value]) => ['--label', `${key}=${value}`]);
-          await this._run(['network', 'create', '--driver', 'bridge', '--internal', ...labels, resources.network], { context });
+        if (!current.container || !current.proxy) await this._load(assets, context, resources);
+        for (const role of ['network', 'edge']) { if (!current[role]) {
+          const labels = Object.entries(role === 'network' ? resources.labels : resources.edgeLabels).flatMap(([key, value]) => ['--label', `${key}=${value}`]);
+          await this._run(['network', 'create', '--driver', 'bridge', ...(role === 'network' ? ['--internal'] : []), ...labels, resources[role]], { context });
           current = await this._read(resources, context, recipe, assets);
-          requireSafe(current.network);
-        }
+          requireSafe(current[role]);
+        } }
         if (!current.container) {
           if (!recipe.mode) await this._run(['image', 'pull', '--platform', 'linux/amd64', IMAGE], { context, timeout: 180000 });
           current = await this._read(resources, context, recipe, assets); requireSafe(!current.container && current.network);
           const labels = Object.entries(resources.labels).flatMap(([key, value]) => ['--label', `${key}=${value}`]);
           const runtime = recipe.mode ? ['--read-only', '--env', `CAMPUS_LAB_MODE=${recipe.mode}`, '--env', `CAMPUS_SEED=${resources.seed}`] : [];
-          await this._run(['container', 'create', '--name', resources.container, '--platform', 'linux/amd64', '--network', resources.network, '--publish', `127.0.0.1::${recipe.port}`, '--restart', 'no', '--memory', recipe.memory, '--memory-swap', recipe.memory, '--cpus', '1', '--pids-limit', String(recipe.pids), '--cap-drop', 'ALL', '--security-opt', 'no-new-privileges:true', ...runtime, ...labels, recipe.mode ? assets.imageId : IMAGE], { context, timeout: 30000 });
+          await this._run(['container', 'create', '--name', resources.container, '--platform', 'linux/amd64', '--network', resources.network, '--network-alias', resources.targetDns, '--restart', 'no', '--memory', recipe.memory, '--memory-swap', recipe.memory, '--cpus', '1', '--pids-limit', String(recipe.pids), '--cap-drop', 'ALL', '--security-opt', 'no-new-privileges:true', ...runtime, ...labels, recipe.mode ? assets.imageId : IMAGE], { context, timeout: 30000 });
           current = await this._read(resources, context, recipe, assets); requireSafe(current.container);
         }
         if (!current.container.State.Running) {
           requireSafe(!current.container.State.Dead && !current.container.State.Paused && !current.container.State.Restarting);
           await this._run(['container', 'start', current.container.Id], { context, timeout: 30000 });
         }
+        current = await this._read(resources, context, recipe, assets);
+        if (!current.proxy) {
+          const labels = Object.entries(resources.proxyLabels).flatMap(([key, value]) => ['--label', `${key}=${value}`]);
+          const env = ['CAMPUS_LAB_MODE=proxy', 'CAMPUS_SEED=1', `CAMPUS_TARGET_NAME=${resources.targetDns}`, `CAMPUS_TARGET_PORT=${recipe.port}`, `CAMPUS_TARGET_MODE=${recipe.mode || 'juice-shop'}`].flatMap(value => ['--env', value]);
+          await this._run(['container', 'create', '--name', resources.proxy, '--platform', 'linux/amd64', '--network', resources.edge, '--network', resources.network, '--publish', '127.0.0.1::8081', '--restart', 'no', '--memory', '512m', '--memory-swap', '512m', '--cpus', '1', '--pids-limit', '128', '--cap-drop', 'ALL', '--security-opt', 'no-new-privileges:true', '--read-only', ...env, ...labels, assets.imageId], { context, timeout: 30000 });
+          current = await this._read(resources, context, recipe, assets); requireSafe(current.proxy);
+        }
+        if (!current.proxy.State.Running) { requireSafe(!current.proxy.State.Dead && !current.proxy.State.Paused && !current.proxy.State.Restarting); await this._run(['container', 'start', current.proxy.Id], { context, timeout: 30000 }); }
         return await this._snapshot(await this._read(resources, context, recipe, assets), doctor, recipe, assets);
       } catch (error) {
+        this._diagnostic(error);
         return { ...base, state: error instanceof AssetsUnavailable ? 'unavailable_assets' : error instanceof Unsafe ? 'unsafe' : 'error', message: error instanceof AssetsUnavailable ? 'El runtime incluido falta o no supera la verificación. Reinstala o vuelve a preparar los archivos del laboratorio.' : error instanceof Unsafe ? 'No se pudo verificar la propiedad y configuración segura del objetivo. No se modificaron los recursos no verificados.' : 'La operación de Docker no pudo completarse. Comprueba el motor y vuelve a intentar.' };
       }
     });
@@ -342,6 +370,12 @@ class RealLabManager {
     if (value.ready === false) throw new Error('El servicio todavía no está listo.');
     return { ready: true, service: value.service, protocolVersion: value.protocolVersion, mode: value.mode, caseId: value.caseId, ...(typeof value.runId === 'string' && CASE_ID.test(value.runId) ? { runId: value.runId } : {}) };
   }
+  async _proxyHealth(published, recipe, targetName) {
+    const value = await this._request(published, '/_campus_proxy/health');
+    requireSafe(value.service === 'campus-lab-proxy' && value.protocolVersion === 1 && value.targetName === targetName && value.targetPort === recipe.port && value.targetMode === (recipe.mode || 'juice-shop'));
+    if (value.ready !== true || value.backendReady !== true) throw new Error('El servicio todavía no está listo.');
+    return { ready: true, service: value.service, protocolVersion: value.protocolVersion, backendReady: true };
+  }
   _service(profile, labId, action, validate = () => {}) {
     let recipe;
     try { profileId(profile); recipe = getRecipe(labId); if (!recipe.mode) throw new Error(); validate(recipe); }
@@ -356,11 +390,12 @@ class RealLabManager {
         const checked = value => { requireSafe(value.caseId === health.caseId); return value; };
         const result = await action({ published: current.published, checked, health });
         const verified = await this._read(resources, context, recipe, assets);
-        requireSafe(verified.container?.Id === current.container.Id && verified.container.State.Running && !verified.container.State.Paused && !verified.container.State.Restarting && verified.published === current.published);
+        requireSafe(!verified.outdated && verified.container?.Id === current.container.Id && verified.proxy?.Id === current.proxy.Id && verified.proxy.State.Running && !verified.proxy.State.Paused && !verified.proxy.State.Restarting && verified.container.State.Running && !verified.container.State.Paused && !verified.container.State.Restarting && verified.published === current.published);
+        await this._proxyHealth(current.published, recipe, resources.targetDns);
         const after = await this._health(current.published, recipe);
         requireSafe(after.caseId === health.caseId && after.runId === health.runId);
         return result;
-      } catch { throw new Error('El laboratorio no está listo o la petición no pudo verificarse.'); }
+      } catch (error) { this._diagnostic(error); throw new Error('El laboratorio no está listo o la petición no pudo verificarse.'); }
     });
   }
   _events(value) {

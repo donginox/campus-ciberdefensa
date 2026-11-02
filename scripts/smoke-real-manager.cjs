@@ -8,13 +8,13 @@ const exec=require('node:util').promisify(require('node:child_process').execFile
 const pause=ms=>new Promise(resolve=>setTimeout(resolve,ms));
 (async()=>{
  const dataDir=await fs.mkdtemp(path.join(os.tmpdir(),'campus-manager-live-'));
- const manager=new RealLabManager({dataDir,runtimeDir:path.resolve('.local/lab-runtime')});
- const profile=randomUUID(),labs=['soc-response','database-fundamentals'];
- const evidence={docker:false,soc:false,database:false,lifecycle:false,loopback:false};
+ const manager=new RealLabManager({dataDir,runtimeDir:path.resolve('.local/lab-runtime'),onDiagnostic:error=>console.error('LAB_DIAGNOSTIC',error.stack||error.message)});
+ const profile=randomUUID(),labs=['soc-response','database-fundamentals','juice-shop'];
+ const evidence={docker:false,soc:false,database:false,web:false,lifecycle:false,loopback:false};
  async function ready(labId){
   let snapshot=await manager.start(profile,labId);
   for(let n=0;n<40;n++){
-   if(snapshot.state==='running'&&snapshot.serviceHealth?.ready)return snapshot;
+   if(snapshot.state==='running'&&snapshot.capabilities?.open)return snapshot;
    if(!['starting','running'].includes(snapshot.state))throw new Error(labId+': '+JSON.stringify(snapshot));
    await pause(500);snapshot=await manager.status(profile,labId);
   }
@@ -31,6 +31,8 @@ const pause=ms=>new Promise(resolve=>setTimeout(resolve,ms));
   assert.equal(result.assessment.passed,true,JSON.stringify(result));assert.ok(result.rows.length>0);
   await assert.rejects(manager.query(profile,'database-fundamentals','DROP TABLE auth_events'));
   assert.ok((await manager.query(profile,'database-fundamentals','SELECT COUNT(*) AS count FROM auth_events')).rows[0][0]>0);evidence.database=true;
+  const web=await ready('juice-shop');assert.equal(new URL(web.url).hostname,'127.0.0.1');
+  const page=await new Promise((resolve,reject)=>{const request=require('node:http').get(web.url,{timeout:5000},response=>{let bytes=0;const chunks=[];assert.equal(response.statusCode,200);response.on('data',chunk=>{bytes+=chunk.length;if(bytes>2*1024*1024)request.destroy(new Error('Juice HTML too large'));else chunks.push(chunk);});response.on('end',()=>resolve(Buffer.concat(chunks).toString('utf8')));response.on('error',reject);});request.on('timeout',()=>request.destroy(new Error('Juice HTTP timeout')));request.on('error',reject);});assert.match(page,/juice.?shop/i);evidence.web=true;
   for(const labId of labs){const stopped=await manager.stop(profile,labId);assert.equal(stopped.state,'stopped');assert.equal(stopped.capabilities.open,false);const reset=await manager.reset(profile,labId);assert.ok(['starting','running'].includes(reset.state),JSON.stringify(reset));await ready(labId);}
   evidence.lifecycle=true;console.log('CAMPUS_DOCKER_MANAGER_OK',JSON.stringify(evidence));
  }finally{
@@ -41,11 +43,17 @@ const pause=ms=>new Promise(resolve=>setTimeout(resolve,ms));
   for(const labId of labs){try{
    const current=await manager.status(profile,labId);if(current.capabilities?.stop)await manager.stop(profile,labId);
    const stopped=await manager.status(profile,labId);if(!stopped.capabilities?.reset)continue;
-   const name=`campus-${owner}-${profile}-${labId}`,net=name+'-internal';
+   const stem=`campus-${owner}-${profile}`,name=stem+'-'+labId,internal=labId==='juice-shop'?stem+'-internal':name+'-internal';
    const inspect=async(type,value)=>JSON.parse(await docker(['--context',context,type,'inspect',value]))[0];
-   function owned(resource,labels){assert.match(resource.Id,/^[a-f0-9]{64}$/);const expected={'owner':'campus-ciberdefensa','instance':owner,'profile':profile,'lab':labId};for(const[key,value]of Object.entries(expected))assert.equal(labels['ar.campus.ciberdefensa.'+key],value);}
-   const container=await inspect('container',name);owned(container,container.Config.Labels);assert.equal(container.State.Running,false);await docker(['--context',context,'container','rm',container.Id]);
-   const network=await inspect('network',net);owned(network,network.Labels);assert.equal(Object.keys(network.Containers||{}).length,0);await docker(['--context',context,'network','rm',network.Id]);
+   function owned(resource,labels,role){assert.match(resource.Id,/^[a-f0-9]{64}$/);const expected={'owner':'campus-ciberdefensa','instance':owner,'profile':profile,'lab':labId};if(role)expected.role=role;for(const[key,value]of Object.entries(expected))assert.equal(labels['ar.campus.ciberdefensa.'+key],value);}
+   // Validate all four identities before selective cleanup, never remove by broad selector.
+   const proxy=await inspect('container',name+'-proxy');owned(proxy,proxy.Config.Labels,'proxy');assert.equal(proxy.State.Running,false);
+   const container=await inspect('container',name);owned(container,container.Config.Labels);assert.equal(container.State.Running,false);
+   const edge=await inspect('network',name+'-edge');owned(edge,edge.Labels,'edge');
+   const network=await inspect('network',internal);owned(network,network.Labels);
+   for(const target of [proxy,container])await docker(['--context',context,'container','rm',target.Id]);
+   for(const target of [edge,network]){const checked=await inspect('network',target.Id);assert.equal(Object.keys(checked.Containers||{}).length,0);await docker(['--context',context,'network','rm',target.Id]);}
+
   }catch(error){console.error('Owned cleanup:',labId,error.message);process.exitCode=1;}}
   await fs.rm(dataDir,{recursive:true,force:true});
  }

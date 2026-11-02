@@ -75,5 +75,42 @@ class PackagingTests(unittest.TestCase):
                     build.package_image(self.image_id, value, self.output, io.BytesIO(b"x"))
 
 
+class PublishedPortTests(unittest.TestCase):
+    def setUp(self):
+        self.assertIsNotNone(smoke)
+        self.assertTrue(hasattr(smoke, "published_port"), "Smoke must diagnose actual missing Docker port publication")
+
+    def container(self, ports):
+        return {"State": {"Running": True, "Status": "running", "ExitCode": 0},
+                "HostConfig": {"PortBindings": {"8081/tcp": [{"HostIp": "127.0.0.1", "HostPort": ""}]}},
+                "NetworkSettings": {"Ports": ports}}
+
+    def test_internal_only_network_missing_mappings_fail_with_specific_diagnostic(self):
+        for ports in ({}, {"8080/tcp": None, "8081/tcp": None}, {"8080/tcp": None, "8081/tcp": []}):
+            with self.subTest(ports=ports):
+                with self.assertRaisesRegex(RuntimeError, "unsupported_internal_port_publishing"):
+                    smoke.published_port(self.container(ports))
+
+    def test_actual_loopback_publication_is_required_and_returned(self):
+        self.assertEqual(smoke.published_port(self.container({"8080/tcp": None, "8081/tcp": [{"HostIp": "127.0.0.1", "HostPort": "49170"}]})), 49170)
+        for binding in ({"HostIp": "0.0.0.0", "HostPort": "49170"}, {"HostIp": "127.0.0.1", "HostPort": ""}, {"HostIp": "127.0.0.1", "HostPort": "65536"}):
+            with self.subTest(binding=binding):
+                with self.assertRaisesRegex(RuntimeError, "unsafe_port_publication"):
+                    smoke.published_port(self.container({"8080/tcp": None, "8081/tcp": [binding]}))
+
+    def test_diagnostics_show_actual_requested_ports_and_state_without_environment(self):
+        self.assertTrue(hasattr(smoke, "diagnostic_snapshot"), "Smoke failure must print bounded inspection evidence")
+        container = self.container({"8080/tcp": None, "8081/tcp": []})
+        container["Config"] = {"Env": ["SECRET=must-not-print"]}
+        network = {"Id": "b" * 64, "Driver": "bridge", "Internal": True, "IPAM": {"Config": [{"Subnet": "172.20.0.0/16", "Gateway": "172.20.0.1"}]}}
+        evidence = smoke.diagnostic_snapshot(container, network)
+        self.assertIn('"PortBindings"', evidence)
+        self.assertIn('"Ports"', evidence)
+        self.assertIn('"Internal":true', evidence)
+        self.assertNotIn("must-not-print", evidence)
+        container["State"]["Error"] = "x" * 20000
+        self.assertLessEqual(len(smoke.diagnostic_snapshot(container, network)), 8192)
+
+
 if __name__ == "__main__":
     unittest.main()

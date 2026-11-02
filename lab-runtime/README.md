@@ -1,16 +1,39 @@
 # Runtime de prácticas
 
-Una imagen propia sirve dos objetivos: `CAMPUS_LAB_MODE=soc` o `database`.
+Una imagen propia sirve dos objetivos: `CAMPUS_LAB_MODE=soc` o `database`, y el
+proxy de acceso con `CAMPUS_LAB_MODE=proxy`.
 `CAMPUS_SEED` acepta enteros entre 1 y 2147483647. Cada proceso crea una sesión
 vacía, con un `runId` nuevo y un `caseId` determinista por modo y semilla. Toda
 la actividad y la base SQLite viven en RAM. Detener/arrancar pierde la sesión;
 el progreso que guarda la aplicación de escritorio es independiente.
 
-La imagen usa la base y el digest de `docs/mission-campus-spec.md`, puerto 8080,
+La imagen usa la base y el digest de `docs/mission-campus-spec.md`, puertos 8080
+(objetivo) y 8081 (proxy),
 usuario `10001:10001`, directorio `/app`, entrypoint nulo y comando
 `["python", "/app/server.py"]`. No declara volúmenes ni instala paquetes.
-Funciona con raíz de solo lectura. El manager configura la red interna,
-publicación exclusiva en loopback y límites de CPU, memoria y PIDs.
+Funciona con raíz de solo lectura. Cada objetivo se conecta únicamente a su
+red interna, sin puertos publicados. Un sidecar conecta esa red y una segunda
+red bridge de acceso; solo publica su puerto 8081 en loopback. El manager
+configura límites de CPU, memoria y PIDs para ambos contenedores.
+
+Una red exclusivamente `--internal` no tiene gateway y Moby no publica sus
+puertos, aunque conserve la solicitud en `HostConfig.PortBindings`. Por eso la
+comprobación usa la publicación efectiva en `NetworkSettings.Ports`, y el
+sidecar conserva la red interna del objetivo. El proxy sí tiene una ruta de
+salida por su red de acceso; su código solo permite el destino configurado.
+Referencia primaria: [explicación del maintainer de Moby](https://github.com/moby/moby/discussions/53256).
+
+El proxy acepta `CAMPUS_TARGET_NAME=target-<24 hex>`, un alias DNS corto derivado
+por el manager del nombre completo del objetivo. `CAMPUS_TARGET_PORT` es 8080
+para `CAMPUS_TARGET_MODE=soc|database`, o 3000 para `juice-shop`. Esas variables
+solo provienen del manager; ninguna petición HTTP cambia el destino.
+`GET /_campus_proxy/health` devuelve identidad del proxy, destino y
+`ready`/`backendReady` derivados de una solicitud real al objetivo. Las demás
+rutas se reenvían al destino fijo. El proxy valida Host/Origin de loopback,
+reescribe ambos para el servicio interno, elimina headers hop-by-hop y los
+declarados en Connection, no sigue redirecciones y rechaza respuestas 3xx.
+Admite 1 MiB de cuerpo de solicitud, 16 MiB de respuesta, timeout de 5 segundos
+y un máximo de 16 threads simultáneos. No admite CONNECT ni URLs absolutas.
 
 ## API del protocolo 1
 
@@ -58,6 +81,7 @@ Desde la raíz del proyecto, sin Docker:
 
 ```text
 python tests/python-runtime.py -v
+python tests/python-runtime-proxy.py -v
 python tests/python-runtime-build.py -v
 ```
 
@@ -77,9 +101,13 @@ Build produce `runtime.tar.gz` con `docker image save` y gzip sin fecha, más
 `manifest.json` con el ID exacto, versión, tag, tamaño y SHA-256 del gzip final.
 El manifest se publica al terminar el archivo. Smoke verifica tamaño y hash
 antes de `docker load`; verifica el ID cargado y levanta ambas modalidades con
-sus propias redes internas y puertos aleatorios de loopback. Comprueba HTTP,
+sus propios objetivos internos y sidecars de destino fijo con puertos
+aleatorios de loopback. Comprueba HTTP,
 evaluación, bloqueo de aplicación, SQL, límites, salida a red pública bloqueada
-y reinicio de sesión. Elimina solo los IDs que creó. La carga se comprueba en
+y reinicio de sesión. Verifica que cada objetivo carezca de publicación y de
+ruta de salida pública, y que solo el proxy tenga la red de acceso. Ante una
+falla imprime inspecciones acotadas de estado, puertos solicitados/efectivos y
+redes, sin variables de entorno. Elimina solo los IDs que creó. La carga se comprueba en
 el mismo daemon del build; no afirma haber usado un daemon vacío.
 
 El manifest de confianza se incorpora al instalador desde el artifact de la

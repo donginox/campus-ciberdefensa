@@ -78,7 +78,49 @@ def healthy(port, mode):
     raise AssertionError("Runtime did not become ready")
 
 
-def inspect_container(container_id, network_id, image_id):
+def published_port(container):
+    """Require actual publication, not merely the request saved in HostConfig.
+
+    Moby publishes via a default-gateway endpoint. An exclusively --internal
+    network can retain PortBindings while Ports is empty: waiting cannot fix it.
+    https://github.com/moby/moby/discussions/53256
+    """
+    ports = container["NetworkSettings"]["Ports"]
+    published = {key: value for key, value in ports.items() if value}
+    if not published:
+        raise RuntimeError("unsupported_internal_port_publishing: Docker did not publish the requested loopback port; an internal-only network has no default-gateway endpoint. See bounded inspection evidence.")
+    bindings = published.get("8081/tcp")
+    if set(ports) - {"8080/tcp", "8081/tcp"} or set(published) != {"8081/tcp"} or not isinstance(bindings, list) or len(bindings) != 1:
+        raise RuntimeError("unsafe_port_publication: expected exactly one published proxy 8081/tcp binding")
+    binding = bindings[0]
+    port = binding.get("HostPort")
+    if binding.get("HostIp") != "127.0.0.1" or not isinstance(port, str) or not port.isascii() or not port.isdigit() or not 1 <= int(port) <= 65535:
+        raise RuntimeError("unsafe_port_publication: expected 127.0.0.1 and a concrete valid host port")
+    return int(port)
+
+
+def diagnostic_snapshot(container, network):
+    host = container.get("HostConfig", {})
+    settings = container.get("NetworkSettings", {})
+    evidence = {"containerId": container.get("Id"), "imageId": container.get("Image"),
+                "State": container.get("State"), "PortBindings": host.get("PortBindings"),
+                "NetworkMode": host.get("NetworkMode"), "Ports": settings.get("Ports"),
+                "Networks": settings.get("Networks"),
+                "network": {key: network.get(key) for key in ("Id", "Driver", "Internal", "EnableIPv4", "EnableIPv6", "Options", "IPAM", "Containers")}}
+    value = json.dumps(evidence, ensure_ascii=True, separators=(",", ":"), default=str)
+    return value if len(value) <= 8192 else value[:8178] + "...[truncated]"
+
+
+def emit_diagnostics(container_id, network_id):
+    try:
+        container = json.loads(docker("container", "inspect", container_id))[0] if container_id else {}
+        network = json.loads(docker("network", "inspect", network_id))[0]
+        print("CAMPUS_SMOKE_INSPECTION " + diagnostic_snapshot(container, network), flush=True)
+    except (subprocess.SubprocessError, ValueError, OSError) as error:
+        print("CAMPUS_SMOKE_INSPECTION_UNAVAILABLE " + str(error)[:1000], flush=True)
+
+
+def inspect_container(container_id, primary_network_id, image_id, network_ids, proxy=False):
     container = json.loads(docker("container", "inspect", container_id))[0]
     config, host = container["Config"], container["HostConfig"]
     assert container["Id"] == container_id and container["Image"] == image_id
@@ -86,17 +128,38 @@ def inspect_container(container_id, network_id, image_id):
     assert config["Cmd"] == ["python", "/app/server.py"] and not config.get("Entrypoint")
     assert not container["Mounts"] and not config.get("Volumes")
     assert not host["Privileged"] and host["ReadonlyRootfs"] and not host.get("Devices")
-    assert host["Memory"] == 536870912 and host["NanoCpus"] == 1000000000 and host["PidsLimit"] == 128
+    assert host["Memory"] == 536870912 and host["MemorySwap"] == 536870912 and host["NanoCpus"] == 1000000000 and host["PidsLimit"] == 128
     assert host["CapDrop"] == ["ALL"] and not host.get("CapAdd")
     assert any(value in ("no-new-privileges", "no-new-privileges=true") for value in host["SecurityOpt"])
-    assert host["RestartPolicy"]["Name"] == "no" and host["NetworkMode"] == network_id
-    ports = container["NetworkSettings"]["Ports"]
-    assert set(ports) == {"8080/tcp"} and len(ports["8080/tcp"]) == 1
-    assert ports["8080/tcp"][0]["HostIp"] == "127.0.0.1"
+    assert host["RestartPolicy"]["Name"] == "no" and host["NetworkMode"] == primary_network_id
+    assert set(container["Config"]["ExposedPorts"]) == {"8080/tcp", "8081/tcp"}
+    assert {value["NetworkID"] for value in container["NetworkSettings"]["Networks"].values()} == set(network_ids)
+    if proxy:
+        return published_port(container)
+    assert not host.get("PortBindings"), "Target must not request host publication"
+    assert not any(container["NetworkSettings"]["Ports"].values()), "Target must not publish ports"
+    return None
+
+
+def inspect_network(network_id, internal, members):
     network = json.loads(docker("network", "inspect", network_id))[0]
-    assert network["Id"] == network_id and network["Internal"] and network["Driver"] == "bridge"
-    assert set(network["Containers"]) == {container_id}
-    return int(ports["8080/tcp"][0]["HostPort"])
+    assert network["Id"] == network_id and network["Internal"] is internal and network["Driver"] == "bridge"
+    assert set(network["Containers"]) == set(members)
+
+
+def proxy_healthy(port, name, mode):
+    deadline = time.monotonic() + 30
+    while time.monotonic() < deadline:
+        try:
+            value = request(port, "/_campus_proxy/health")
+            assert value["service"] == "campus-lab-proxy" and value["protocolVersion"] == 1
+            assert (value["targetName"], value["targetPort"], value["targetMode"]) == (name, 8080, mode)
+            if value["ready"] is True and value["backendReady"] is True:
+                return
+        except (OSError, http.client.HTTPException):
+            pass
+        time.sleep(0.2)
+    raise AssertionError("Proxy did not become ready for its fixed target")
 
 
 def exercise(port, mode):
@@ -142,51 +205,75 @@ def main():
     manifest = verify_assets(args.runtime_dir)
     version = docker("version", "--format", "{{.Server.Version}}")
     assert int(version.split(".")[0]) >= 28, "Docker Engine >= 28 required"
+    print("CAMPUS_SMOKE_ENGINE " + version[:100], flush=True)
     docker("image", "load", "--input", str(args.runtime_dir / "runtime.tar.gz"))
     image = json.loads(docker("image", "inspect", manifest["imageTag"]))[0]
     assert image["Id"] == manifest["imageId"] and image["Os"] == "linux" and image["Architecture"] == "amd64"
+    networks, containers = [], []
     resources = []
     try:
         for mode in ("soc", "database"):
             suffix = uuid.uuid4().hex[:16]
-            network_id = docker("network", "create", "--driver", "bridge", "--internal", "--label", "campus.smoke=" + suffix, "campus-smoke-" + suffix)
-            assert re.fullmatch(r"[0-9a-f]{64}", network_id)
-            resources.append((None, network_id))
-            container_id = docker("run", "--detach", "--name", "campus-smoke-" + suffix,
-                                  "--label", "campus.smoke=" + suffix, "--network", network_id,
-                                  "--publish", "127.0.0.1::8080", "--cpus", "1", "--memory", "512m",
-                                  "--pids-limit", "128", "--cap-drop", "ALL", "--security-opt", "no-new-privileges",
-                                  "--read-only", "--restart", "no", "--user", "10001:10001",
+            lab_id = "soc-response" if mode == "soc" else "database-fundamentals"
+            name = "campus-%s-%s-%s" % (uuid.uuid4(), uuid.uuid4(), lab_id)
+            target_alias = "target-" + hashlib.sha256(name.encode()).hexdigest()[:24]
+            internal_id = docker("network", "create", "--driver", "bridge", "--internal", "--label", "campus.smoke=" + suffix, name + "-internal")
+            assert re.fullmatch(r"[0-9a-f]{64}", internal_id)
+            networks.append(internal_id)
+            edge_id = docker("network", "create", "--driver", "bridge", "--label", "campus.smoke=" + suffix, name + "-edge")
+            assert re.fullmatch(r"[0-9a-f]{64}", edge_id)
+            networks.append(edge_id)
+            common = ["--platform", "linux/amd64", "--label", "campus.smoke=" + suffix, "--cpus", "1", "--memory", "512m", "--memory-swap", "512m", "--pids-limit", "128",
+                      "--cap-drop", "ALL", "--security-opt", "no-new-privileges", "--read-only", "--restart", "no", "--user", "10001:10001"]
+            container_id = docker("container", "create", "--name", name, "--network", internal_id, "--network-alias", target_alias, *common,
                                   "--env", "CAMPUS_LAB_MODE=" + mode, "--env", "CAMPUS_SEED=17", manifest["imageId"])
             assert re.fullmatch(r"[0-9a-f]{64}", container_id)
-            resources[-1] = (container_id, network_id)
-            port = inspect_container(container_id, network_id, manifest["imageId"])
+            containers.append(container_id)
+            resources.append((container_id, internal_id))
+            docker("container", "start", container_id)
+            proxy_id = docker("container", "create", "--name", name + "-proxy", "--network", edge_id, "--network", internal_id,
+                              "--publish", "127.0.0.1::8081", *common,
+                              "--env", "CAMPUS_LAB_MODE=proxy", "--env", "CAMPUS_SEED=1",
+                              "--env", "CAMPUS_TARGET_NAME=" + target_alias, "--env", "CAMPUS_TARGET_PORT=8080",
+                              "--env", "CAMPUS_TARGET_MODE=" + mode, manifest["imageId"])
+            assert re.fullmatch(r"[0-9a-f]{64}", proxy_id)
+            containers.append(proxy_id)
+            resources.append((proxy_id, edge_id))
+            docker("container", "start", proxy_id)
+            inspect_container(container_id, internal_id, manifest["imageId"], [internal_id])
+            port = inspect_container(proxy_id, edge_id, manifest["imageId"], [internal_id, edge_id], proxy=True)
+            inspect_network(internal_id, True, [container_id, proxy_id])
+            inspect_network(edge_id, False, [proxy_id])
+            proxy_healthy(port, target_alias, mode)
             before, rows = exercise(port, mode)
             # No DNS or external service is required for this outbound-isolation assertion.
             probe = "import socket,sys\ntry:\n s=socket.create_connection(('1.1.1.1',443),timeout=2)\n s.close()\n sys.exit(1)\nexcept OSError:\n sys.exit(0)"
             docker("exec", container_id, "python", "-c", probe)
             docker("container", "stop", "--time", "3", container_id)
             docker("container", "start", container_id)
-            port = inspect_container(container_id, network_id, manifest["imageId"])
+            inspect_container(container_id, internal_id, manifest["imageId"], [internal_id])
+            port = inspect_container(proxy_id, edge_id, manifest["imageId"], [internal_id, edge_id], proxy=True)
+            proxy_healthy(port, target_alias, mode)
             after = healthy(port, mode)
             assert after["caseId"] == before["caseId"] and after["runId"] != before["runId"]
             assert request(port, "/api/events")["events"] == []
             if mode == "database":
                 assert request(port, "/api/query", {"query": QUERY})["rows"] == rows
-            print("PASS: %s, real HTTP, isolation, restart and loaded image %s" % (mode, manifest["imageId"]))
+            print("PASS: %s, fixed proxy HTTP, target outbound isolation, restart and loaded image %s" % (mode, manifest["imageId"]), flush=True)
     except BaseException:
-        for container_id, _ in resources:
+        for container_id, network_id in resources:
+            emit_diagnostics(container_id, network_id)
             if container_id:
                 try:
-                    print(docker("container", "logs", "--tail", "100", container_id))
+                    print(docker("container", "logs", "--tail", "100", container_id)[-16384:], flush=True)
                 except subprocess.SubprocessError:
                     pass
         raise
     finally:
         # Only full IDs returned by this invocation; no labels, prune or name selectors.
-        for container_id, network_id in reversed(resources):
-            if container_id:
-                docker("container", "rm", "--force", container_id)
+        for container_id in reversed(containers):
+            docker("container", "rm", "--force", container_id)
+        for network_id in reversed(networks):
             docker("network", "rm", network_id)
 
 

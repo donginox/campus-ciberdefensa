@@ -2,6 +2,8 @@
 
 Decisión de arquitectura, verificada el 2026-11-02. Este documento describe el contrato recomendado; no prueba que las imágenes o el flujo aquí propuestos ya estén implementados o publicados.
 
+> Corrección comprobada en CI: publicar directamente un objetivo exclusivamente internal no funciona en Docker. El diseño final usa objetivo internal sin publish y proxy de destino fijo con red de acceso, documentado al final de mission-campus-spec.md. Referencia primaria: https://github.com/moby/moby/discussions/53256.
+
 > Registro de investigación previo a la implementación. Los nombres, endpoints y contratos finales están en [mission-campus-spec.md](mission-campus-spec.md) y [README del runtime](../lab-runtime/README.md). Las recetas implementadas se llaman `soc-response` y `database-fundamentals`; el replay se orquesta en el manager mediante peticiones HTTP reales.
 
 ## Alcance y recetas
