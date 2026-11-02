@@ -69,4 +69,3 @@ La ruta externa detalla entorno manual autorizado Windows/Linux con varios hosts
 `node --test tests/assessment-core.test.cjs tests/ui-assessment.test.cjs`: 20 pruebas, 20 aprobadas. Incluye preflight, entrega inmutable, orientación, casos distintos, guardado/reintento/remontaje, importación del mismo ID con epoch nuevo, texto escapado, accesibilidad estructural con axe y foco de teclado. Se verificó paridad JSON/JS y sintaxis Node.
 
 No se ejecutaron motores reales, Docker, VMs, acciones de host, instaladores ni QA visual nativa desde este módulo. La suite global y QA integrada corresponden a root. Axe no verificó contraste; el CSS usa los tokens existentes de ambos temas y controles de al menos 44px.
-

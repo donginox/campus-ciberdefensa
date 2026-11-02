@@ -50,9 +50,15 @@ class ProfileStore {
  serialize(action){const result=this.queue.then(action);this.queue=result.catch(()=>{});return result;}
  flush(){return this.queue;}
  async safeDirectory(){
-  const stat=await fs.lstat(this.directory);const real=await fs.realpath(this.directory);
-  const normalize=value=>process.platform==='win32'?value.toLowerCase():value;
-  if(!stat.isDirectory()||stat.isSymbolicLink()||normalize(real)!==normalize(this.directory))throw recoveryError();
+  // Reject redirected ancestors before resolving aliases or creating children.
+  // Windows short names can legitimately differ from realpath's long spelling.
+  const root=path.parse(this.directory).root;let cursor=root,stat;
+  for(const part of ['',...this.directory.slice(root.length).split(path.sep).filter(Boolean)]){
+   cursor=path.join(cursor,part);stat=await fs.lstat(cursor,{bigint:true});
+   if(!stat.isDirectory()||stat.isSymbolicLink())throw recoveryError();
+  }
+  const canonical=await fs.lstat(await fs.realpath(this.directory),{bigint:true});
+  if(!canonical.isDirectory()||canonical.isSymbolicLink()||stat.dev!==canonical.dev||stat.ino!==canonical.ino)throw recoveryError();
  }
  async safeFile(file){
   if(path.dirname(file)!==this.directory)throw recoveryError();

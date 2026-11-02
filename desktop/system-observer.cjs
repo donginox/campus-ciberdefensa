@@ -27,15 +27,22 @@ function linuxRows(kind,text){
   return {Protocol:cells[0],State:cells[1],LocalAddress:cells[4]};
  });
 }
+async function checkSandboxDirectories(absolute,{allowMissing=false}={}){
+ let cursor=path.parse(absolute).root;
+ for(const part of absolute.slice(cursor.length).split(path.sep).filter(Boolean)){
+  cursor=path.join(cursor,part);let stat;
+  try{stat=await fs.lstat(cursor)}catch(error){if(allowMissing&&error.code==='ENOENT')return;throw error}
+  if(stat.isSymbolicLink()||!stat.isDirectory())throw Error('unsafe sandbox parent');
+ }
+}
 class SystemObserver{
  constructor({platform=process.platform,runner=run,dataDir}={}){this.platform=platform;this.runner=runner;this.dataDir=dataDir}
  info(){return {platform:this.platform,kinds:[...KINDS],source:'real-host',maxRows:MAX_ROWS,maxBytes:MAX_BYTES,available:['win32','linux'].includes(this.platform),privacy:'Datos reales del equipo, temporales y locales. No se guardan automáticamente. Sin argumentos de procesos ni mensajes de eventos.'}}
  async sandbox(){
   if(!this.dataDir||!path.isAbsolute(this.dataDir))throw Error('sandbox unavailable');
-  // Refuse links in every existing parent, including Windows junctions.
-  const absolute=path.resolve(this.dataDir);let cursor=path.parse(absolute).root;
-  for(const part of absolute.slice(cursor.length).split(path.sep).filter(Boolean)){cursor=path.join(cursor,part);const stat=await fs.lstat(cursor);if(stat.isSymbolicLink()||!stat.isDirectory())throw Error('unsafe sandbox parent')}
-  const dir=path.join(absolute,'system-practice-sandbox');await fs.mkdir(dir,{recursive:true});const stat=await fs.lstat(dir);if(stat.isSymbolicLink()||!stat.isDirectory())throw Error('unsafe sandbox');
+  // Check every existing ancestor before creating the owned child directories.
+  // Recheck the entire chain after mkdir, including Windows junctions.
+  const dir=path.join(path.resolve(this.dataDir),'system-practice-sandbox');await checkSandboxDirectories(dir,{allowMissing:true});await fs.mkdir(dir,{recursive:true});await checkSandboxDirectories(dir);
   const file=path.join(dir,'evidence-example.txt');try{await fs.writeFile(file,'Datos ficticios de práctica Campus.\n',{flag:'wx'})}catch(error){if(error.code!=='EEXIST')throw error}
   const entry=await fs.lstat(file);if(entry.isSymbolicLink()||!entry.isFile()||entry.nlink!==1)throw Error('unsafe sandbox file');return file;
  }

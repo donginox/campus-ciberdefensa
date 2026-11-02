@@ -36,7 +36,3 @@ function create({getProfileId=()=>null,getProfileEpoch=()=>0,getRecord=()=>null,
 }
 window.AssessmentHub={create};
 })();
-
-
-
-

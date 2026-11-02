@@ -41,6 +41,25 @@ test('las brechas exportadas reflejan trabajo del perfil y objetivos concretos d
  const make=study=>portfolio.buildPortfolio({study,labs:{'mission-case':{lastEvidence:{caseId:'CASE-1',summary:'Observación local.'}}}},{competencies}).html;
  const html=make({lessons:{lesson:{read:true}}});assert.match(html,/Competencias y brechas pendientes/);assert.match(html,/Objetivo leído/);assert.match(html,/Lectura registrada; práctica y revisión pendientes/);assert.match(html,/Entorno externo pendiente/);assert.match(html,/Falta ejecutar y revisar en el entorno externo/);assert.match(html,/Falta cubrir almacenamiento remoto/);assert.match(html,/Procedimiento reproducible/);assert.notEqual(html,make({lessons:{}}));
 });
+const preparationEntry=patch=>({id:'evidence-1',certificationId:'cc',competencyId:'cc-controles',date:'2026-11-02',environment:'VM propia aislada',procedure:'PROCEDIMIENTO_VALIDO_BITACORA',result:'Observé el resultado del control.',interpretation:'La muestra requiere revisión y otra prueba.',help:'assisted',review:'pending',reviewNotes:'Revisión elegida por el alumno.',...patch});
+const ledgerCompetencies={certifications:[{id:'cc',name:'Ruta CC',domains:[{skills:[{id:'cc-controles',title:'Control registrado',practice:{kind:'external'},evidence:'Evidencia para revisar'},{id:'cc-continuidad',title:'Otra competencia',practice:{kind:'guided'}}]}]},{id:'ccst',name:'Otra certificación',domains:[{skills:[{id:'cc-controles',title:'Mismo identificador en otra certificación',practice:{kind:'external'}}]}]}]};
+function portfolioCompetencies(html){const dom=new(require('jsdom').JSDOM)(html);const entries=[...dom.window.document.querySelectorAll('.competency')].map(el=>el.textContent);dom.window.close();return entries;}
+test('la evidencia de bitácora actualiza solo su certificación y competencia sin cerrar brechas externas',()=>{
+ const html=portfolio.buildPortfolio({labs:{'preparation-ledger':{entries:[preparationEntry()]}}},{competencies:ledgerCompetencies}).html;
+ const [matched,otherSkill,otherCert]=portfolioCompetencies(html);assert.match(html,/PROCEDIMIENTO_VALIDO_BITACORA/);assert.match(matched,/Evidencia declarada en bitácora/);assert.doesNotMatch(matched,/Sin evidencia registrada/);assert.match(matched,/Revisión declarada: pendiente/);assert.match(matched,/no verifica ejecución ni dominio/);assert.match(matched,/Falta ejecutar y revisar en el entorno externo/);assert.match(otherSkill,/Sin evidencia registrada/);assert.match(otherCert,/Sin evidencia registrada/);
+});
+test('las brechas conservan la revisión propia o por tutor como declaraciones no verificadas',()=>{
+ for(const [review,want]of [['self',/Revisión declarada: propia/],['tutor',/Revisión declarada: por tutor, identidad no verificada por la app/]]){
+  const html=portfolio.buildPortfolio({labs:{'preparation-ledger':{entries:[preparationEntry({review})]}}},{competencies:ledgerCompetencies}).html;
+  const [matched]=portfolioCompetencies(html);assert.match(matched,/Evidencia declarada en bitácora/);assert.match(matched,want);assert.match(matched,/no verifica ejecución ni dominio/);assert.match(matched,/Falta ejecutar y revisar en el entorno externo/);
+ }
+});
+test('bitácoras importadas inválidas y borradores no se convierten en evidencia de competencias',()=>{
+ const invalidEntries=[preparationEntry({certificationId:'ccst'}),preparationEntry({competencyId:'no-existe'}),preparationEntry({date:'2026-02-30'}),preparationEntry({procedure:{toString:null}}),preparationEntry({result:42}),preparationEntry({review:{toString:null}}),preparationEntry({help:false})];
+ const ledgers=[null,42,[],{entries:{toString:null}},{entryDraft:preparationEntry(),entries:[]},...invalidEntries.map(entry=>({entries:[entry]}))];
+ for(const ledger of ledgers){const imported=require('../desktop/validation.cjs').jsonData({'preparation-ledger':ledger},1024*1024);let html;assert.doesNotThrow(()=>{html=portfolio.buildPortfolio({labs:imported},{competencies:ledgerCompetencies}).html});const [matched]=portfolioCompetencies(html);assert.match(matched,/Sin evidencia registrada/);assert.doesNotMatch(html,/PROCEDIMIENTO_VALIDO_BITACORA|\[object Object\]|toString/);}
+});
+
 test('agotar exactamente el presupuesto avisa que se omitió evidencia posterior',()=>{
  const lessons=Object.fromEntries(Array.from({length:24},(_,i)=>['lesson-'+i,{answer:'a'.repeat(250),notes:'n'.repeat(3500)}]));
  const html=portfolio.buildPortfolio({study:{lessons},labs:{'practice-later':{notes:'Evidencia guardada después de las clases.'}}},{}).html;

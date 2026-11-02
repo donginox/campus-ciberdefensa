@@ -22,8 +22,3 @@ function guidance(raw,id,now){if(!date(now))throw new Error('Indicá una fecha I
 function summary(raw){const r=normalize(raw);return {attempts:r.attempts.map(a=>{const peers=r.attempts.filter(b=>b.id!==a.id&&b.caseId===a.caseId),priorExposure=peers.some(b=>b.guidanceViews>0&&(!a.submittedAt||b.guidanceFirstAt<=a.submittedAt)),repeatedCase=peers.some(b=>b.startedAt<a.startedAt||b.startedAt===a.startedAt&&Number(b.id.slice(8))<Number(a.id.slice(8)));return {id:a.id,caseId:a.caseId,submittedAt:a.submittedAt,independence:a.guidanceViews||priorExposure?'guided':a.independence,reviewStatus:a.reviewStatus,external:a.execution==='external',hasEvidence:a.hasEvidence,priorExposure,repeatedCase}}),activeCaseId:r.activeCaseId}}
 return {normalize,start,update,submit,guidance,summary,REPORT_FIELDS,CASES};
 });
-
-
-
-
-

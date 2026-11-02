@@ -30,6 +30,27 @@ test('permissions inspect only generated Campus sandbox and reject redirected sa
  const o=new SystemObserver({dataDir:dir,platform:'linux'});const r=await o.observe('permissions');assert.equal(r.state,'available');assert.equal(r.rows[0].Name,'evidence-example.txt');assert.equal(await fs.readFile(path.join(dir,'system-practice-sandbox','evidence-example.txt'),'utf8'),'Datos ficticios de práctica Campus.\n');
  const bad=await fs.mkdtemp(path.join(os.tmpdir(),'campus-observer-link-'));t.after(()=>fs.rm(bad,{recursive:true,force:true}));await fs.symlink(dir,path.join(bad,'system-practice-sandbox'),'junction');const blocked=await new SystemObserver({dataDir:bad,platform:'linux'}).observe('permissions');assert.equal(blocked.state,'unavailable');
 });
+test('permissions initialize the absent application child directories before bounded observation',async t=>{
+ const root=await fs.mkdtemp(path.join(os.tmpdir(),'campus-observer-fresh-'));t.after(()=>fs.rm(root,{recursive:true,force:true}));
+ for(const platform of ['linux','win32']){
+  const dataDir=path.join(root,platform,'campus-data','system-practice'),file=path.join(dataDir,'system-practice-sandbox','evidence-example.txt');let calls=0;
+  const observer=new SystemObserver({dataDir,platform,runner:async(exe,args,options)=>{calls++;assert.equal(await fs.readFile(file,'utf8'),'Datos ficticios de práctica Campus.\n');assert.ok(args.at(-1).includes('Get-Acl -LiteralPath'));assert.ok(args.at(-1).includes(file.replace(/'/g,"''")));assert.equal(options.shell,false);return {stdout:'[{"Name":"evidence-example.txt","Identity":"Fixture","Rights":"Read","Type":"Allow","Inherited":true}]'}}});
+  const result=await observer.observe('permissions');assert.equal(result.state,'available',platform);assert.equal(result.rows.length,1);assert.equal(result.rows[0].Name,'evidence-example.txt');assert.equal(calls,platform==='win32'?1:0);assert.match(result.limitations.join(' '),/Solo archivo ficticio/);assert.equal(await fs.readFile(file,'utf8'),'Datos ficticios de práctica Campus.\n');
+ }
+});
+test('permissions reject a linked existing ancestor without creating its missing children outside',async t=>{
+ const root=await fs.mkdtemp(path.join(os.tmpdir(),'campus-observer-ancestor-'));t.after(()=>fs.rm(root,{recursive:true,force:true}));
+ const outside=path.join(root,'outside'),linked=path.join(root,'redirected');await fs.mkdir(outside);await fs.writeFile(path.join(outside,'keep.txt'),'untouched');await fs.symlink(outside,linked,process.platform==='win32'?'junction':'dir');let calls=0;
+ const result=await new SystemObserver({dataDir:path.join(linked,'campus-data','system-practice'),platform:'win32',runner:async()=>{calls++;return {stdout:'[]'}}}).observe('permissions');
+ assert.equal(result.state,'unavailable');assert.equal(calls,0);assert.deepEqual(await fs.readdir(outside),['keep.txt']);assert.equal(await fs.readFile(path.join(outside,'keep.txt'),'utf8'),'untouched');
+});
+test('permissions revalidate the created sandbox ancestors before writing the fictitious file',async t=>{
+ const root=await fs.mkdtemp(path.join(os.tmpdir(),'campus-observer-recheck-'));t.after(()=>fs.rm(root,{recursive:true,force:true}));
+ const dataDir=path.join(root,'owned'),outside=path.join(root,'outside'),sandbox=path.join(dataDir,'system-practice-sandbox');await fs.mkdir(dataDir);await fs.mkdir(path.join(outside,'system-practice-sandbox'),{recursive:true});const mkdir=fs.mkdir;let redirected=false,calls=0;
+ t.mock.method(fs,'mkdir',async function(target,...args){const result=await mkdir.call(this,target,...args);if(target===sandbox&&!redirected){redirected=true;await fs.rename(dataDir,path.join(root,'retained'));await fs.symlink(outside,dataDir,process.platform==='win32'?'junction':'dir');}return result;});
+ const result=await new SystemObserver({dataDir,platform:'win32',runner:async()=>{calls++;return {stdout:'[]'}}}).observe('permissions');
+ assert.equal(redirected,true);assert.equal(result.state,'unavailable');assert.equal(calls,0);assert.deepEqual(await fs.readdir(path.join(outside,'system-practice-sandbox')),[]);
+});
 test('Windows observation isolates module lookup from a PowerShell 7 parent environment',async()=>{
  const observer=new SystemObserver({platform:'win32',runner:async(_exe,_args,options)=>{if(options.env?.PSModulePath!=='C:\\Windows\\System32\\WindowsPowerShell\\v1.0\\Modules')throw Error('incompatible inherited module');return {stdout:'[{"Name":"demo","Status":"Running","StartType":"Automatic"}]'}}});
  const result=await observer.observe('services');assert.equal(result.state,'available');assert.equal(result.rows[0].Name,'demo');
