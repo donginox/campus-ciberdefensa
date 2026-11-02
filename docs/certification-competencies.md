@@ -119,4 +119,3 @@ Las 24 clases conservan su función docente:
 No todas las materias tienen igual presencia en cada examen. Completar esta base no demuestra cobertura de cinco certificaciones.
 
 Durante noviembre, conservar evidencia de la base y detectar brechas. En diciembre, revisar CC y CCST por separado y elegir profundidad principal entre Security+, BTL1 o eJPT. Una decisión de fecha necesita objetivos completos, prácticas pendientes resueltas y evaluaciones legítimas nuevas. Si falta Windows, una imagen forense, un SIEM o una red con segundo segmento, registrar **pendiente**, con próxima acción y nueva fecha de revisión; no compensarlo con casillas completadas.
-
