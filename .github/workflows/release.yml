@@ -83,7 +83,7 @@ jobs:
           required = {
               f'Campus-Ciberdefensa-{version}-win-x64.exe',
               f'Campus-Ciberdefensa-{version}-win-x64.exe.blockmap',
-              f'Campus-Ciberdefensa-{version}-linux-x64.AppImage',
+              f'Campus-Ciberdefensa-{version}-linux-x86_64.AppImage',
               'latest.yml', 'latest-linux.yml'
           }
           if not required <= names:
