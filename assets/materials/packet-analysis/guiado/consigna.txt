@@ -1,0 +1,41 @@
+CASO GUIADO — COMPROBACIÓN DE SERVICIO
+SINTÉTICO. Abrí primero ../LEEME.txt y completá custodia en la plantilla.
+
+Una revisión docente pide establecer qué ocurrió en WS-DEMO-01 alrededor de
+2026-10-03 12:00 UTC. Se entregan caso.pcap, endpoint.csv, servidor.csv y
+cambios.csv. El sensor ficticio ve ambos sentidos de este intercambio.
+No se presupone incidente. Evaluá si la operación observada coincide con
+el cambio autorizado exacto; separá resultados de red y de aplicación.
+
+1. Abrí una copia del PCAP en un lector. Anotá 13 paquetes, inicio, fin,
+   duración, encapsulación y tu zona de visualización. Si difieren, revisá
+   los hashes y filtros antes de inferir que cambió el escenario.
+2. Aplicá el filtro de visualización dns. En paquetes 1 y 2 registrá nombre,
+   ID de transacción, IP cliente/resolvedor, respuesta A y TTL. Explicá por
+   qué una respuesta DNS no equivale a una conexión ni prueba legitimidad.
+3. Usá tcp o tcp.port == 80. Identificá paquetes 3, 4 y 5 como inicio de
+   sesión. Anotá la tupla completa y flags. Si Wireshark usa números relativos,
+   aclará esa opción. ¿Qué consumen SYN y FIN en el espacio de secuencia?
+4. Seleccioná paquete 6 y Analyze > Follow > TCP Stream (o equivalente).
+   Anotá método, Host, ruta, cuerpo y Content-Length. Buscá respuesta en
+   paquete 8, status, cuerpo y bytes. Un ACK en 7 reconoce bytes TCP,
+   no una decisión HTTP. El filtro http muestra sólo mensajes HTTP;
+   no cambia la numeración original de los paquetes.
+5. Volvé a toda la conversación y documentá ACK y cierre en 9 a 13.
+   Escribí cronología con UTC completo y al menos seis referencias de paquete.
+6. Correlacioná EP-02/EP-03, WEB-01 y CHG-DEMO-01 usando tiempo, IP/puerto,
+   host, método, ruta y proceso. Sólo una coincidencia de hora no alcanza.
+   ¿Qué fuente atribuye el proceso? ¿Podés deducirlo únicamente del PCAP?
+7. Compará dos hipótesis: comprobación autorizada y acceso no previsto.
+   Indicá qué evidencia apoya cada una, qué descarta una alternativa y
+   qué no podés concluir sobre el equipo completo con 0,7 segundos de datos.
+8. Proponé una medida proporcionada con validación y efecto esperado.
+   Entregá informe inicial antes de solicitar la corrección separada.
+
+RÚBRICA VISIBLE (10 puntos, corrección humana o autoevaluación razonada)
+2: verifica integridad, custodia, herramienta y UTC.
+2: DNS/handshake/solicitud/respuesta/cierre con números de paquete correctos.
+2: cronología y correlación por campos, no sólo por horario.
+2: prueba alternativa, distingue hecho/inferencia y declara límites.
+2: acción proporcionada, verificación y asistencia declarada.
+Completar una lista o registrar un intento no acredita dominio.

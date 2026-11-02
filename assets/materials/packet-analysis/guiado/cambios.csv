@@ -1,0 +1,2 @@
+ticket,start_utc,end_utc,host,process,method,destination,path,approval,provenance
+CHG-DEMO-01,2026-10-03T11:55:00Z,2026-10-03T12:05:00Z,WS-DEMO-01,monitor-servicio-demo,GET,estado.campus.test:80,/status.txt,aprobado-solo-este-alcance,SINTETICO

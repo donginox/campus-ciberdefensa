@@ -1,0 +1,48 @@
+PROCEDENCIA Y LÍMITES — SINTÉTICO ORIGINAL
+Autoría: contenido docente propio de Campus Ciberdefensa, edición 2026-11-02.
+Generador del repositorio: scripts/build-packet-cases.py (Python estándar).
+No deriva de capturas públicas, datos de alumnos ni interfaces del anfitrión.
+Los PCAP se construyeron byte a byte con Ethernet/IPv4, DNS sobre UDP y
+una sesión TCP/HTTP en texto claro, con checksums de IPv4/UDP/TCP, handshake,
+secuencias, ACK, Content-Length y cierre FIN coherentes. Ethernet sin FCS;
+MAC locales ficticias. PCAP clásico little endian, v2.4, microsegundos,
+snaplen 65535, LINKTYPE_ETHERNET (1). No hay fragmentación ni truncamiento.
+
+guiado/caso.pcap: 13 paquetes, 2026-10-03 12:00:00.000000Z a .700000Z.
+transferencia/caso.pcap: 15 paquetes, 2026-10-04 12:00:00.000000Z a .900000Z.
+Cada CSV es una representación docente inventada, NO una extracción de
+EDR, EVTX o servidor real. endpoint.csv usa event_id EP-01 a EP-04 por caso;
+servidor.csv WEB-01; cambios.csv CHG-DEMO-01. Identificadores sólo únicos
+dentro de cada caso. No se debe sumar confianza como si las tres fuentes
+inventadas fueran adquisiciones independientes. Los nombres de procesos
+son etiquetas didácticas, no ejecutables distribuidos ni comandos a correr.
+
+Direcciones de documentación y dominios reservados .test:
+https://www.rfc-editor.org/info/rfc5737/
+https://www.rfc-editor.org/info/rfc2606/
+Los rangos de documentación no son instrucciones para configurar una red.
+No es necesario resolver estos dominios. Todo se inspecciona como datos.
+
+QA realizada: pruebas estándar independientes del escritor para registros,
+longitudes, hashes, checksums, secuencias, ACK, DNS y HTTP; lectura adicional
+con dpkt 1.9.8 (pcap.Reader, Ethernet, IPv4, DNS, Request y Response). El
+parser se instaló sólo en un venv de QA externo al proyecto, no como requisito
+de ejecución del campus. No se verificó visualmente con Wireshark en esta
+máquina. La prueba con lector real no sustituye capturas de sistemas reales.
+Fuente primaria del parser y versión fijada, consultadas 2026-11-02:
+https://pypi.org/project/dpkt/1.9.8/
+https://kbandla.github.io/dpkt/
+Guía primaria del analizador sugerido, consultada 2026-11-02:
+https://www.wireshark.org/docs/wsug_html/
+https://www.wireshark.org/download.html
+
+Hay dos manifiestos SHA256SUMS.txt según la entrega. El original de la carpeta
+completa cubre capturas, consignas, correcciones, fuentes y plantillas dentro
+de packet-analysis/; excluye el propio manifiesto y los HTML exteriores.
+El paquete offline, exportado con un solo botón del campus, omite ambas
+correcciones y regenera su manifiesto para los archivos realmente incluidos.
+Ese manifiesto del ZIP también cubre ../packet-analysis.html y ../indice.html;
+las rutas se verifican desde packet-analysis/. No mezcles las dos referencias.
+Las correcciones se exportan aparte después del primer informe guardado y no
+son necesarias para verificar el ZIP. Custodia, recepción y análisis reales
+deben documentarse por separado: sus fechas no son las del escenario inventado.

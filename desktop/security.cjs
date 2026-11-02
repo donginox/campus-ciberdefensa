@@ -19,6 +19,12 @@ function keys(arg,allowed){if(!v.plain(arg)||Object.keys(arg).some(k=>!allowed.i
 function labInput(arg,extra=[]){keys(arg,['profileId','labId',...extra]);v.id(arg.profileId);if(!['juice-shop','soc-response','database-fundamentals'].includes(arg.labId))throw new Error('Receta de laboratorio no permitida.');return arg;}
 function actor(value){if(typeof value!=='string'||!value.trim()||value.length>100||/[\u0000-\u001f\u007f]/.test(value))throw new Error('Actor del caso inválido.');return value.trim();}
 function validateCall(method,arg){switch(method){
+ case 'recoveryStatus':case 'recoverFromBackup':case 'openRecoveryFolder':if(arg!==undefined)throw new Error('La operación no acepta parámetros.');return;
+ case 'recoverStore':return v.id(arg);
+ case 'vmDoctor':case 'systemPracticeInfo':if(arg!==undefined)throw new Error('La operación no acepta parámetros.');return;
+ case 'vmStatus':case 'vmCreate':case 'vmStart':case 'vmStop':case 'vmSnapshot':case 'vmRestore':keys(arg,['profileId','templateId']);v.id(arg.profileId);if(!['windows','linux'].includes(arg.templateId))throw new Error('Plantilla de VM no permitida.');return arg;
+ case 'observeSystem':keys(arg,['profileId','kind']);v.id(arg.profileId);if(!['processes','services','network','events','permissions'].includes(arg.kind))throw new Error('Observación no permitida.');return arg;
+ case 'exportPortfolio':keys(arg,['profileId','format']);v.id(arg.profileId);if(!['pdf','html'].includes(arg.format))throw new Error('Formato de portafolio no permitido.');return arg;
  case 'getAppInfo':case 'listProfiles':case 'getActiveProfile':case 'getSystemLabInfo':case 'checkForUpdates':case 'installUpdate':case 'readyToClose':case 'realLabDoctor':case 'labCatalog':if(arg!==undefined)throw new Error('La operación no acepta parámetros.');return;
  case 'labStatus':case 'labStart':case 'labStop':case 'labReset':case 'labOpen':case 'labEvents':case 'labReplay':return labInput(arg);
  case 'labQuery':labInput(arg,['query']);if(arg.labId!=='database-fundamentals'||typeof arg.query!=='string'||!arg.query.trim()||Buffer.byteLength(arg.query)>8000)throw new Error('Consulta de sala inválida.');return arg;

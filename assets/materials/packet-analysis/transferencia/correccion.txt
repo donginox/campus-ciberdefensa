@@ -1,0 +1,48 @@
+CORRECCIÓN DE TRANSFERENCIA — RECURSO SEPARADO, DESPUÉS DEL INTENTO
+SINTÉTICO. No usar el veredicto del caso guiado como línea de base.
+
+15 paquetes; 2026-10-04 12:00:00Z a .900000Z (0,9 s).
+1 (.000000): estado-viejo.campus.test, DNS ID 0x2201, cliente 192.0.2.22:53002.
+2 (.020000): NXDOMAIN (rcode 3), sin respuesta A. No hay sesión TCP hacia
+   una IP de ese nombre en el conjunto; no confundir error DNS con un ataque.
+3 (.200000): recepcion.campus.test, ID 0x2202, cliente :53001 → 192.0.2.53:53.
+4 (.220000): A 198.51.100.80, TTL 300, sin error.
+5 (.400000): SYN 192.0.2.22:49162 → 198.51.100.80:80, secuencia real 4000.
+6 (.450000): SYN/ACK secuencia 9000, ACK 4001.
+7 (.500000): ACK 9001. El TCP funciona aunque la aplicación pueda rechazar.
+8 (.550000): POST /collect, Host recepcion.campus.test, Content-Length 32.
+   Cuerpo de 32 bytes, incluyendo LF: equipo=WS-DEMO-02&estado=prueba
+9 (.600000): ACK de la solicitud. Reconoce recepción de bytes TCP, no
+   autorización ni escritura persistente.
+10 (.650000): HTTP 403 Forbidden, cuerpo de 20 bytes incluyendo LF:
+   solicitud rechazada
+11 (.700000): ACK. 12 (.750000): FIN/ACK servicio. 13 (.800000): ACK.
+14 (.850000): FIN/ACK cliente. 15 (.900000): ACK final.
+
+EP-02 coincide con la conexión en .400000, EP-03 con POST en .550000 y
+utilidad-manual-demo PID 202. EP-04 código 0 describe salida del proceso,
+no aprobación HTTP. WEB-01 en .650000 declara política-rechaza-metodo,
+403 y cuerpos 32/20 bytes. Host/cliente/puerto/método/ruta coinciden.
+CHG-DEMO-01 autoriza monitor-servicio-demo, GET, estado.campus.test:80,
+/status.txt. La operación observada cae dentro del horario, pero cambia
+proceso, método, nombre de destino y ruta. No está cubierta por ese ticket.
+
+Dictamen limitado: hubo transmisión en claro de un cuerpo sintético de
+prueba, y la aplicación observada respondió rechazo. No afirmar "no salió
+ningún dato" por ver 403: los 32 bytes ya se ven en el paquete 8. Tampoco
+afirmar exportación aceptada, malware, filtración de secretos o autoría:
+el contenido es ficticio y faltan pruebas. Un 403 no demuestra que el
+servidor no guardó el cuerpo; faltan auditoría de almacenamiento y contexto.
+
+Alternativas: monitor autorizado frente a operación fuera del ticket.
+La segunda explica mejor los campos. Todavía son compatibles una prueba
+manual no registrada y un uso indebido: consultar responsable, historial
+de ejecución y autorización adicional sería necesario para distinguirlas.
+No derivar causalidad de la cercanía temporal del NXDOMAIN y el POST.
+
+Acciones propuestas: preservar evidencia, revisar con responsable el alcance
+del ticket, investigar la utilidad y posibles repeticiones, validar política
+de métodos/rutas y revisar logs de almacenamiento. Si se confirma riesgo,
+acotar temporalmente esa operación con impacto evaluado y prueba posterior.
+No aislar toda la organización ni atribuir un atacante sólo por este PCAP.
+Tras la corrección, anotá qué afirmación cambió y cuál evidencia la cambió.

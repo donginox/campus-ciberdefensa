@@ -10,17 +10,26 @@ La primera versión se construye sin certificado de firma de Windows. El reposit
 
 ## Estudiar y practicar
 
+- Guía de inicio reanudable: prioridad, fecha, disponibilidad flexible y entornos viables.
+- Diagnóstico de 24 preguntas, plan personal, agenda y repaso espaciado. Cinco simulacros docentes seleccionan preguntas de un banco propio de 48; repetirlas no mide preparación oficial.
 - 24 clases con teoría, prácticas, 72 preguntas y 48 tarjetas.
 - Windows y Linux, sistemas, redes, datos, programación y decisiones de seguridad.
 - Final integrador de siete estaciones y criterios de evidencia.
 - Roadmap de ISC2 CC, CCST Cybersecurity, Security+, BTL1 y eJPT, con enlaces directos.
 - Matriz «Qué necesito saber»: 27 competencias, clases, prácticas, evidencias y brechas con fuentes oficiales.
+- Cinco espacios de certificación y una bitácora con procedimiento, resultado, interpretación, asistencia y revisión declarada.
+- Diez prácticas Windows/Linux y tres campañas conectadas; observación real del equipo únicamente a pedido, sin guardar filas del host.
+- Dos casos PCAP originales con registros correlacionados, descarga ZIP sin conexión y correcciones después de registrar el informe.
+- Dos evaluaciones prácticas web/defensa con alcance previo, informes inmutables y registro de ayuda. El historial separa repetición, orientación y evidencia nueva.
+- Exportación PDF/HTML del portafolio; recuperación de datos dañados, checkpoints acotados y respaldo JSON externo.
 - Tres salas guiadas con tareas, pistas tras intento, notas y objetivos locales reales.
 - Ocho laboratorios locales; la aplicación identifica simulaciones, consultas SQL reales sobre datos sintéticos y prácticas guiadas que se realizan en Windows o Linux.
 - Perfiles locales separados y copia/restauración; un perfil local no sustituye autenticación o aislamiento entre cuentas del sistema operativo.
 - Lectura ampliada, contraste alto, temas claro/oscuro, espaciado y navegación con teclado.
 
 Para traer el progreso de la aplicación HTML anterior, descargá su copia JSON en «Guardado y ayuda» e importala en un perfil del programa nuevo. La aplicación no inspecciona el almacenamiento de tu navegador. Los archivos originales se conservan fuera de este repositorio.
+
+Empezá por **Guía de inicio**, continuá con el diagnóstico y abrí la primera tarea de **Mi plan**. Usá **Certificaciones** para relacionar cada competencia seleccionada con una evidencia y su próxima acción. La [guía de uso](docs/user-guide.md) explica el recorrido completo.
 
 ## Entornos de práctica reales
 
@@ -34,9 +43,15 @@ En «Salas prácticas» podés leer las instrucciones antes de encender un objet
 
 Cada objetivo permanece en una red interna sin puertos publicados. Un proxy propio de destino fijo abre el acceso exclusivamente en `127.0.0.1`; es el único componente con una segunda red de acceso. Los contenedores tienen límites de recursos y no montan carpetas del equipo. Defensa y SQLite se incluyen en el instalador como un archivo Docker verificado antes de cargarlo; Juice Shop requiere conexión inicial para obtener su imagen inmutable. Las notas y evidencias se guardan en el perfil; el estado en memoria de los casos propios se pierde al detener/reiniciar.
 
-En **Windows**, Docker Desktop con contenedores Linux permite ejecutar estos mismos objetivos. El campus no instala Docker, modifica WSL/Hyper-V ni inicia VMs existentes. Son servicios en contenedores, no escritorios completos Windows o Kali. Si Kali está en otra computadora, abrí la app Linux y Docker allí para trabajar sobre su localhost. No se expone el objetivo de Windows a la red doméstica.
+En **Windows**, Docker Desktop con contenedores Linux permite ejecutar estos mismos servicios. Además, **Escritorios VM** prepara máquinas propias Windows o Linux mediante VirtualBox 7.2: seleccionás una ISO válida, instalás el invitado manualmente, abrís su escritorio y guardás/restaurás una base. La app administra exclusivamente sus máquinas en un registro privado y comprueba propiedad, configuración y rutas antes de controlarlas. Usa una red interna, sin puente o NAT. Ver [máquinas virtuales](docs/vm-labs.md).
 
-Sin Docker podés estudiar las salas, guardar respuestas y utilizar los ocho ejercicios anteriores. Las prácticas Windows/Linux con sistemas completos, forense y pivoting quedan identificadas como pendientes de ejecutar en otro entorno; no se acreditan con estas salas.
+El campus no instala Docker, VirtualBox, WSL/Hyper-V ni sistemas operativos automáticamente. Si Kali está en otra computadora, abrí la app Linux allí para trabajar sobre su localhost; los objetivos de Windows no se exponen a la red doméstica. Sin motores podés estudiar, guardar informes y usar los ejercicios y archivos descargables. Las prácticas de sistemas se realizan en tu equipo o en un invitado preparado; las brechas de disco/memoria, SIEM, explotación entre hosts y pivoting siguen explícitas y requieren entornos adicionales.
+
+## Evidencias y recuperación
+
+El portafolio reúne resúmenes, procedencia elegida, rúbricas, bitácora y reportes entregados, con sus límites y brechas. Las declaraciones de ejecución, ayuda o tutor no verifican por sí solas identidad ni dominio. Los borradores de exámenes e informes prácticos no se exportan como entregas.
+
+**Copias y recuperación** permite inspeccionar versiones válidas y restaurarlas mediante confirmación nativa. Antes de reemplazar los datos se preserva el archivo actual. Hay hasta cinco checkpoints y cinco originales preservados; al alcanzar este último límite la app pide archivarlos antes de otra recuperación. La inspección y la cancelación no reemplazan datos. Exportá también JSON fuera del disco de estudio. Ver [recuperación](docs/recovery.md).
 
 Ver [topología y prácticas](docs/real-labs-topology.md), [competencias y brechas](docs/certification-competencies.md) y [referencias públicas del diseño](docs/learning-experience-research.md). Al cerrar el campus, un contenedor puede seguir encendido hasta elegir Detener. No hay servidor multiusuario ni sincronización entre equipos.
 

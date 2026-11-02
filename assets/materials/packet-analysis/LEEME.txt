@@ -1,0 +1,87 @@
+ANÁLISIS DE PAQUETES — DOS CASOS ORIGINALES SINTÉTICOS
+Edición 2026-11-02. Material docente propio, no material de un examen oficial.
+
+Objetivo: reconstruir DNS → TCP → HTTP, correlacionar eventos, probar una
+hipótesis alternativa y recomendar acciones proporcionadas con evidencia.
+Cada PCAP contiene una conversación pequeña y completa, no tráfico del host.
+Todos los usuarios, procesos, servicios, tiempos y registros fueron inventados.
+No contiene malware, credenciales reales ni contenido ejecutable.
+
+ANTES DE COMENZAR
+1. Usá «Exportar paquete offline ZIP» en la pantalla del campus: un solo
+   guardado reúne la guía y evidencia. Extraelo conservando packet-analysis/
+   con LEEME.txt, procedencia.txt, plantilla-informe.txt, SHA256SUMS.txt y las
+   carpetas guiado/ y transferencia/. Cada caso incluye caso.pcap, consigna.txt,
+   endpoint.csv, servidor.csv y cambios.csv. Abrí packet-analysis.html desde
+   la raíz extraída. No alcanza copiar únicamente el PCAP.
+   El ZIP excluye ambas correccion.txt: después de guardar el primer informe
+   de un caso, exportá su corrección aparte desde el campus. No hace falta
+   agregarla para verificar el ZIP. Si recibís archivos individuales, conservá
+   la misma estructura; el manifiesto original completo incluye correcciones
+   y requiere los seis archivos por caso para una verificación completa.
+2. Registrá recepción real, responsable, origen docente, nombres, tamaños,
+   SHA-256, versión del analizador y zona horaria en plantilla-informe.txt.
+3. Conservá una carpeta originales y creá una copia trabajo. Copiar estos
+   archivos propios es suficiente; no requiere permisos administrativos.
+   No sobreescribas un original, tu informe o un intento anterior.
+4. Verificá hashes antes y después del análisis. Guardá la salida y cualquier
+   diferencia. Un hash igual prueba igualdad de bytes con esta referencia,
+   no autoría, confianza independiente ni cadena de custodia judicial.
+
+VERIFICACIÓN DE SHA-256
+Linux, desde packet-analysis con la estructura recibida:
+  sha256sum -c SHA256SUMS.txt
+Windows PowerShell, desde esa misma carpeta (sin instalación adicional):
+  Get-Content -LiteralPath .\SHA256SUMS.txt | ForEach-Object {
+    $camposCaso = $_ -split '  ', 2
+    $archivoCaso = Join-Path (Get-Location) $camposCaso[1]
+    $actualCaso = (Get-FileHash -LiteralPath $archivoCaso -Algorithm SHA256).Hash.ToLowerInvariant()
+    [pscustomobject]@{ Archivo=$camposCaso[1]; Coincide=($actualCaso -eq $camposCaso[0]) }
+  }
+Usá siempre el SHA256SUMS.txt recibido con esa modalidad de entrega:
+- El del ZIP se genera para su subconjunto real: no lista correcciones y sí
+  verifica las dos páginas HTML exteriores con ../packet-analysis.html y
+  ../indice.html. Esas rutas son relativas a esta carpeta packet-analysis/.
+- El original de la carpeta completa lista todos sus recursos, incluidas
+  correcciones; excluye el propio manifiesto y los HTML exteriores.
+Si falta un archivo listado, recuperá ese archivo de la misma entrega antes
+de comparar. No mezcles ambos manifiestos. Conservá la referencia recibida;
+no regeneres hashes para ocultar una diferencia.
+
+HERRAMIENTA EXTERNA OPCIONAL
+El campus no instala ni ejecuta analizadores. Si ya tenés Wireshark en
+Windows o Linux, Archivo > Abrir sobre la COPIA de caso.pcap permite
+resolver la práctica offline. No inicies captura ni abras una interfaz.
+Si te falta, consultá por tu cuenta el sitio oficial:
+https://www.wireshark.org/download.html
+La página ofrece instaladores Windows y rutas para Linux. La instalación
+es una preparación externa voluntaria, no una acción del campus; abrir
+archivos existentes no exige capturar tráfico. Después de tener el lector
+y exportar los archivos, el análisis de estos casos funciona sin red.
+Guía oficial de filtros y Follow TCP Stream:
+https://www.wireshark.org/docs/wsug_html/
+No visites los dominios de los paquetes ni ejecutes peticiones o escaneos.
+
+TIEMPO Y FUENTES
+Configurá visualización UTC con fecha y hora completa. Todos los CSV usan
+ISO 8601 con Z (UTC), y el PCAP guarda epoch con microsegundos. Por ejemplo,
+12:00:00Z corresponde a 09:00:00 con desplazamiento UTC-03:00. Conservá
+también el UTC original en el informe. No uses fecha de exportación ni
+mtime del archivo como tiempo del evento. Los relojes son coherentes por
+construcción, sin deriva simulada; microsegundos de formato no equivalen a
+precisión forense medida. El punto ficticio de observación ve ambos sentidos
+del flujo entre cliente y servicio y la consulta al resolvedor; no representa
+todo el tráfico de una organización. Cada caso tiene su propia fecha.
+
+RECORRIDO
+Primero guiado/consigna.txt con ayuda de los filtros. Entregá un informe
+antes de contrastar guiado/correccion.txt. Luego transferencia/consigna.txt
+con datos y resultado diferentes: escribí el procedimiento sin copiar la
+conclusión del primero. Registrá toda ayuda utilizada. El campus ofrece
+corrección después de registrar el intento. Los archivos se distribuyen
+con el programa y pueden leerse fuera de él: esto organiza el aprendizaje,
+no es un mecanismo antitrampa ni un examen supervisado.
+
+Una captura breve no acredita operación de un SOC, adquisición real,
+respuesta a incidentes, análisis de TLS, malware ni cobertura completa de
+una certificación. La rúbrica evalúa este conjunto limitado de evidencia.

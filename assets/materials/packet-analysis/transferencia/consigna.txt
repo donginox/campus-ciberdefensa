@@ -1,0 +1,40 @@
+CASO DE TRANSFERENCIA — REVISIÓN DE UNA OPERACIÓN WEB
+SINTÉTICO ORIGINAL. Resolver después del caso guiado, con un informe nuevo.
+
+Revisá WS-DEMO-02 alrededor de 2026-10-04 12:00 UTC. El equipo de soporte
+pregunta si la operación web observada coincide con la autorización y qué
+resultado puede demostrar la evidencia. Se entregan caso.pcap, endpoint.csv,
+servidor.csv y cambios.csv. La captura no representa toda la actividad del
+equipo. No supongas que el resultado es el mismo que el caso anterior.
+
+Prepará custodia y hashes. Definí pregunta, línea de base e hipótesis antes
+de redactar el veredicto. Elegí tus propios filtros de visualización.
+
+ENTREGA INDEPENDIENTE
+A. Inventario con tamaños, SHA-256, lector/versión, zona UTC y alcance.
+B. Tabla de las consultas DNS y sus resultados, con número de paquete,
+   transacción, nombre e IP. Explicá si cada consulta conduce a una sesión.
+C. Tupla TCP, tres paquetes del handshake, secuencias/ACK y cierre.
+D. Reconstrucción HTTP: método, Host, ruta, solicitud y respuesta, bytes de
+   cada cuerpo. Diferenciá dato transmitido, acuse TCP y resultado HTTP.
+E. Cronología de al menos ocho hechos con UTC, número de paquete y/o
+   event_id. Correlacioná proceso, servidor y autorización por varios campos.
+F. Dos hipótesis plausibles y una prueba que discrimine entre ellas. Registrá
+   también una hipótesis o filtro que no funcionó. Indicá límites y evidencia
+   adicional requerida antes de afirmar autoría, impacto o persistencia.
+G. Dictamen limitado, confianza, acciones proporcionadas, impacto esperado
+   y cómo verificarías la remediación. No ejecutes cambios reales.
+H. Asistencia utilizada, integridad final y próximo paso de aprendizaje.
+
+No consultes correccion.txt hasta guardar tu primer informe. La corrección
+es un recurso docente separado, no una protección contra lectura anticipada.
+Conservá tu intento inicial y añadí una revisión sin reemplazarlo.
+
+RÚBRICA VISIBLE (10 puntos)
+2: custodia, hashes, tiempo y alcance verificables.
+2: DNS/TCP/HTTP con evidencia y números de paquete.
+2: cronología y correlación precisa con los registros.
+2: alternativa contrastada, límites y distinción entre capas/resultados.
+2: acciones verificables y ayuda declarada.
+No cuenta como práctica independiente si copiaste la corrección; registrá
+esa ayuda y repetí después con otro conjunto de evidencia externo autorizado.

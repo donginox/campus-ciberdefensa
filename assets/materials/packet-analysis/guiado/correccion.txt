@@ -1,0 +1,35 @@
+CORRECCIÓN GUIADA — LEER DESPUÉS DE ENTREGAR UN INTENTO
+SINTÉTICO. Una conclusión sin evidencia no obtiene crédito por coincidir.
+
+PCAP: 13 paquetes; 2026-10-03 12:00:00Z a 12:00:00.700000Z (0,7 s).
+1 (.000000): 192.0.2.11:53001 pregunta a 192.0.2.53:53 por estado.campus.test,
+   transacción 0x2202, A/IN.
+2 (.020000): respuesta A 198.51.100.80, TTL 300, sin error.
+3 (.200000): 192.0.2.11:49161 → 198.51.100.80:80 SYN, secuencia real 1000.
+4 (.250000): SYN/ACK del servicio, secuencia 5000, ACK 1001.
+5 (.300000): ACK 5001, sesión iniciada.
+6 (.350000): GET /status.txt, Host estado.campus.test, Content-Length 0.
+7 (.400000): ACK de los bytes de la solicitud, no aceptación HTTP.
+8 (.450000): HTTP 200, Content-Length 33; cuerpo de 33 bytes incluyendo LF:
+   campus-demo: servicio disponible
+9 (.500000): ACK de respuesta. 10 (.550000): FIN/ACK del servidor.
+11 (.600000): ACK; 12 (.650000): FIN/ACK cliente; 13 (.700000): ACK final.
+
+EP-02 coincide con la tupla y apertura en .200000; EP-03 con la solicitud
+en .350000 y monitor-servicio-demo, PID 101. WEB-01 coincide con respuesta
+en .450000, método/ruta/host, cliente/puerto y 0/33 bytes de cuerpo.
+CHG-DEMO-01 permite ese proceso y GET a estado.campus.test:80/status.txt
+en WS-DEMO-01 entre 11:55 y 12:05 UTC. Los campos, no sólo el horario,
+son compatibles con una comprobación autorizada que recibió HTTP 200.
+La atribución del proceso viene del CSV sintético, no del protocolo TCP.
+
+Alternativa: acceso ajeno al cambio. Pierde apoyo al comparar el alcance
+exacto con los registros proporcionados, pero una captura limitada no
+descarta actividad fuera de esta ventana, suplantación del log o compromiso
+previo del proceso. No hay evidencia aquí para atribuir un actor o aislar
+todo el equipo. No afirmar que todo el host es seguro.
+Medida proporcionada: documentar la comprobación, conservar referencias y
+revisar eventos adicionales si existiera otra señal concreta; validar que
+la autorización y la política de HTTP claro son apropiadas. Recomendar TLS
+para datos sensibles futuros no demuestra que este texto de prueba lo sea.
+No se ejecutan cambios desde este ejercicio.
