@@ -16,8 +16,14 @@ function resourcePath(raw,root){
  const result=path.resolve(root,relative),base=path.resolve(root)+path.sep;if(!result.startsWith(base))throw new Error('Ruta inválida.');return result;
 }
 function keys(arg,allowed){if(!v.plain(arg)||Object.keys(arg).some(k=>!allowed.includes(k))||allowed.some(k=>!Object.hasOwn(arg,k)))throw new Error('Parámetros inválidos.');}
+function labInput(arg,extra=[]){keys(arg,['profileId','labId',...extra]);v.id(arg.profileId);if(!['juice-shop','soc-response','database-fundamentals'].includes(arg.labId))throw new Error('Receta de laboratorio no permitida.');return arg;}
+function actor(value){if(typeof value!=='string'||!value.trim()||value.length>100||/[\u0000-\u001f\u007f]/.test(value))throw new Error('Actor del caso inválido.');return value.trim();}
 function validateCall(method,arg){switch(method){
- case 'getAppInfo':case 'listProfiles':case 'getActiveProfile':case 'getSystemLabInfo':case 'checkForUpdates':case 'installUpdate':case 'readyToClose':case 'realLabDoctor':if(arg!==undefined)throw new Error('La operación no acepta parámetros.');return;
+ case 'getAppInfo':case 'listProfiles':case 'getActiveProfile':case 'getSystemLabInfo':case 'checkForUpdates':case 'installUpdate':case 'readyToClose':case 'realLabDoctor':case 'labCatalog':if(arg!==undefined)throw new Error('La operación no acepta parámetros.');return;
+ case 'labStatus':case 'labStart':case 'labStop':case 'labReset':case 'labOpen':case 'labEvents':case 'labReplay':return labInput(arg);
+ case 'labQuery':labInput(arg,['query']);if(arg.labId!=='database-fundamentals'||typeof arg.query!=='string'||!arg.query.trim()||Buffer.byteLength(arg.query)>8000)throw new Error('Consulta de sala inválida.');return arg;
+ case 'labAssess':labInput(arg,['actor','failures']);if(arg.labId!=='soc-response'||!Number.isInteger(arg.failures)||arg.failures<0||arg.failures>300)throw new Error('Evaluación de caso inválida.');return {...arg,actor:actor(arg.actor)};
+ case 'labContain':labInput(arg,['actor']);if(arg.labId!=='soc-response')throw new Error('Contención no disponible en esta receta.');return {...arg,actor:actor(arg.actor)};
  case 'createProfile':return v.name(arg);
  case 'selectProfile':case 'exportBackup':case 'importBackup':case 'realLabStatus':case 'startRealLab':case 'stopRealLab':case 'resetRealLab':case 'openRealLab':return v.id(arg);
  case 'renameProfile':keys(arg,['id','name']);return {id:v.id(arg.id),name:v.name(arg.name)};

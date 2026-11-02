@@ -14,6 +14,8 @@ La primera versión se construye sin certificado de firma de Windows. El reposit
 - Windows y Linux, sistemas, redes, datos, programación y decisiones de seguridad.
 - Final integrador de siete estaciones y criterios de evidencia.
 - Roadmap de ISC2 CC, CCST Cybersecurity, Security+, BTL1 y eJPT, con enlaces directos.
+- Matriz «Qué necesito saber»: 27 competencias, clases, prácticas, evidencias y brechas con fuentes oficiales.
+- Tres salas guiadas con tareas, pistas tras intento, notas y objetivos locales reales.
 - Ocho laboratorios locales; la aplicación identifica simulaciones, consultas SQL reales sobre datos sintéticos y prácticas guiadas que se realizan en Windows o Linux.
 - Perfiles locales separados y copia/restauración; un perfil local no sustituye autenticación o aislamiento entre cuentas del sistema operativo.
 - Lectura ampliada, contraste alto, temas claro/oscuro, espaciado y navegación con teclado.
@@ -22,11 +24,21 @@ Para traer el progreso de la aplicación HTML anterior, descargá su copia JSON 
 
 ## Entornos de práctica reales
 
-En «Entornos reales» podés comprobar Docker local e iniciar OWASP Juice Shop con una imagen fijada, red interna propia y un puerto publicado únicamente en127.0.0.1. Los controles permiten abrir, detener y restablecer el objetivo de tu perfil; restablecer requiere confirmación. El campus no instala Docker ni modifica WSL, Hyper-V o tus VMs.
+En «Salas prácticas» podés leer las instrucciones antes de encender un objetivo. El campus comprueba Docker local (motor Linux 28 o superior), conserva el avance docente separado del estado del entorno y ofrece iniciar, abrir, detener y restablecer. Restablecer exige una confirmación nativa con el nombre del objetivo.
 
-Esto ejecuta una aplicación vulnerable real en un contenedor; no levanta un sistema operativo de VM. La guía incluida distingue contenedores, VMs y laboratorios externos. Si Kali está en otra computadora, ejecutá la app Linux y Docker allí para practicar sobre su localhost. La guía propone también una topología VirtualBox privada y prácticas Windows con evidencia.
+| Sala | Qué corre realmente | Qué practica |
+| --- | --- | --- |
+| Investigación web | OWASP Juice Shop, imagen fijada por digest | Observación de una aplicación vulnerable, evidencia e hipótesis con revisión manual |
+| Investigación defensiva | Servicio HTTP propio y eventos capturados | Tráfico de prueba, análisis de fallos/acceso, comprobación de hipótesis y bloqueo dentro de la aplicación |
+| Investigación SQL | SQLite real en un servicio propio | Consultas de solo lectura sobre registros sintéticos variables y evaluación del resultado |
 
-Ver [topología y prácticas](docs/real-labs-topology.md) y la guía descargable desde la app. Al cerrar el campus el contenedor puede seguir encendido hasta que elijas Detener. Las notas del campus se guardan por separado del objetivo.
+Los objetivos se publican exclusivamente en `127.0.0.1`, con redes internas y límites de recursos propios. Defensa y SQLite se incluyen en el instalador como un archivo Docker verificado antes de cargarlo; Juice Shop requiere conexión inicial para obtener su imagen inmutable. Las notas y evidencias se guardan en el perfil; el estado en memoria de los casos propios se pierde al detener/reiniciar.
+
+En **Windows**, Docker Desktop con contenedores Linux permite ejecutar estos mismos objetivos. El campus no instala Docker, modifica WSL/Hyper-V ni inicia VMs existentes. Son servicios en contenedores, no escritorios completos Windows o Kali. Si Kali está en otra computadora, abrí la app Linux y Docker allí para trabajar sobre su localhost. No se expone el objetivo de Windows a la red doméstica.
+
+Sin Docker podés estudiar las salas, guardar respuestas y utilizar los ocho ejercicios anteriores. Las prácticas Windows/Linux con sistemas completos, forense y pivoting quedan identificadas como pendientes de ejecutar en otro entorno; no se acreditan con estas salas.
+
+Ver [topología y prácticas](docs/real-labs-topology.md), [competencias y brechas](docs/certification-competencies.md) y [referencias públicas del diseño](docs/learning-experience-research.md). Al cerrar el campus, un contenedor puede seguir encendido hasta elegir Detener. No hay servidor multiusuario ni sincronización entre equipos.
 
 ## Actualizaciones
 
@@ -45,6 +57,9 @@ npm start
 ```
 
 ```sh
+# Primero, con Docker disponible, preparar el runtime incluido:
+python scripts/build-lab-runtime.py --version 0.1.0 --output-dir .local/lab-runtime
+python scripts/smoke-lab-runtime.py --runtime-dir .local/lab-runtime
 npm run dist:win
 npm run dist:linux
 ```
@@ -58,7 +73,8 @@ desktop/       ventana, perfiles, archivos, IPC y actualizaciones
 src/renderer/ interfaz de estudio
 src/labs/     motores aislados y simuladores
 src/shared/   reglas de progreso y copias
-src/content/  clases y roadmap
+src/content/  clases, roadmap, misiones y competencias
+lab-runtime/ servicio HTTP/SQLite propio empaquetado como imagen Docker
 assets/       materiales docentes y datos sintéticos
 tests/        pruebas de comportamiento
 ```

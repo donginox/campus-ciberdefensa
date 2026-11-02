@@ -18,6 +18,11 @@ files:
 extraResources:
   - from: node_modules/sql.js/dist/sql-wasm.wasm
     to: sql-wasm.wasm
+  - from: .local/lab-runtime
+    to: lab-runtime
+    filter:
+      - manifest.json
+      - runtime.tar.gz
 artifactName: Campus-Ciberdefensa-${version}-${os}-${arch}.${ext}
 publish:
   provider: github

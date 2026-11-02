@@ -1,0 +1,246 @@
+window.CAMPUS_MISSIONS = {
+  "version": 1,
+  "scopeNote": "Salas docentes originales. Las tareas marcadas son declaraciones del alumno y las comprobaciones SOC/SQL son formativas. Ninguna sala acredita una certificación. Los datos de los casos son ficticios; el servicio HTTP y SQLite sí se ejecutan localmente cuando el entorno está disponible.",
+  "rooms": [
+    {
+      "id": "web-investigation",
+      "labId": "juice-shop",
+      "title": "Investigar una aplicación web",
+      "eyebrow": "01 · Observación y criterio",
+      "minutes": 45,
+      "description": "Delimitá un objetivo autorizado, observá una solicitud y construí un hallazgo reproducible en OWASP Juice Shop.",
+      "intro": "Un hallazgo empieza con una pregunta y una frontera clara. Esta sala utiliza una tienda vulnerable de laboratorio. Tu objetivo es explicar qué solicitud hiciste, qué devolvió el servicio y qué control tendría que decidir el acceso. Una respuesta distinta no prueba por sí sola una vulnerabilidad.",
+      "environment": "Aplicación web real · Contenedor local",
+      "limits": "Juice Shop es una aplicación web vulnerable; no es una VM Windows ni una red de pentesting. El campus no comprueba automáticamente sus retos. Conservá la solicitud, el resultado y los límites de tu conclusión en tus notas. Trabajá únicamente sobre el objetivo publicado por este perfil.",
+      "concepts": [
+        {
+          "title": "Alcance antes de herramientas",
+          "text": "Escribí el activo, la dirección local autorizada y la acción permitida. Una dirección que ves dentro de un enlace no amplía el permiso de la práctica."
+        },
+        {
+          "title": "Autenticación y autorización",
+          "text": "Autenticar responde quién sos; autorizar decide qué recurso y acción podés usar. Una interfaz que oculta un botón todavía necesita un control del lado del servicio."
+        },
+        {
+          "title": "Observación, hipótesis y prueba",
+          "text": "Separá lo que devolvió HTTP de lo que suponés que ocurrió. Cambiá una condición por vez, repetí y describí también el resultado esperado de un control correcto."
+        }
+      ],
+      "lessonIds": [
+        "linux-http-local",
+        "fronteras-confianza",
+        "riesgo-cambios"
+      ],
+      "competencyIds": [
+        "ccst-priorizar",
+        "sec-interpretar-hallazgos",
+        "ejpt-alcance-enumerar",
+        "ejpt-web-validar"
+      ],
+      "certifications": [
+        "Cisco CCST",
+        "Security+",
+        "eJPT"
+      ],
+      "tasks": [
+        {
+          "id": "web-scope",
+          "title": "Delimitá el trabajo",
+          "instruction": "Antes de iniciar, describí qué objetivo vas a usar, qué acción vas a observar y dónde vas a detenerte. Después comprobá el entorno e iniciá el objetivo local.",
+          "question": "¿Qué dirección pertenece a este objetivo y qué cambiaría si Kali está en otra computadora?",
+          "hint": "Compará equipo del campus, dirección loopback y equipo que ejecuta tu navegador.",
+          "solution": "La dirección válida es la que el controlador muestra para este perfil en 127.0.0.1. Loopback apunta al equipo que hace la solicitud. Para trabajar en otra computadora, ejecutá allí Campus y el motor o elegí un entorno externo autorizado; no supongas que 127.0.0.1 apunta a Windows."
+        },
+        {
+          "id": "web-http",
+          "title": "Observá una solicitud",
+          "instruction": "Abrí el objetivo. En las herramientas de desarrollo del navegador, mirá la solicitud de una acción de navegación sencilla. Registrá método, ruta, estado y una parte mínima de la respuesta sin copiar tokens.",
+          "question": "¿Qué observaste directamente y qué todavía es una hipótesis?",
+          "hint": "Un código HTTP describe una respuesta concreta; no demuestra toda la lógica del servicio.",
+          "solution": "Método, ruta, estado y cuerpo observado son evidencia de esa solicitud. Que un recurso exista, que otro usuario pueda verlo o que haya una vulnerabilidad requiere pruebas adicionales. Anotá esas hipótesis por separado."
+        },
+        {
+          "id": "web-control",
+          "title": "Contrastá un control",
+          "instruction": "Elegí una acción de autenticación o acceso dentro del laboratorio. Compará dos estados permitidos de la práctica y guardá el resultado de cada uno. No automatices pruebas contra otros sitios.",
+          "question": "¿Qué tendría que verificar el servicio y qué repetición confirmaría tu observación?",
+          "hint": "Pensá en identidad, recurso y permiso; un control visual no alcanza.",
+          "solution": "El servicio debe comprobar identidad y autorización para el recurso y la acción. Repetí con condiciones conocidas, registrá ambas respuestas y evitá concluir que un botón oculto constituye una autorización segura. Si no pudiste comprobarlo, registralo como pendiente."
+        },
+        {
+          "id": "web-report",
+          "title": "Comunicá un hallazgo limitado",
+          "instruction": "Redactá un informe breve: alcance, pasos, resultado observado, resultado esperado, impacto posible y mitigación. Detené el objetivo al terminar.",
+          "question": "¿Qué evidencia permitiría a otra persona reproducirlo y qué límite le advertirías?",
+          "hint": "Una conclusión útil permite repetir la prueba y también dice qué no se probó.",
+          "solution": "Incluí el objetivo local, condiciones iniciales, solicitud mínima, respuesta, pasos de repetición y propuesta de control. Diferenciá impacto observado de impacto supuesto. Un ejercicio sobre Juice Shop no demuestra explotación de hosts ni pivoting."
+        }
+      ],
+      "evidencePrompt": "Registrá la solicitud mínima, resultados contrastados, conclusión y límites. Es evidencia declarada por vos; pedí revisión de un tutor.",
+      "nextPractice": {
+        "title": "Web Security Academy · práctica externa autorizada",
+        "text": "Elegí un laboratorio de autorización o autenticación y repetí el formato de informe. Requiere un entorno externo; el campus no registra su aprobación.",
+        "url": "https://portswigger.net/web-security"
+      }
+    },
+    {
+      "id": "soc-investigation",
+      "labId": "soc-response",
+      "title": "Investigar y contener un caso HTTP",
+      "eyebrow": "02 · Evidencia y respuesta",
+      "minutes": 50,
+      "description": "Generá tráfico HTTP real, correlacioná registros de actores ficticios y justificá una contención en la aplicación de práctica.",
+      "intro": "Un registro es una observación acotada, no una explicación completa. En esta sala un servicio HTTP produce eventos reales de un caso con identidades ficticias. Vas a separar actor de red, construir una secuencia, comprobar una hipótesis y registrar qué efecto tuvo una contención.",
+      "environment": "HTTP y registros reales · Caso ficticio local",
+      "limits": "La repetición genera solicitudes HTTP predefinidas al contenedor de este perfil. X-Campus-Actor identifica un actor ficticio del caso; peer identifica el origen HTTP que observó el servicio. El bloqueo afecta solo a esta aplicación de práctica: no cambia el firewall, no investiga el sistema operativo y no constituye un SIEM completo.",
+      "concepts": [
+        {
+          "title": "Actor del caso y peer HTTP",
+          "text": "Una etiqueta ficticia permite correlacionar el ejercicio. El peer es la dirección del cliente que el servidor ve en HTTP; con una red de contenedores puede ser una pasarela. No atribuyas identidad humana a esa dirección."
+        },
+        {
+          "title": "Secuencia y calidad del indicio",
+          "text": "Fallos de inicio, un éxito posterior y un acceso administrativo justifican investigar su relación. Contá eventos del mismo actor y conservá sus identificadores; un fallo aislado también puede ser un error legítimo."
+        },
+        {
+          "title": "Contención con alcance y comprobación",
+          "text": "Decidí una acción proporcional, registrá su alcance y comprobá el efecto. La contención no sustituye preservar evidencia, investigar la causa y planificar recuperación."
+        }
+      ],
+      "lessonIds": [
+        "windows-eventos",
+        "riesgo-cambios",
+        "recuperacion-rto-rpo"
+      ],
+      "competencyIds": [
+        "cc-triaje-datos",
+        "ccst-escalar",
+        "btl-caso-integrado"
+      ],
+      "certifications": [
+        "ISC2 CC",
+        "Cisco CCST",
+        "BTL1"
+      ],
+      "tasks": [
+        {
+          "id": "soc-scope",
+          "title": "Prepará la fuente",
+          "instruction": "Iniciá el servicio, abrí el dashboard y generá el tráfico del caso con Repetir tráfico. Consultá los eventos actuales.",
+          "question": "¿Qué parte del ejercicio es real y qué representa una identidad ficticia?",
+          "hint": "Diferenciá transporte, registro y etiqueta de escenario.",
+          "solution": "Las solicitudes y los registros cruzan HTTP real al servicio local. El actor es una etiqueta ficticia del caso; el peer es el origen HTTP observado por el servicio. Ninguno demuestra por sí solo la identidad de una persona."
+        },
+        {
+          "id": "soc-correlate",
+          "title": "Formulá una hipótesis",
+          "instruction": "Leé la secuencia. Buscá fallos de inicio relacionados por actor, observá lo que ocurrió después y contá los fallos. Completá actor y cantidad en la comprobación formativa.",
+          "question": "¿Qué eventos sustentan tu selección y qué explicación alternativa considerarías?",
+          "hint": "Contá solo los fallos del actor elegido y citá identificadores. No sumes automáticamente todos los estados 4xx.",
+          "solution": "Correlacioná el mismo actor, contá sus fallos de inicio y citá los eventos relevantes en orden temporal. Un éxito posterior y una acción sensible aumentan el interés de la secuencia; todavía necesitás contexto para atribuir intención. La comprobación usa el caso actual, no una respuesta fija."
+        },
+        {
+          "id": "soc-contain",
+          "title": "Contené y contrastá",
+          "instruction": "Justificá primero qué actor bloquearías y por qué. Usá Bloquear actor en la aplicación y volvé a generar/consultar tráfico para observar el efecto.",
+          "question": "¿Qué cambió y qué quedó fuera del alcance de esta acción?",
+          "hint": "El alcance de un control es tan importante como el resultado que devuelve.",
+          "solution": "El servicio de práctica bloquea únicamente al actor del caso dentro de la aplicación. Contrastá eventos posteriores y documentá el resultado. No cambió el firewall del host ni hubo una remediación del sistema operativo."
+        },
+        {
+          "id": "soc-handoff",
+          "title": "Prepará el relevo",
+          "instruction": "Escribí una síntesis con caso, eventos, hipótesis, contención, verificación y siguiente paso. Detené el servicio; sus datos en RAM se reinician al volver a arrancar.",
+          "question": "¿Qué conservarías para que otra persona revise tu decisión?",
+          "hint": "Las tablas visibles son temporales. Conservá una síntesis útil, no una exportación indiscriminada.",
+          "solution": "Registrá caseId, identificadores y tiempos relevantes, conteo, alternativas, alcance del bloqueo y verificación posterior. Marcá atribución y causa raíz como pendientes si no las probaste. El campus conserva tu síntesis; los eventos se vuelven a consultar."
+        }
+      ],
+      "evidencePrompt": "Escribí caseId, IDs de eventos, hipótesis, alcance de la contención y resultado de la comprobación. La revisión humana sigue pendiente.",
+      "nextPractice": {
+        "title": "Consultar eventos Windows reales",
+        "text": "Continuá en tu propio entorno autorizado con la clase de eventos y contrastá campos reales. Para forense o SIEM necesitás herramientas y evidencia adicionales; esta sala no cubre esas brechas.",
+        "lessonId": "windows-eventos"
+      }
+    },
+    {
+      "id": "sql-investigation",
+      "labId": "database-fundamentals",
+      "title": "Investigar eventos con SQL",
+      "eyebrow": "03 · Preguntas sobre datos",
+      "minutes": 50,
+      "description": "Consultá SQLite real en un servicio local y detectá orígenes con tres o más fallos en un caso que cambia por semilla.",
+      "intro": "Una consulta responde una pregunta precisa sobre un conjunto de filas. En esta sala SQLite contiene datos ficticios de autenticación, activos y usuarios. Primero conocé el esquema del dashboard; después filtrá, agrupá y contrastá una conclusión sin confundir cantidad de filas con cantidad de incidentes.",
+      "environment": "SQLite real en memoria · Servicio HTTP local",
+      "limits": "El servicio acepta consultas únicas SELECT/WITH de solo lectura sobre auth_events, assets y users. Hay límites de tiempo, tamaño y filas. No accede a archivos del equipo. Un resultado truncado exige acotar la consulta. Al detener y arrancar se reinician los datos; restablecer puede crear otro caso.",
+      "concepts": [
+        {
+          "title": "Unidad de análisis",
+          "text": "Una fila de auth_events representa un evento. Antes de contar definí qué resultado significa fallo, qué campo identifica el origen y qué conjunto temporal corresponde al caso. Usá el esquema que muestra el dashboard."
+        },
+        {
+          "title": "WHERE, GROUP BY y HAVING",
+          "text": "WHERE selecciona filas antes de agrupar; GROUP BY reúne filas por una clave; HAVING filtra los grupos ya calculados. Un umbral sobre COUNT necesita considerar esa secuencia."
+        },
+        {
+          "title": "Resultado y conclusión",
+          "text": "Una tabla sin filas también puede ser una respuesta válida a una pregunta mal formulada. Contrastá columnas, conteo y datos de entrada. Un patrón de fallos es un indicio para investigar, no atribución automática de un ataque."
+        }
+      ],
+      "lessonIds": [
+        "modelo-calidad",
+        "sql-consultas",
+        "sql-transacciones"
+      ],
+      "competencyIds": [
+        "sec-investigar",
+        "btl-consulta-siem"
+      ],
+      "certifications": [
+        "Security+",
+        "BTL1 · preparación parcial"
+      ],
+      "defaultQuery": "SELECT * FROM auth_events LIMIT 10;",
+      "tasks": [
+        {
+          "id": "sql-inspect",
+          "title": "Conocé los datos",
+          "instruction": "Iniciá el servicio y abrí el dashboard para leer el esquema. Ejecutá una muestra de auth_events con límite y anotá qué representa cada fila.",
+          "question": "¿Qué columnas necesitás para identificar origen y fallo?",
+          "hint": "Leé nombres y valores reales del caso antes de asumir una convención.",
+          "solution": "Buscá source_ip y el campo/valor de resultado de autenticación en el esquema actual del dashboard. Necesitás definir fallo antes de contar. La muestra sirve para entender las filas; LIMIT no garantiza representar toda la distribución."
+        },
+        {
+          "id": "sql-filter",
+          "title": "Filtrá antes de contar",
+          "instruction": "Escribí una consulta que seleccione únicamente fallos. Contrastá con una muestra y explicá qué filas excluiste.",
+          "question": "¿Por qué filtrar después de contar todas las filas podría responder otra pregunta?",
+          "hint": "Separá filas de entrada y grupos de salida.",
+          "solution": "WHERE aplica el criterio de fallo a cada fila antes de agrupar. Si contás éxitos y fallos juntos, el total describe actividad y no cantidad de fallos. Confirmá el valor de resultado en el esquema del caso."
+        },
+        {
+          "id": "sql-group",
+          "title": "Detectá el umbral",
+          "instruction": "Agrupá por source_ip, devolvé el conteo con alias failures y conservá grupos con tres o más fallos. Ejecutá para recibir la comprobación formativa del caso actual.",
+          "question": "¿Dónde aplicás el umbral y cómo revisarías un resultado inesperado?",
+          "hint": "El umbral usa un agregado; compará WHERE con HAVING y verificá los aliases pedidos.",
+          "solution": "Filtrá los fallos con WHERE, agrupá por source_ip y aplicá HAVING COUNT(*) >= 3. Devolvé source_ip y COUNT(*) AS failures. La condición exacta de fallo se toma del esquema del servicio. Revisá los datos de entrada si aparece cero filas; no copies un origen de otro caso."
+        },
+        {
+          "id": "sql-explain",
+          "title": "Explicá el alcance",
+          "instruction": "Registrá la consulta, caseId, filas relevantes y conclusión en tus notas. Explicá una limitación y detené el servicio cuando termines.",
+          "question": "¿Un origen con varios fallos demuestra por sí solo una intrusión?",
+          "hint": "Distinguí patrón, hipótesis e impacto confirmado.",
+          "solution": "No. Los fallos son un patrón que requiere contexto y correlación con éxitos, cuentas y acciones. Registrá el criterio de selección y qué datos faltan. SQLite local no acredita uso de SPL, KQL ni investigación en un SIEM real."
+        }
+      ],
+      "evidencePrompt": "Conservá pregunta, consulta, caseId, resultado resumido y límites. Las filas completas son temporales; la última ejecución guarda solo metadatos.",
+      "nextPractice": {
+        "title": "Profundizar JOIN, agrupación y NULL",
+        "text": "Volvé a la clase para razonar cómo cambia el conteo al unir tablas. Después practicá en un SIEM externo autorizado si tu ruta lo requiere.",
+        "lessonId": "sql-consultas"
+      }
+    }
+  ]
+};

@@ -8,7 +8,13 @@ No se necesita un token en el cliente. Nunca deben agregarse `GH_TOKEN`, `GITHUB
 
 ## Publicación en main
 
-Cada push a main ejecuta pruebas con Node 22.17.0 y construye NSIS x64 en Windows y AppImage x64 en Linux. La versión es `0.1.<github.run_number>`, creciente para este workflow. La versión local inicial es 0.1.0. Mantener este workflow y su contador; no reutilizar números ni modificar una release ya publicada. Un nuevo intento de una ejecución ya publicada no reemplaza sus artefactos.
+Antes de compilar, CI construye una imagen propia de laboratorio desde una base fijada por digest, ejecuta sus pruebas Python/HTTP y pruebas reales de Docker. Genera un único archivo Docker comprimido con SHA-256, tamaño e ImageID; los dos instaladores incorporan exactamente ese recurso. El manager verifica el archivo antes de cargarlo y comprueba su ImageID después. Las identidades previamente cargadas desde archivos verificados se registran en un historial privado de la instancia. Si cambia la imagen incluida, un objetivo anterior validado muestra que requiere actualización y permite detener/restablecer, sin habilitar práctica. Restablecer lo migra a la imagen actual y conserva las notas. Una imagen desconocida o un recurso adulterado permanece bloqueado.
+
+La imagen de Juice Shop conserva su digest fijo y no se incluye en ese archivo.
+
+Cada push a main ejecuta pruebas con Node 22.23.4 y construye NSIS x64 en Windows y AppImage x64 en Linux. La versión es `0.1.<github.run_number>`, creciente para este workflow. La versión local inicial es 0.1.0. Mantener este workflow y su contador; no reutilizar números ni modificar una release ya publicada. Un nuevo intento de una ejecución ya publicada no reemplaza sus artefactos.
+
+Las pull requests ejecutan los mismos checks y compilan instaladores sin publicar una release. Solo main o un dispatch sobre main pueden publicar.
 
 Los dos jobs generan instaladores y metadatos con electron-builder 26.18.0 y Electron 45.2.1. El job final descarga ambos conjuntos completos, exige el instalador Windows, su blockmap, el AppImage y `latest.yml`/`latest-linux.yml`, crea una release borrador, sube todos los archivos y recién entonces la publica. Si falla una compilación o una subida, no aparece una release estable incompleta. Un borrador fallido puede inspeccionarse y eliminarse desde GitHub antes de repetir la publicación. La credencial automática `GITHUB_TOKEN` tiene permisos de publicación solamente en el job final y nunca entra al paquete.
 

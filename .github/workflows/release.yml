@@ -2,14 +2,45 @@ name: Test, build and publish desktop
 on:
   push:
     branches: [main]
+  pull_request:
+    branches: [main]
   workflow_dispatch:
 permissions:
   contents: read
+  actions: read
 concurrency:
-  group: desktop-release
+  group: desktop-${{ github.ref }}
   cancel-in-progress: false
 jobs:
+  lab-runtime:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1
+        with:
+          node-version: 22.23.4
+      - name: Test real HTTP and SQLite runtime
+        run: |
+          python3 tests/python-runtime.py -v
+          python3 tests/python-runtime-build.py -v
+      - name: Build immutable local lab archive
+        run: python3 scripts/build-lab-runtime.py --version "0.1.${GITHUB_RUN_NUMBER}" --output-dir .local/lab-runtime
+      - name: Exercise Docker runtime and verified archive
+        run: python3 scripts/smoke-lab-runtime.py --runtime-dir .local/lab-runtime
+      - name: Exercise desktop manager against real Docker
+        run: node scripts/smoke-real-manager.cjs
+      - name: Preserve verified runtime for both installers
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9
+        with:
+          name: lab-runtime
+          include-hidden-files: true
+          if-no-files-found: error
+          retention-days: 14
+          path: |
+            .local/lab-runtime/manifest.json
+            .local/lab-runtime/runtime.tar.gz
   build:
+    needs: lab-runtime
     strategy:
       fail-fast: false
       matrix:
@@ -23,10 +54,15 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
       - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1
         with:
-          node-version: 22.17.0
+          node-version: 22.23.4
           cache: npm
       - run: npm ci
       - run: npm test
+      - name: Retrieve the verified bundled runtime
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh run download "$GITHUB_RUN_ID" --repo "$GITHUB_REPOSITORY" --name lab-runtime --dir .local/lab-runtime
       - name: Assign immutable release version
         shell: bash
         run: npm version "0.1.${GITHUB_RUN_NUMBER}" --no-git-tag-version
@@ -57,6 +93,7 @@ jobs:
             dist/*.blockmap
             dist/latest*.yml
   release:
+    if: github.event_name != 'pull_request' && github.ref == 'refs/heads/main'
     needs: build
     runs-on: ubuntu-24.04
     permissions:
@@ -98,6 +135,6 @@ jobs:
       - name: Upload all assets before publishing release
         run: |
           tag="v0.1.${RUN_NUMBER}"
-          gh release create "$tag" --draft --target "$COMMIT" --title "Campus Ciberdefensa 0.1.${RUN_NUMBER}" --notes "Aplicación local para Windows y Linux. Los perfiles existentes se conservan fuera de la instalación. La firma de Windows depende de los certificados configurados en CI; sin ellos, el instalador no está firmado."
+          gh release create "$tag" --draft --target "$COMMIT" --title "Campus Ciberdefensa 0.1.${RUN_NUMBER}" --notes "Salas prácticas de ataque web, defensa y bases de datos; 27 competencias con fuentes oficiales. Incluye runtime local de defensa y SQLite, probado con Docker en CI. Requiere Docker local con contenedores Linux para los entornos; las clases y simuladores funcionan sin motor. Los perfiles existentes se conservan fuera de la instalación. Sin certificados configurados en CI, el instalador Windows no está firmado."
           gh release upload "$tag" release-assets/*
           gh release edit "$tag" --draft=false --latest
