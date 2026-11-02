@@ -1,4 +1,5 @@
 const {test}=require('node:test'); const assert=require('node:assert/strict');
+const path=require('node:path'); const os=require('node:os');
 let api={};try{api=require('../desktop/security.cjs');}catch{}
 test('IPC accepts only exact trusted top frame belonging to main window',()=>{
  assert.equal(typeof api.assertTrustedSender,'function'); const frame={url:'campus://app/src/renderer/index.html'}, wc={mainFrame:frame};
@@ -9,8 +10,9 @@ test('IPC accepts only exact trusted top frame belonging to main window',()=>{
 });
 test('resource mapping blocks traversal, remote hosts and unlisted materials',()=>{
  assert.equal(typeof api.resourcePath,'function');
- assert.equal(api.resourcePath('campus://app/src/renderer/index.html','C:/campus').replaceAll('\\','/'),'C:/campus/src/renderer/index.html');
- for(const url of ['campus://other/src/renderer/index.html','campus://app/src/renderer/%2e%2e/%2e%2e/package.json','campus://app/desktop/main.cjs','campus://app/assets/materials/missing.exe'])assert.throws(()=>api.resourcePath(url,'C:/campus'));
+ const root=path.resolve(os.tmpdir(),'campus-resource-fixture');
+ assert.equal(api.resourcePath('campus://app/src/renderer/index.html',root),path.join(root,'src','renderer','index.html'));
+ for(const url of ['campus://other/src/renderer/index.html','campus://app/src/renderer/%2e%2e/%2e%2e/package.json','campus://app/desktop/main.cjs','campus://app/assets/materials/missing.exe'])assert.throws(()=>api.resourcePath(url,root));
 });
 test('IPC payload schemas reject paths, malformed ids and unknown fields',()=>{
  assert.equal(typeof api.validateCall,'function');

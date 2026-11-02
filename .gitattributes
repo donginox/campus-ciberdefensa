@@ -1,5 +1,5 @@
 * text=auto eol=lf
-assets/** -text
+assets/** -text -whitespace
 *.png binary
 *.ico binary
 *.wasm binary
