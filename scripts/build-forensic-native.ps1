@@ -72,6 +72,7 @@ if (-not [Text.Encoding]::ASCII.GetString($dumpBytes).Contains('CAMPUS_TEST_MEMO
 
 # Emit only controlled, fictitious records. Export this provider, never all logs.
 $provider = 'CampusCiberdefensaTraining'
+if (-not [Diagnostics.EventLog]::SourceExists($provider)) { [Diagnostics.EventLog]::CreateEventSource($provider, 'Application') }
 $eventRows = @(
     @{id=411;kind='auth-failure';actor='alumno-ficticio';src='10.78.10.10';resource='ssh'},
     @{id=411;kind='auth-failure';actor='alumno-ficticio';src='10.78.10.10';resource='ssh'},
@@ -81,8 +82,8 @@ $eventRows = @(
 )
 foreach ($row in $eventRows) {
     $message = @{case_id='alameda';training=$true;event_kind=$row.kind;actor=$row.actor;source_ip=$row.src;resource=$row.resource} | ConvertTo-Json -Compress
-    & "$env:SystemRoot\System32\eventcreate.exe" /L APPLICATION /SO $provider /ID $row.id /T INFORMATION /D $message | Out-Null
-    if ($LASTEXITCODE -ne 0) { throw 'No se pudo emitir el evento de entrenamiento.' }
+    # Direct API retains JSON quotes; native command-line parsing stripped them.
+    [Diagnostics.EventLog]::WriteEntry($provider, $message, [Diagnostics.EventLogEntryType]::Information, [int]$row.id)
 }
 $evtxFile = Join-Path $forensicOutput 'campus-training.evtx'
 & "$env:SystemRoot\System32\wevtutil.exe" epl Application $evtxFile "/q:*[System[Provider[@Name='CampusCiberdefensaTraining']]]" /ow:true
@@ -93,6 +94,10 @@ $xmlText = $xmlRows -join "`n"
 [xml]$events = $xmlText
 $eventNodes = @($events.Events.Event)
 if ($eventNodes.Count -ne 5 -or @($eventNodes | Where-Object { $_.System.Provider.Name -ne $provider }).Count -ne 0) { throw 'El EVTX contiene un alcance inesperado.' }
+foreach ($eventNode in $eventNodes) {
+    $payload = ([string]$eventNode.EventData.Data) | ConvertFrom-Json
+    if ($payload.case_id -ne 'alameda' -or $payload.training -ne $true) { throw 'El mensaje no conserva el JSON de entrenamiento.' }
+}
 [IO.File]::WriteAllText((Join-Path $forensicOutput 'campus-training.xml'), $xmlText, $utf8)
 $evtxBytes = [IO.File]::ReadAllBytes($evtxFile)
 if ([Text.Encoding]::ASCII.GetString($evtxBytes,0,8) -ne "ElfFile`0" -or $evtxBytes.Length -gt 4MB) { throw 'Cabecera EVTX inválida.' }
