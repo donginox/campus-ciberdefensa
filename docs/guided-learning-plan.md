@@ -1,0 +1,23 @@
+# Plan: seis mejoras del taller de estudio
+
+Spec: `docs/guided-learning-spec.md`.
+
+## Global Constraints
+
+Preserve offline/security/persistence/profile epoch/rejected-evidence/lifecycle contracts. No server/dependencies/IPC/motor execution. Existing public Git/release authorization persists. Root sole committer, suitable existing feature checkout. Do not access old ABRIR ACADEMIA.html, run denied updater-download probe, delete prior denied directories, or change unrelated finished-plan workspaces.
+
+## Task 1: Catálogo, recuperaciones y retos de transferencia
+
+Own new src/content/study-studio.json +matching browser JS, six new assessment HTML materials and manifest entries, existing assessments.json/js, assessment-core.js, assessment-hub.js scoped family/variant labels, and focused content/assessment tests. Read spec and architecture audit. Author 12 prerequisite nodes covering all24lessons/eightmodules, DAG, short original explanation/example and2different followup checks each; validate all references. Six paired Windows/Linux assessment cases as specified, synthetic original artifacts, substantive variants, exact objectiveRefs, assistance/limitations, materialmanifest. Add cross-variant family exposure safely preserving old records and immutable submissions, with behavioral failing tests first. Do not add separate transfer report collection. Existing fields/reviewer/tutor hashes/exports must remain compatible. Cite primary technical docs for nontrivial OS semantic facts; do not claim official exam content. Shared catalog schema communicate to Task2 immediately, do not redesign session state. No commits/subagents. Report in planworkspace/task-1-report.md.
+
+## Task 2: Núcleo de sesiones, cuaderno y preparación
+
+Own src/shared/study-studio-core.js, docs/study-studio-api.md and focused pure-core tests. Read spec, agree catalog schema with Task1. Publish exact API doc first so Task3 can start. Implement strict180000byte version1 record with no truncation, typed references/workspace/cursor, monotonicIDs, bounded24notebook/12sessions, explicit dates and operations, frozen30/60/90 plans, pause/resume/complete, followup capture. Transfer reports remain AssessmentCore. Readiness is pure conservative projection over real records +exact objective/competency crosswalk, separate701/801 and course provisional. Unknown/legacy missing dates do not become recent autonomous demonstration; report help/exposure and evidence provenance. Use explicit now/localdate helpers, no global currentyear invention. TDD valid/malformed/UTF8/overcapacity/timestamp/version/crossprofilestate inputs and repeated/assisted/unexecuted/certmapping traps. No desktop/app/renderer edits, commits or subagents. Report task-2-report.md.
+
+## Task 3: Aula dividida y taller integrado
+
+Own new study-studio-hub.js/css and classroom-workspace.js/css, app.js/index.html/professional-shell.js/campus-ui.js, tests/ui-harness.cjs, new UI tests and minimal existing UI test expectations for new grouped route. Read spec and frozen Task2 API doc. Build six user flows with one grouped studio route +tabs, contextual actions and discoverable resume. Aula split reads/writes canonical lesson notes only and supports keyboard ratio, reflow, stable editing/focus and preferences. Session checkpoint before close/profile boundaries uses same save queue. Hub keeps valid state +raw rejected overlay until correction or explicit discard, validates before side effects, scopes by profileId+epoch and checks even inactive. Direct navigation to cases/objectives is exact and typed; no automatic VM startup. Preserve all oldroutes/steps/links and existing UI tests. TDD behaviors incl reload/exact resume, edits while async saving, sameIDadoption, rejectedinactive drafts, limits, focus+keyboard. No source/API changes owned by other tasks, commits or subagents. Report task-3-report.md.
+
+## Task 4: Portafolio, combinación, revisión y entrega
+
+Root delegates small portfolio/merge acceptance work after core API ready (owned desktop/portfolio.cjs and corresponding tests; merge record stays atomic unless real preservation issue). Add concise guide/verification evidence. Independently review tasks, fix observed issues, full appropriate tests +native Electron state/layout/axe/keyboard matrix. Most-capable final wholebranch review, then existing PR/CI/main release workflow and verify Windows/Linux package hashes/canonical production files/native/runtime. Place new versioned installers and startguide in outputs, preserve existing outputs. No reattempt denied cleanup/probe. Complete all six accepted features, no followup approval gate.

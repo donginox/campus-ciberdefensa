@@ -2,7 +2,7 @@
 'use strict';
 const esc=value=>String(value??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const groups=[
- {id:'aula',label:'Aula virtual',routes:[['route','Cursos','book'],['learning','Mi plan','calendar'],['summary','Mi resumen','document'],['library','Biblioteca','library']]},
+ {id:'aula',label:'Aula virtual',routes:[['route','Cursos','book'],['learning','Mi plan','calendar'],['studio','Taller de estudio','book'],['summary','Mi resumen','document'],['library','Biblioteca','library']]},
  {id:'labs',label:'Laboratorios',routes:[['environments','Salas prácticas','flask'],['labs','Entrenamiento','terminal'],['systems','Sistemas y casos','monitor'],['vms','Escritorios VM','monitor'],['topology','Red de práctica','network'],['packet-analysis','Análisis de paquetes','network'],['forensics','Forense y SIEM','search']]},
  {id:'certifications',label:'Certificaciones',routes:[['preparation','Preparación','award'],['objectives','Objetivos por examen','target'],['competencies','Qué necesito saber','book'],['assessment','Evaluación práctica','check'],['roadmap','Roadmap','map'],['final','Final integrador','check']]},
  {id:'space',label:'Mi espacio',routes:[['onboarding','Guía de inicio','map'],['portfolio','Mi portafolio','folder'],['tutor','Devoluciones','message'],['profiles','Perfiles','person'],['merge','Combinar equipos','merge'],['recovery','Copias y recuperación','restore'],['settings','Ajustes','settings']]}

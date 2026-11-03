@@ -11,6 +11,7 @@ La primera versión se construye sin certificado de firma de Windows. El reposit
 ## Estudiar y practicar
 
 - Interfaz universitaria azul y bordó, navegación por áreas, portada con continuidad real del estudio y aula con índice de clases. Consultá la [guía de la interfaz](docs/university-ui-guide.md).
+- Taller de estudio: aula dividida con apuntes canónicos, sesiones guiadas de 30/60/90 minutos, cuaderno de errores y dudas, doce bases con 24 recuperaciones y preparación por objetivo con ayuda, fechas y evidencias. Consultá la [guía del taller](docs/guided-learning-guide.md).
 - Guía de inicio reanudable: prioridad, fecha, disponibilidad flexible y entornos viables.
 - Diagnóstico de 24 preguntas, plan personal, agenda y repaso espaciado. Cinco simulacros docentes seleccionan preguntas de un banco propio de 128; repetirlas no mide preparación oficial.
 - 24 clases con teoría, prácticas, 72 preguntas y 48 tarjetas.
@@ -21,7 +22,7 @@ La primera versión se construye sin certificado de firma de Windows. El reposit
 - Cinco espacios de certificación y una bitácora con procedimiento, resultado, interpretación, asistencia y revisión declarada.
 - Diez prácticas Windows/Linux y tres campañas conectadas; observación real del equipo únicamente a pedido, sin guardar filas del host.
 - Dos casos PCAP originales con registros correlacionados, descarga ZIP sin conexión y correcciones después de registrar el informe.
-- Ocho evaluaciones prácticas Windows/Linux/redes/web/forense/respuesta, con artefactos, variantes, alcance previo, informes inmutables y registro de ayuda. El historial separa repetición, orientación y evidencia nueva.
+- Catorce casos de evaluación Windows/Linux/redes/web/forense/respuesta, incluidos seis de transferencia entre plataformas con artefactos sintéticos. Conservan alcance previo, informes inmutables y registro de ayuda. El historial distingue variante, trabajo previo en la familia y orientación consultada; el análisis documental se identifica como tal.
 - Catálogo de 156 objetivos públicos con versiones separadas, 41 refuerzos originales, actividades, evidencias requeridas y brechas explícitas. El detalle CCST se identifica como provisional del curso oficial.
 - Topología aislada de tres VMs propias: estación Windows, salto Linux y servidor Linux; controles por nodo y kit de preparación manual.
 - Forense con FAT16 real, minidump propio y EVTX de entrenamiento; SIEM didáctico SQLite con ingesta, búsqueda, detección, deduplicación y reinicio.

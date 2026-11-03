@@ -249,6 +249,372 @@
       ],
       "materialId": "assessment-ir-mail-containment.html",
       "variantNote": "Elegí A o B antes de empezar y registralo. Repetir otra variante del mismo caso se conserva como caso repetido; no se presenta como una muestra independiente nueva."
+    },
+    {
+      "id": "transfer-permissions-a",
+      "title": "Permisos y acceso efectivo · A · Windows/Linux · Acceso sobrante y recorrido ausente",
+      "category": "Transferencia Windows/Linux",
+      "viewId": "topology",
+      "exposureFamily": "transfer-permissions",
+      "variantId": "a",
+      "objectiveRefs": [
+        "cc:3.2",
+        "ccst-course:3.3",
+        "security-plus-701:4.6",
+        "security-plus-801:4.5"
+      ],
+      "brief": "Archivo Norte compara dos incidentes que parecen permisos de archivo. En Windows una contratista puede leer un documento local que debería quedar reservado a Revisores. En Linux el servicio de revisión no llega al documento aunque su grupo tiene lectura del archivo. Proponé cambios mínimos diferentes, sin copiar literalmente la solución entre plataformas.",
+      "baseline": "Identificá transfer-permissions-a, versión del paquete, fecha/zona y procedencia sintética. Elegí análisis documental sin ejecución o registrá guests propios, versiones, cuentas ficticias y baseline verificada antes de declarar una práctica. La otra variante comparte familia y exposición.",
+      "authorizedScope": "Análisis local de estos textos sintéticos. Ejecución opcional y manual solo en nodos propios aislados con carpetas y cuentas ficticias de CampusLab o /srv/campus-*. Registrar autorización, snapshot y criterio de parada. Sin cambios en host, cuentas reales, servicios ajenos, red externa o automatización de comandos.",
+      "deliverable": "Compará ambos sistemas en el informe canónico: tabla Windows/Linux con IDs de filas, identidad, operación, resultado observado y esperado. Justificá por qué la causa, cambio mínimo y prueba difieren; contrastá una hipótesis alternativa por plataforma. Incluí recuperación, controles positivos y negativos, asistencia recibida, limitaciones y datos pendientes. Explicar herencia Windows frente a búsqueda de componentes Linux; no traducir Read a un modo por nombre. El análisis documental se declara sin ejecución y no acredita haber probado una VM.",
+      "rubric": [
+        "Cita artefactos de Windows y Linux y vincula cada conclusión a filas concretas.",
+        "Justifica una diferencia de semántica entre plataformas sin trasladar una receta por nombre.",
+        "Propone prueba que refute la hipótesis y conserva una cuenta u operación de control.",
+        "Separa observación sintética, inferencia, ejecución declarada y pendientes de verificación.",
+        "Define cambio mínimo, reversión, asistencia y criterio observable de validación."
+      ],
+      "guidance": "Compará WPA-1 y el origen heredado con LPA-1 y LPA-2. En Linux el archivo legible no evita el requisito del padre. En Windows retiraría acceso sobrante conservando grupos legítimos. Una corrección y una recuperación necesitan pruebas positivas y negativas bajo las mismas identidades.",
+      "artifacts": [
+        {
+          "name": "windows-permissions-a.csv",
+          "format": "CSV o JSON docente sintético original; no captura del equipo",
+          "text": "record,path,principal,group_or_origin,right,result\nWPA-1,C:\\CampusLab\\Revision,nora,Contratistas,Read inherited,read allowed\nWPA-2,C:\\CampusLab\\Revision,Revisores,explicit,Read,required\nWPA-3,C:\\CampusLab\\Revision,Editores,explicit,Modify,required\nWPA-4,C:\\CampusLab,parent Contratistas,inherited source,Read,parent broader than policy"
+        },
+        {
+          "name": "linux-permissions-a.csv",
+          "format": "CSV o JSON docente sintético original; no captura del equipo",
+          "text": "record,path,owner,group,mode,identity,result\nLPA-1,/srv/campus-revision,root,archivo,0750,revision-svc groups=revision,search denied\nLPA-2,/srv/campus-revision/informe.txt,root,revision,0640,revision-svc,read by pathname denied\nLPA-3,/srv,root,root,0755,revision-svc,search allowed\nLPA-4,control identity,visitante,no revision group,not applicable,visitante,must remain excluded"
+        },
+        {
+          "name": "transfer-permissions-a-constraints.json",
+          "format": "CSV o JSON docente sintético original; no captura del equipo",
+          "text": "{\n  \"goal\": \"Revisores leen y Editores modifican en Windows; Nora queda excluida. revision-svc lee en Linux y visitante sigue excluido.\",\n  \"assumptions\": \"Archivos locales Windows, sin SMB. Linux usa permisos POSIX básicos, sin ACL extendida, LSM ni capacidades; esas hipótesis requieren nueva evidencia en un guest real.\",\n  \"requiredComparison\": \"Explicar herencia Windows frente a búsqueda de componentes Linux; no traducir Read a un modo por nombre.\"\n}"
+        }
+      ],
+      "materialId": "assessment-transfer-permissions-a.html",
+      "variantNote": "Familia Permisos y acceso efectivo · Variante A. Repetir una variante o intentar su pareja registra exposición familiar. La orientación de cualquiera puede afectar intentos posteriores o en curso; la declaración original de independencia se conserva.",
+      "assistanceNote": "Declarar personas, IA, documentación y orientaciones consultadas en assistanceLog. Leer estas fuentes técnicas no verifica independencia; el alumno declara su uso. Orientación de solución solo después de entregar.",
+      "limitations": "Dataset sintético original, no captura del host ni pregunta oficial. Leerlo es análisis documental: no demuestra ejecución, recuperación real ni dominio de un objetivo. Las hipótesis simplificadas deben comprobarse en el guest autorizado.",
+      "sources": [
+        {
+          "id": "windows-dacl",
+          "title": "Microsoft Learn · icacls: DACL, herencia y restauración",
+          "url": "https://learn.microsoft.com/en-us/windows-server/administration/windows-commands/icacls"
+        },
+        {
+          "id": "posix-access",
+          "title": "GNU Coreutils · clases de permisos y búsqueda en directorios",
+          "url": "https://www.gnu.org/s/coreutils/manual/html_node/Mode-Structure.html"
+        }
+      ]
+    },
+    {
+      "id": "transfer-permissions-b",
+      "title": "Permisos y acceso efectivo · B · Windows/Linux · La pertenencia a un grupo no alcanza",
+      "category": "Transferencia Windows/Linux",
+      "viewId": "topology",
+      "exposureFamily": "transfer-permissions",
+      "variantId": "b",
+      "objectiveRefs": [
+        "cc:3.2",
+        "ccst-course:3.3",
+        "security-plus-701:4.6",
+        "security-plus-801:4.5"
+      ],
+      "brief": "Archivo Sur quiere permitir edición por red a una editora Windows y escritura local a un proceso Linux. Las dos cuentas pertenecen al grupo de edición, pero ninguna puede guardar. El expediente incluye dos capas Windows y una diferencia entre propietario y grupo Linux. Separá la selección de permisos efectiva del simple listado de grupos.",
+      "baseline": "Identificá transfer-permissions-b, versión del paquete, fecha/zona y procedencia sintética. Elegí análisis documental sin ejecución o registrá guests propios, versiones, cuentas ficticias y baseline verificada antes de declarar una práctica. La otra variante comparte familia y exposición.",
+      "authorizedScope": "Análisis local de estos textos sintéticos. Ejecución opcional y manual solo en nodos propios aislados con carpetas y cuentas ficticias de CampusLab o /srv/campus-*. Registrar autorización, snapshot y criterio de parada. Sin cambios en host, cuentas reales, servicios ajenos, red externa o automatización de comandos.",
+      "deliverable": "Compará ambos sistemas en el informe canónico: tabla Windows/Linux con IDs de filas, identidad, operación, resultado observado y esperado. Justificá por qué la causa, cambio mínimo y prueba difieren; contrastá una hipótesis alternativa por plataforma. Incluí recuperación, controles positivos y negativos, asistencia recibida, limitaciones y datos pendientes. Distinguir permiso compartido/NTFS frente a selección de clase dueño/grupo. Explicar por qué el caso A no basta para resolver B. El análisis documental se declara sin ejecución y no acredita haber probado una VM.",
+      "rubric": [
+        "Cita artefactos de Windows y Linux y vincula cada conclusión a filas concretas.",
+        "Justifica una diferencia de semántica entre plataformas sin trasladar una receta por nombre.",
+        "Propone prueba que refute la hipótesis y conserva una cuenta u operación de control.",
+        "Separa observación sintética, inferencia, ejecución declarada y pendientes de verificación.",
+        "Define cambio mínimo, reversión, asistencia y criterio observable de validación."
+      ],
+      "guidance": "En Windows compará WPB-1 con WPB-2 antes de tocar NTFS. En Linux LPB-2 es dueño: la clase del propietario no obtiene escritura de la clase de grupo. Conservá lectura de auditor y denegación del visitante. No propongas Full Control o 777 como atajo.",
+      "artifacts": [
+        {
+          "name": "windows-permissions-b.csv",
+          "format": "CSV o JSON docente sintético original; no captura del equipo",
+          "text": "record,path,layer,principal,right,identity,result\nWPB-1,\\\\guest\\Revision,SMB,Editores,Read,luz groups=Editores,write denied\nWPB-2,C:\\CampusLab\\Revision,NTFS,Editores,Modify,luz,local write allowed\nWPB-3,\\\\guest\\Revision,SMB,Auditores,Read,omar groups=Auditores,read required\nWPB-4,\\\\guest\\Revision,SMB,Visitantes,none,ines groups=Visitantes,read denied"
+        },
+        {
+          "name": "linux-permissions-b.csv",
+          "format": "CSV o JSON docente sintético original; no captura del equipo",
+          "text": "record,path,owner,group,mode,identity,result\nLPB-1,/srv/campus-sur,root,edicion,0770,edicion-svc groups=edicion,search allowed\nLPB-2,/srv/campus-sur/salida.txt,edicion-svc,edicion,0460,edicion-svc,write denied\nLPB-3,/srv/campus-sur/salida.txt,edicion-svc,edicion,0460,mar groups=edicion,write allowed\nLPB-4,/srv/campus-sur/salida.txt,edicion-svc,edicion,0460,visitante no edicion,write denied"
+        },
+        {
+          "name": "transfer-permissions-b-constraints.json",
+          "format": "CSV o JSON docente sintético original; no captura del equipo",
+          "text": "{\n  \"goal\": \"Luz puede editar por SMB y Omar conserva solo lectura; edicion-svc escribe sin abrir acceso a visitante.\",\n  \"assumptions\": \"Windows no tiene entradas deny adicionales y se usa la misma identidad en SMB. Linux sin ACL extendida ni privilegios especiales. El dueño usa su clase de modo; los permisos de grupo no se suman a ella.\",\n  \"requiredComparison\": \"Distinguir permiso compartido/NTFS frente a selección de clase dueño/grupo. Explicar por qué el caso A no basta para resolver B.\"\n}"
+        }
+      ],
+      "materialId": "assessment-transfer-permissions-b.html",
+      "variantNote": "Familia Permisos y acceso efectivo · Variante B. Repetir una variante o intentar su pareja registra exposición familiar. La orientación de cualquiera puede afectar intentos posteriores o en curso; la declaración original de independencia se conserva.",
+      "assistanceNote": "Declarar personas, IA, documentación y orientaciones consultadas en assistanceLog. Leer estas fuentes técnicas no verifica independencia; el alumno declara su uso. Orientación de solución solo después de entregar.",
+      "limitations": "Dataset sintético original, no captura del host ni pregunta oficial. Leerlo es análisis documental: no demuestra ejecución, recuperación real ni dominio de un objetivo. Las hipótesis simplificadas deben comprobarse en el guest autorizado.",
+      "sources": [
+        {
+          "id": "posix-access",
+          "title": "GNU Coreutils · clases de permisos y búsqueda en directorios",
+          "url": "https://www.gnu.org/s/coreutils/manual/html_node/Mode-Structure.html"
+        },
+        {
+          "id": "windows-smb",
+          "title": "Microsoft Learn · verificación de permisos SMB y NTFS",
+          "url": "https://learn.microsoft.com/en-us/troubleshoot/windows-client/networking/access-denied-access-smb-file-share"
+        }
+      ]
+    },
+    {
+      "id": "transfer-service-a",
+      "title": "Servicios y prueba funcional · A · Windows/Linux · Proceso en marcha, entrada incorrecta",
+      "category": "Transferencia Windows/Linux",
+      "viewId": "topology",
+      "exposureFamily": "transfer-service",
+      "variantId": "a",
+      "objectiveRefs": [
+        "cc:5.4",
+        "ccst-course:3.2",
+        "security-plus-701:1.3",
+        "security-plus-801:1.2"
+      ],
+      "brief": "El servicio ficticio Lector entrega la versión anterior de un catálogo en ambas plataformas. Windows reporta RUNNING, pero su configuración de aplicación apunta a una copia vieja. Linux muestra active tras un oneshot exitoso con RemainAfterExit y ningún proceso persistente. Diseñá una prueba de función y explicá por qué las etiquetas de estado no son equivalentes.",
+      "baseline": "Identificá transfer-service-a, versión del paquete, fecha/zona y procedencia sintética. Elegí análisis documental sin ejecución o registrá guests propios, versiones, cuentas ficticias y baseline verificada antes de declarar una práctica. La otra variante comparte familia y exposición.",
+      "authorizedScope": "Análisis local de estos textos sintéticos. Ejecución opcional y manual solo en nodos propios aislados con carpetas y cuentas ficticias de CampusLab o /srv/campus-*. Registrar autorización, snapshot y criterio de parada. Sin cambios en host, cuentas reales, servicios ajenos, red externa o automatización de comandos.",
+      "deliverable": "Compará ambos sistemas en el informe canónico: tabla Windows/Linux con IDs de filas, identidad, operación, resultado observado y esperado. Justificá por qué la causa, cambio mínimo y prueba difieren; contrastá una hipótesis alternativa por plataforma. Incluí recuperación, controles positivos y negativos, asistencia recibida, limitaciones y datos pendientes. Windows informa un servicio iniciado; Linux puede conservar active después de salir el oneshot. Proponer observación de salida y reversión en cada uno. El análisis documental se declara sin ejecución y no acredita haber probado una VM.",
+      "rubric": [
+        "Cita artefactos de Windows y Linux y vincula cada conclusión a filas concretas.",
+        "Justifica una diferencia de semántica entre plataformas sin trasladar una receta por nombre.",
+        "Propone prueba que refute la hipótesis y conserva una cuenta u operación de control.",
+        "Separa observación sintética, inferencia, ejecución declarada y pendientes de verificación.",
+        "Define cambio mínimo, reversión, asistencia y criterio observable de validación."
+      ],
+      "guidance": "WSA-2 y WSA-3 separan configuración y versión aprobada. En Linux active/exited con RemainAfterExit no requiere un proceso vivo; reiniciar y ver active otra vez no demuestra versión 2. Definí entrada, salida, cuenta y criterio de reversión distintos para ambas plataformas.",
+      "artifacts": [
+        {
+          "name": "windows-service-a.csv",
+          "format": "CSV o JSON docente sintético original; no captura del equipo",
+          "text": "record,time_utc,source,field,value\nWSA-1,2026-11-03T09:00:00Z,SCM,state,RUNNING\nWSA-2,2026-11-03T09:00:01Z,Lector config,input,C:\\CampusLab\\catalogo-v1.txt\nWSA-3,2026-11-03T09:00:02Z,approved change,expected_input,C:\\CampusLab\\catalogo-v2.txt\nWSA-4,2026-11-03T09:01:00Z,local sample,version,1\nWSA-5,2026-11-03T09:01:00Z,service identity,account,CampusLector"
+        },
+        {
+          "name": "linux-service-a.csv",
+          "format": "CSV o JSON docente sintético original; no captura del equipo",
+          "text": "record,time_utc,source,field,value\nLSA-1,2026-11-03T09:00:00Z,unit,Type,oneshot\nLSA-2,2026-11-03T09:00:00Z,unit,RemainAfterExit,yes\nLSA-3,2026-11-03T09:00:01Z,status,ActiveState,active\nLSA-4,2026-11-03T09:00:01Z,status,SubState,exited\nLSA-5,2026-11-03T09:00:01Z,status,MainPID,0\nLSA-6,2026-11-03T09:01:00Z,generated output,catalog_version,1\nLSA-7,2026-11-03T09:01:00Z,approved change,expected_catalog_version,2"
+        },
+        {
+          "name": "transfer-service-a-constraints.json",
+          "format": "CSV o JSON docente sintético original; no captura del equipo",
+          "text": "{\n  \"goal\": \"Ambos productos deben generar versión 2 con entradas controladas. El supervisor no es el criterio funcional.\",\n  \"assumptions\": \"Las filas de configuración son datos originales del escenario, no comandos disponibles del host. Linux usa systemd con la configuración indicada.\",\n  \"requiredComparison\": \"Windows informa un servicio iniciado; Linux puede conservar active después de salir el oneshot. Proponer observación de salida y reversión en cada uno.\"\n}"
+        }
+      ],
+      "materialId": "assessment-transfer-service-a.html",
+      "variantNote": "Familia Servicios y prueba funcional · Variante A. Repetir una variante o intentar su pareja registra exposición familiar. La orientación de cualquiera puede afectar intentos posteriores o en curso; la declaración original de independencia se conserva.",
+      "assistanceNote": "Declarar personas, IA, documentación y orientaciones consultadas en assistanceLog. Leer estas fuentes técnicas no verifica independencia; el alumno declara su uso. Orientación de solución solo después de entregar.",
+      "limitations": "Dataset sintético original, no captura del host ni pregunta oficial. Leerlo es análisis documental: no demuestra ejecución, recuperación real ni dominio de un objetivo. Las hipótesis simplificadas deben comprobarse en el guest autorizado.",
+      "sources": [
+        {
+          "id": "windows-state",
+          "title": "Microsoft Learn · estados de servicios",
+          "url": "https://learn.microsoft.com/en-us/windows/win32/services/service-status-transitions"
+        },
+        {
+          "id": "systemd-service",
+          "title": "systemd · tipo y estado de servicio",
+          "url": "https://www.freedesktop.org/software/systemd/man/latest/systemd.service.html"
+        }
+      ]
+    },
+    {
+      "id": "transfer-service-b",
+      "title": "Servicios y prueba funcional · B · Windows/Linux · Contexto de ejecución distinto del interactivo",
+      "category": "Transferencia Windows/Linux",
+      "viewId": "topology",
+      "exposureFamily": "transfer-service",
+      "variantId": "b",
+      "objectiveRefs": [
+        "cc:5.4",
+        "ccst-course:3.2",
+        "security-plus-701:1.3",
+        "security-plus-801:1.2"
+      ],
+      "brief": "El mismo archivo funciona desde una sesión interactiva pero falla en el servicio Lector Sur. En Windows el servicio usa una cuenta distinta del operador. En Linux la unidad tiene WorkingDirectory y User propios: una ruta relativa termina en otra carpeta. No hay evidencia de caída de red. Determiná qué comparar antes de cambiar credenciales o volver a instalar.",
+      "baseline": "Identificá transfer-service-b, versión del paquete, fecha/zona y procedencia sintética. Elegí análisis documental sin ejecución o registrá guests propios, versiones, cuentas ficticias y baseline verificada antes de declarar una práctica. La otra variante comparte familia y exposición.",
+      "authorizedScope": "Análisis local de estos textos sintéticos. Ejecución opcional y manual solo en nodos propios aislados con carpetas y cuentas ficticias de CampusLab o /srv/campus-*. Registrar autorización, snapshot y criterio de parada. Sin cambios en host, cuentas reales, servicios ajenos, red externa o automatización de comandos.",
+      "deliverable": "Compará ambos sistemas en el informe canónico: tabla Windows/Linux con IDs de filas, identidad, operación, resultado observado y esperado. Justificá por qué la causa, cambio mínimo y prueba difieren; contrastá una hipótesis alternativa por plataforma. Incluí recuperación, controles positivos y negativos, asistencia recibida, limitaciones y datos pendientes. Comparar identidad y ACL frente a User/WorkingDirectory/ruta efectiva; justificar qué hallazgo falta para confirmar la hipótesis Windows. El análisis documental se declara sin ejecución y no acredita haber probado una VM.",
+      "rubric": [
+        "Cita artefactos de Windows y Linux y vincula cada conclusión a filas concretas.",
+        "Justifica una diferencia de semántica entre plataformas sin trasladar una receta por nombre.",
+        "Propone prueba que refute la hipótesis y conserva una cuenta u operación de control.",
+        "Separa observación sintética, inferencia, ejecución declarada y pendientes de verificación.",
+        "Define cambio mínimo, reversión, asistencia y criterio observable de validación."
+      ],
+      "guidance": "WSB-1 no prueba acceso de svc-sur. Inspeccioná su identidad efectiva y una prueba de lectura acotada. En Linux LSB-2 más LSB-3 apunta al archivo ausente; conceder permisos no crea esa entrada. Que ambos síntomas digan fallo de servicio no los vuelve la misma causa.",
+      "artifacts": [
+        {
+          "name": "windows-service-b.csv",
+          "format": "CSV o JSON docente sintético original; no captura del equipo",
+          "text": "record,context,identity,input,observation\nWSB-1,interactive,CAMPUS\\eva,C:\\CampusLab\\sur\\datos.txt,read succeeds\nWSB-2,service,CAMPUS\\svc-sur,C:\\CampusLab\\sur\\datos.txt,read denied\nWSB-3,NTFS file,CAMPUS\\eva,Read,explicit allow\nWSB-4,NTFS file,CAMPUS\\svc-sur,no allow found,full effective token pending\nWSB-5,SCM state,CAMPUS\\svc-sur,START_PENDING,application initialization incomplete"
+        },
+        {
+          "name": "linux-service-b.csv",
+          "format": "CSV o JSON docente sintético original; no captura del equipo",
+          "text": "record,context,field,value,observation\nLSB-1,unit,User,svc-sur,not interactive user\nLSB-2,unit,WorkingDirectory,/srv/campus-sur/current,configured\nLSB-3,application,input,datos.txt,relative path\nLSB-4,interactive,WorkingDirectory,/srv/campus-sur/release,read succeeds\nLSB-5,service,/srv/campus-sur/current/datos.txt,absent,no such file\nLSB-6,filesystem,/srv/campus-sur/release/datos.txt,present,hash=CAMPUS-SUR-2"
+        },
+        {
+          "name": "transfer-service-b-constraints.json",
+          "format": "CSV o JSON docente sintético original; no captura del equipo",
+          "text": "{\n  \"goal\": \"Elegir una prueba mínima de identidad Windows y otra de ruta efectiva Linux. Conservar autorización restringida; no usar cuenta privilegiada para ocultar el problema.\",\n  \"assumptions\": \"Aplicación docente interpreta datos.txt respecto del directorio de trabajo. No se conoce el token completo Windows: una entrada ausente no basta para concluir todos los derechos efectivos.\",\n  \"requiredComparison\": \"Comparar identidad y ACL frente a User/WorkingDirectory/ruta efectiva; justificar qué hallazgo falta para confirmar la hipótesis Windows.\"\n}"
+        }
+      ],
+      "materialId": "assessment-transfer-service-b.html",
+      "variantNote": "Familia Servicios y prueba funcional · Variante B. Repetir una variante o intentar su pareja registra exposición familiar. La orientación de cualquiera puede afectar intentos posteriores o en curso; la declaración original de independencia se conserva.",
+      "assistanceNote": "Declarar personas, IA, documentación y orientaciones consultadas en assistanceLog. Leer estas fuentes técnicas no verifica independencia; el alumno declara su uso. Orientación de solución solo después de entregar.",
+      "limitations": "Dataset sintético original, no captura del host ni pregunta oficial. Leerlo es análisis documental: no demuestra ejecución, recuperación real ni dominio de un objetivo. Las hipótesis simplificadas deben comprobarse en el guest autorizado.",
+      "sources": [
+        {
+          "id": "windows-dacl",
+          "title": "Microsoft Learn · icacls: DACL, herencia y restauración",
+          "url": "https://learn.microsoft.com/en-us/windows-server/administration/windows-commands/icacls"
+        },
+        {
+          "id": "windows-state",
+          "title": "Microsoft Learn · estados de servicios",
+          "url": "https://learn.microsoft.com/en-us/windows/win32/services/service-status-transitions"
+        },
+        {
+          "id": "systemd-exec",
+          "title": "systemd · identidad y entorno de ejecución",
+          "url": "https://www.freedesktop.org/software/systemd/man/latest/systemd.exec.html"
+        }
+      ]
+    },
+    {
+      "id": "transfer-recovery-a",
+      "title": "Restauración y límites de evidencia · A · Windows/Linux · Bytes recuperados, permisos distintos",
+      "category": "Transferencia Windows/Linux",
+      "viewId": "topology",
+      "exposureFamily": "transfer-recovery",
+      "variantId": "a",
+      "objectiveRefs": [
+        "cc:2.2",
+        "ccst-course:4.4",
+        "security-plus-701:3.4",
+        "security-plus-801:3.4",
+        "btl1:6.5"
+      ],
+      "brief": "Dos restauraciones recuperaron el contenido esperado del expediente Marea, pero una cuenta de control Windows ahora lee y el servicio Linux ya no puede hacerlo. La política exige restaurar disponibilidad sin ampliar acceso. Elaborá una matriz de contenido, metadatos, función y recuperación del cambio; no declares éxito por un digest coincidente.",
+      "baseline": "Identificá transfer-recovery-a, versión del paquete, fecha/zona y procedencia sintética. Elegí análisis documental sin ejecución o registrá guests propios, versiones, cuentas ficticias y baseline verificada antes de declarar una práctica. La otra variante comparte familia y exposición.",
+      "authorizedScope": "Análisis local de estos textos sintéticos. Ejecución opcional y manual solo en nodos propios aislados con carpetas y cuentas ficticias de CampusLab o /srv/campus-*. Registrar autorización, snapshot y criterio de parada. Sin cambios en host, cuentas reales, servicios ajenos, red externa o automatización de comandos.",
+      "deliverable": "Compará ambos sistemas en el informe canónico: tabla Windows/Linux con IDs de filas, identidad, operación, resultado observado y esperado. Justificá por qué la causa, cambio mínimo y prueba difieren; contrastá una hipótesis alternativa por plataforma. Incluí recuperación, controles positivos y negativos, asistencia recibida, limitaciones y datos pendientes. Separar copia de datos de DACL Windows y propietario/grupo/modo Linux. No inferir que un snapshot o hash restaura todos los controles. El análisis documental se declara sin ejecución y no acredita haber probado una VM.",
+      "rubric": [
+        "Cita artefactos de Windows y Linux y vincula cada conclusión a filas concretas.",
+        "Justifica una diferencia de semántica entre plataformas sin trasladar una receta por nombre.",
+        "Propone prueba que refute la hipótesis y conserva una cuenta u operación de control.",
+        "Separa observación sintética, inferencia, ejecución declarada y pendientes de verificación.",
+        "Define cambio mínimo, reversión, asistencia y criterio observable de validación."
+      ],
+      "guidance": "En WRA-3 DAT no incluye seguridad NTFS. En Linux LRA-2 conserva bytes pero perdió el grupo y lectura prevista. Verificá los metadatos correctos y después una lectura legítima y otra denegada; la coincidencia de etiquetas de contenido no prueba esos controles.",
+      "artifacts": [
+        {
+          "name": "windows-recovery-a.csv",
+          "format": "CSV o JSON docente sintético original; no captura del equipo",
+          "text": "record,stage,path,content_digest,permissions,observation\nWRA-1,approved,C:\\CampusLab\\Marea\\datos.txt,synthetic-digest-M2,Revisores Read; Visitantes none,required\nWRA-2,restored,C:\\CampusLab\\Marea\\datos.txt,synthetic-digest-M2,Revisores Read; Visitantes Read,visitor read allowed\nWRA-3,restore log,C:\\CampusLab\\Marea,/COPY:DAT,destination inherited Visitantes Read,security not copied\nWRA-4,receipt,metadata record,ACL baseline saved separately,not yet applied,pending"
+        },
+        {
+          "name": "linux-recovery-a.csv",
+          "format": "CSV o JSON docente sintético original; no captura del equipo",
+          "text": "record,stage,path,content_digest,owner_group_mode,observation\nLRA-1,approved,/srv/campus-marea/datos.txt,synthetic-digest-M2,root:marea:0640,svc-marea groups=marea reads\nLRA-2,restored,/srv/campus-marea/datos.txt,synthetic-digest-M2,root:archive:0600,svc-marea denied\nLRA-3,parent,/srv/campus-marea,not applicable,root:marea:0750,search allowed\nLRA-4,control,/srv/campus-marea/datos.txt,not applicable,visitante no marea,read must remain denied"
+        },
+        {
+          "name": "transfer-recovery-a-constraints.json",
+          "format": "CSV o JSON docente sintético original; no captura del equipo",
+          "text": "{\n  \"goal\": \"Recuperar lectura de svc-marea y exclusión de Visitantes, sin cambiar los bytes verificados.\",\n  \"assumptions\": \"Los identificadores synthetic-digest son etiquetas de comparación docentes, no hashes calculados. En ejecución propia registrar algoritmo y digest real. Linux usa modo básico sin ACL extendida.\",\n  \"requiredComparison\": \"Separar copia de datos de DACL Windows y propietario/grupo/modo Linux. No inferir que un snapshot o hash restaura todos los controles.\"\n}"
+        }
+      ],
+      "materialId": "assessment-transfer-recovery-a.html",
+      "variantNote": "Familia Restauración y límites de evidencia · Variante A. Repetir una variante o intentar su pareja registra exposición familiar. La orientación de cualquiera puede afectar intentos posteriores o en curso; la declaración original de independencia se conserva.",
+      "assistanceNote": "Declarar personas, IA, documentación y orientaciones consultadas en assistanceLog. Leer estas fuentes técnicas no verifica independencia; el alumno declara su uso. Orientación de solución solo después de entregar.",
+      "limitations": "Dataset sintético original, no captura del host ni pregunta oficial. Leerlo es análisis documental: no demuestra ejecución, recuperación real ni dominio de un objetivo. Las hipótesis simplificadas deben comprobarse en el guest autorizado.",
+      "sources": [
+        {
+          "id": "windows-dacl",
+          "title": "Microsoft Learn · icacls: DACL, herencia y restauración",
+          "url": "https://learn.microsoft.com/en-us/windows-server/administration/windows-commands/icacls"
+        },
+        {
+          "id": "windows-copy",
+          "title": "Microsoft Learn · robocopy: contenido y metadatos",
+          "url": "https://learn.microsoft.com/en-us/windows-server/administration/windows-commands/robocopy"
+        },
+        {
+          "id": "posix-access",
+          "title": "GNU Coreutils · clases de permisos y búsqueda en directorios",
+          "url": "https://www.gnu.org/s/coreutils/manual/html_node/Mode-Structure.html"
+        }
+      ]
+    },
+    {
+      "id": "transfer-recovery-b",
+      "title": "Restauración y límites de evidencia · B · Windows/Linux · Disponibilidad rápida con datos demasiado antiguos",
+      "category": "Transferencia Windows/Linux",
+      "viewId": "topology",
+      "exposureFamily": "transfer-recovery",
+      "variantId": "b",
+      "objectiveRefs": [
+        "cc:2.2",
+        "ccst-course:4.4",
+        "security-plus-701:3.4",
+        "security-plus-801:3.4",
+        "btl1:6.5"
+      ],
+      "brief": "Después de un corte a las 14:00, Windows volvió a responder a las 14:18 con una copia de las 13:05. Linux respondió a las 14:35 con la copia de las 13:50, pero perdió dos registros esperados por un error de selección. El equipo pide evaluar RTO de 30 minutos y RPO de 20, sin ocultar diferencias por plataforma ni certificar integridad por estado activo.",
+      "baseline": "Identificá transfer-recovery-b, versión del paquete, fecha/zona y procedencia sintética. Elegí análisis documental sin ejecución o registrá guests propios, versiones, cuentas ficticias y baseline verificada antes de declarar una práctica. La otra variante comparte familia y exposición.",
+      "authorizedScope": "Análisis local de estos textos sintéticos. Ejecución opcional y manual solo en nodos propios aislados con carpetas y cuentas ficticias de CampusLab o /srv/campus-*. Registrar autorización, snapshot y criterio de parada. Sin cambios en host, cuentas reales, servicios ajenos, red externa o automatización de comandos.",
+      "deliverable": "Compará ambos sistemas en el informe canónico: tabla Windows/Linux con IDs de filas, identidad, operación, resultado observado y esperado. Justificá por qué la causa, cambio mínimo y prueba difieren; contrastá una hipótesis alternativa por plataforma. Incluí recuperación, controles positivos y negativos, asistencia recibida, limitaciones y datos pendientes. Windows: 18 minutos hasta respuesta y 55 de pérdida potencial. Linux: 35 hasta respuesta y 10 de antigüedad de copia, pero faltan dos filas; no calificar éxito global. El análisis documental se declara sin ejecución y no acredita haber probado una VM.",
+      "rubric": [
+        "Cita artefactos de Windows y Linux y vincula cada conclusión a filas concretas.",
+        "Justifica una diferencia de semántica entre plataformas sin trasladar una receta por nombre.",
+        "Propone prueba que refute la hipótesis y conserva una cuenta u operación de control.",
+        "Separa observación sintética, inferencia, ejecución declarada y pendientes de verificación.",
+        "Define cambio mínimo, reversión, asistencia y criterio observable de validación."
+      ],
+      "guidance": "Compará tiempo de respuesta y antigüedad de copia como dimensiones separadas. Windows cumple el tiempo de respuesta de 30 minutos pero excede los 20 de datos. Linux excede 30; la copia sería reciente para RPO, pero las 90 filas frente a 92 impiden confirmar consistencia. Estado del supervisor no resuelve esa falta.",
+      "artifacts": [
+        {
+          "name": "windows-recovery-b.csv",
+          "format": "CSV o JSON docente sintético original; no captura del equipo",
+          "text": "record,time_utc,source,field,value\nWRB-1,2026-11-03T14:00:00Z,incident,outage_start,confirmed\nWRB-2,2026-11-03T13:05:00Z,backup,recoverable_data_time,13:05 UTC\nWRB-3,2026-11-03T14:18:00Z,functional sample,response,version 7; rows 80\nWRB-4,2026-11-03T13:50:00Z,business checkpoint,expected_rows,92\nWRB-5,2026-11-03T14:18:01Z,SCM,state,RUNNING"
+        },
+        {
+          "name": "linux-recovery-b.csv",
+          "format": "CSV o JSON docente sintético original; no captura del equipo",
+          "text": "record,time_utc,source,field,value\nLRB-1,2026-11-03T14:00:00Z,incident,outage_start,confirmed\nLRB-2,2026-11-03T13:50:00Z,backup,recoverable_data_time,13:50 UTC\nLRB-3,2026-11-03T14:35:00Z,functional sample,response,version 8; rows 90\nLRB-4,2026-11-03T13:50:00Z,backup manifest,expected_rows,92\nLRB-5,2026-11-03T14:35:01Z,systemd state,ActiveState,active\nLRB-6,2026-11-03T14:35:02Z,restore selection,excluded_partition,delta-02"
+        },
+        {
+          "name": "transfer-recovery-b-constraints.json",
+          "format": "CSV o JSON docente sintético original; no captura del equipo",
+          "text": "{\n  \"goal\": \"Evaluar RTO/RPO por separado y registrar discrepancia de contenido pendiente. Proponer recuperación siguiente con autorización y prueba de consistencia.\",\n  \"assumptions\": \"Relojes UTC sincronizados para este dataset sintético. Volver a responder es disponibilidad parcial; el negocio debe aceptar la integridad antes de declarar restauración completa.\",\n  \"requiredComparison\": \"Windows: 18 minutos hasta respuesta y 55 de pérdida potencial. Linux: 35 hasta respuesta y 10 de antigüedad de copia, pero faltan dos filas; no calificar éxito global.\"\n}"
+        }
+      ],
+      "materialId": "assessment-transfer-recovery-b.html",
+      "variantNote": "Familia Restauración y límites de evidencia · Variante B. Repetir una variante o intentar su pareja registra exposición familiar. La orientación de cualquiera puede afectar intentos posteriores o en curso; la declaración original de independencia se conserva.",
+      "assistanceNote": "Declarar personas, IA, documentación y orientaciones consultadas en assistanceLog. Leer estas fuentes técnicas no verifica independencia; el alumno declara su uso. Orientación de solución solo después de entregar.",
+      "limitations": "Dataset sintético original, no captura del host ni pregunta oficial. Leerlo es análisis documental: no demuestra ejecución, recuperación real ni dominio de un objetivo. Las hipótesis simplificadas deben comprobarse en el guest autorizado.",
+      "sources": [
+        {
+          "id": "windows-state",
+          "title": "Microsoft Learn · estados de servicios",
+          "url": "https://learn.microsoft.com/en-us/windows/win32/services/service-status-transitions"
+        },
+        {
+          "id": "systemd-service",
+          "title": "systemd · tipo y estado de servicio",
+          "url": "https://www.freedesktop.org/software/systemd/man/latest/systemd.service.html"
+        }
+      ]
     }
   ],
   "externalPractice": {
