@@ -9,7 +9,7 @@
   --muted: #52657a;
   --line: #ced8e3;
   --wine: #842e46;
-  --gold: #987432;
+  --gold: #846124;
   --focus: #1269ae;
   --good: #236342;
   --error: #a1223e;
@@ -156,10 +156,11 @@ code { overflow-wrap: anywhere; }
   min-height: 82px; padding: 16px clamp(24px, 3vw, 44px); gap: 18px;
   background: var(--paper); border-bottom: 1px solid var(--line);
 }
-#page-context { display: block; margin-right: auto; min-width: 0; font-size: .875rem; letter-spacing: 0; color: var(--ink); }
+#page-context { display: flex; flex-direction: column; gap: 2px; margin-right: auto; min-width: 0; font-size: .875rem; letter-spacing: 0; color: var(--ink); }
 .campus-location { display: flex; flex-direction: column; gap: 2px; }
 .campus-location-area { color: var(--muted); font-size: .6875rem; letter-spacing: .09em; font-weight: 650; text-transform: uppercase; }
 .campus-location-title { color: var(--ink); font-size: .875rem; font-weight: 650; }
+#page-context>span { min-width: 0; max-width: 100%; overflow-wrap: anywhere; }
 #active-profile { border-radius: 8px; font-size: .8125rem; min-height: 44px; padding: 8px 14px; max-width: 200px; background: var(--surface); }
 #save-status { min-width: 0; font-size: .75rem; max-width: 170px; }
 .icon-button, .search-campus { border-radius: 8px; font-size: .8125rem; }
@@ -220,8 +221,8 @@ main { max-width: 1480px; padding: 36px clamp(24px, 3.2vw, 48px) 60px; }
 .assessment-button:hover, .preparation-button:hover, .packet-hub button:hover:not(:disabled),
 .tutor-hub button:hover:not(:disabled), .objective-hub button:hover:not(:disabled),
 .topology-hub button:hover:not(:disabled), .forensic-hub button:hover:not(:disabled) { background: var(--surface); border-color: var(--wine); }
-.btn.primary, .learning-button.learning-primary, .mission-button.mission-primary,
-.competency-button.competency-primary, .real-env-button.real-env-primary,
+.btn.primary, [data-theme=dark] .btn.primary, .learning-button.learning-primary, .mission-button.mission-primary,
+.competency-button.competency-primary, [data-theme=dark] .competency-button.competency-primary, .real-env-button.real-env-primary,
 .preparation-button.preparation-primary, .vm-actions button[data-vm-action=create],
 .packet-hub button[aria-pressed=true] {
   background: var(--campus-accent); color: var(--campus-on-accent); border-color: var(--campus-accent);
@@ -272,9 +273,10 @@ summary { min-height: 48px; font-size: .875rem; }
 .search-result small { font-size: .8125rem; }
 
 /* Student desk: one clear continuation action, real progress, three destinations. */
-.campus-dashboard { display: grid; gap: 24px; }
+.campus-dashboard { display: grid; grid-template-columns: minmax(0, 1fr); gap: 24px; min-width: 0; }
+.campus-dashboard>*, .campus-resume-main>* { min-width: 0; }
 .campus-welcome { padding: 4px 0 0; }
-.campus-welcome h1 { margin: 8px 0 12px; }
+.campus-welcome h1 { margin: 8px 0 12px; overflow-wrap: anywhere; }
 .campus-welcome p { max-width: 70ch; color: var(--muted); font-size: .9375rem; margin-bottom: 0; }
 .campus-welcome .eyebrow { color: var(--wine); margin-bottom: 8px; }
 .campus-resume {
@@ -425,7 +427,7 @@ summary { min-height: 48px; font-size: .875rem; }
   .menu-open #sidebar { transform: translateX(0); top: 0; box-shadow: 10px 0 40px #00000030; }
   .menu-open { overflow: hidden; }
   .topbar { min-height: 80px; padding: 14px 24px; flex-wrap: wrap; gap: 10px 14px; }
-  #page-context { display: block; }
+  #page-context { display: flex; }
   #active-profile { margin-right: 0; max-width: 180px; }
   #save-status { font-size: .75rem; }
   main { padding-top: 28px; }
@@ -499,7 +501,11 @@ summary { min-height: 48px; font-size: .875rem; }
   animation: none !important; transition: none !important; scroll-behavior: auto !important;
 }
 @media print {
-  :root, [data-theme=dark] { --cream: #fff; --paper: #fff; --surface: #f2f2f2; --ink: #000; --muted: #333; --line: #777; --wine: #000; --gold: #555; color-scheme: light; }
+  :root, [data-theme=dark], [data-contrast=high], [data-theme=dark][data-contrast=high] {
+    --cream: #fff; --paper: #fff; --surface: #f2f2f2; --ink: #000; --muted: #333;
+    --line: #777; --wine: #000; --gold: #555; --campus-tint: #f2f2f2; --campus-blue-tint: #f2f2f2;
+    color-scheme: light;
+  }
   #sidebar, .topbar, #menu-scrim, #menu-close, .page-footer, .toast,
   .campus-syllabus, .campus-launch-grid, .campus-step-caption { display: none !important; }
   .workspace { margin: 0; width: 100%; }
