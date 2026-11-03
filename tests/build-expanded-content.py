@@ -94,4 +94,3 @@ for domain,block in rows.items():
 d['bankVersion']=3
 d['scopeNote']=d['scopeNote'].split(' Banco ampliado')[0]+' Banco ampliado con 80 escenarios nuevos. Los formularios seleccionan una muestra docente de 24 preguntas y conservan sus opciones al retomarlos.'
 p.write_text(json.dumps(d,ensure_ascii=False,indent=2)+'\n',encoding='utf-8');pathlib.Path('src/content/learning.js').write_text('globalThis.CAMPUS_LEARNING = '+json.dumps(d,ensure_ascii=False,indent=2)+';\n',encoding='utf-8')
-

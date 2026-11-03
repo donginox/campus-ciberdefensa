@@ -1,9 +1,16 @@
 'use strict';
 const path=require('node:path');const v=require('./validation.cjs');const materialList=require('../src/content/materials-manifest.json');const materials=new Set(materialList);
+const objectiveAnchors=new Set(require('../src/content/objectives.json').certifications.flatMap(c=>c.domains.flatMap(d=>d.objectives.filter(o=>o.materialId==='objective-bridges.html').map(o=>o.materialAnchor))));
 const TRUSTED_URL='campus://app/src/renderer/index.html';
 function trustedMainUrl(raw){try{const url=new URL(raw);url.hash='';return url.href===TRUSTED_URL;}catch{return false;}}
 function assertTrustedSender(event,contents){if(!contents||event.sender!==contents||event.senderFrame!==contents.mainFrame||!trustedMainUrl(event.senderFrame?.url))throw new Error('Remitente IPC no autorizado.');}
 function material(relative){if(typeof relative!=='string'||!materials.has(relative))throw new Error('Material no permitido.');return relative;}
+function materialReference(target){
+ if(typeof target==='string')return {file:material(target),anchor:''};
+ keys(target,['file','anchor']);
+ if(target.file!=='objective-bridges.html'||typeof target.anchor!=='string'||!/^[a-z0-9-]+$/.test(target.anchor)||!objectiveAnchors.has(target.anchor))throw new Error('Sección de material no permitida.');
+ return {file:material(target.file),anchor:target.anchor};
+}
 function trustedMaterialUrl(raw){
  if(typeof raw!=='string'||/%2e|%2f|%5c|\\/i.test(raw))return false;
  try{const url=new URL(raw),prefix='/assets/materials/';return url.protocol==='campus:'&&url.host==='app'&&!url.username&&!url.password&&!url.search&&url.pathname.startsWith(prefix)&&materials.has(decodeURIComponent(url.pathname.slice(prefix.length)));}catch{return false;}
@@ -47,8 +54,9 @@ function validateCall(method,arg){switch(method){
  case 'selectProfile':case 'exportBackup':case 'importBackup':case 'realLabStatus':case 'startRealLab':case 'stopRealLab':case 'resetRealLab':case 'openRealLab':return v.id(arg);
  case 'renameProfile':keys(arg,['id','name']);return {id:v.id(arg.id),name:v.name(arg.name)};
  case 'saveProfile':keys(arg,['id','expectedRevision','study','labs']);v.id(arg.id);if(!Number.isSafeInteger(arg.expectedRevision)||arg.expectedRevision<1)throw new Error('Revisión inválida.');v.jsonData(arg.study,5*1024*1024);if(!v.plain(arg.labs))throw new Error('Laboratorios inválidos.');v.jsonData(arg.labs,1024*1024);return arg;
- case 'openMaterial':case 'exportMaterial':return material(arg);
+ case 'openMaterial':return typeof arg==='string'?material(arg):materialReference(arg);
+ case 'exportMaterial':return material(arg);
  case 'runSqlLab':keys(arg,['query','taskId']);if(typeof arg.query!=='string'||!arg.query.trim()||Buffer.byteLength(arg.query)>8000||!['sql-investigation','failed-logins'].includes(arg.taskId))throw new Error('Consulta SQL inválida.');return arg;
  default:throw new Error('Operación desconocida.');
 }}
-module.exports={TRUSTED_URL,trustedMainUrl,trustedMaterialUrl,assertTrustedSender,resourcePath,validateCall,material,externalUrl};
+module.exports={TRUSTED_URL,trustedMainUrl,trustedMaterialUrl,assertTrustedSender,resourcePath,validateCall,material,materialReference,externalUrl};

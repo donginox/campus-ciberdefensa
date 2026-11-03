@@ -69,3 +69,9 @@ test('byte-limit rejected evidence survives filters and navigation remount until
  note.value=latest;note.dispatchEvent(new h.w.Event('input',{bubbles:true}));h.page.querySelector('[data-objective-discard]').click();await settle();assert.equal(h.stored().draft,null);assert.equal(h.page.querySelector('[role="alert"]').textContent,'');
  h.hub.dispose();h.dom.window.close();
 });
+
+test('objective reinforcement opens its exact section with a readable button label',async()=>{
+ const calls=[],h=setup({openMaterial:(...args)=>calls.push(args)});const cert=h.page.querySelector('[name="certificationId"]');cert.value='ejpt';cert.dispatchEvent(new h.w.Event('change',{bubbles:true}));await settle();
+ const detail=expand(h,'ejpt:3.3'),button=detail.querySelector('[data-objective-material]');button.click();
+ assert.deepEqual(calls,[['objective-bridges.html','pivot']]);assert.equal(button.textContent,'Leer refuerzo de este objetivo');h.hub.dispose();h.dom.window.close();
+});
