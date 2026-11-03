@@ -19,6 +19,10 @@ function keys(arg,allowed){if(!v.plain(arg)||Object.keys(arg).some(k=>!allowed.i
 function labInput(arg,extra=[]){keys(arg,['profileId','labId',...extra]);v.id(arg.profileId);if(!['juice-shop','soc-response','database-fundamentals'].includes(arg.labId))throw new Error('Receta de laboratorio no permitida.');return arg;}
 function actor(value){if(typeof value!=='string'||!value.trim()||value.length>100||/[\u0000-\u001f\u007f]/.test(value))throw new Error('Actor del caso inválido.');return value.trim();}
 function validateCall(method,arg){switch(method){
+ case 'mergePreview':case 'tutorPreview':keys(arg,['profileId']);v.id(arg.profileId);return arg;
+ case 'mergeCancel':case 'tutorCommit':keys(arg,['profileId','previewId']);v.id(arg.profileId);v.id(arg.previewId);return arg;
+ case 'mergeCommit':keys(arg,['profileId','previewId','decisions']);v.id(arg.profileId);v.id(arg.previewId);v.jsonData(arg.decisions,65536);if(!v.plain(arg.decisions)||Object.keys(arg.decisions).length>500||Object.entries(arg.decisions).some(([key,value])=>key.length>100||!['local','incoming','both'].includes(value)))throw new Error('Selección de conflictos inválida.');return arg;
+ case 'tutorExport':keys(arg,['profileId','attemptId']);v.id(arg.profileId);if(typeof arg.attemptId!=='string'||arg.attemptId.length>200||!/^(?:independent-assessment:[a-zA-Z0-9-]+|packet-casework:(?:guiado|transferencia))$/.test(arg.attemptId))throw new Error('Informe no permitido.');return arg;
  case 'recoveryStatus':case 'recoverFromBackup':case 'openRecoveryFolder':if(arg!==undefined)throw new Error('La operación no acepta parámetros.');return;
  case 'recoverStore':return v.id(arg);
  case 'vmDoctor':case 'systemPracticeInfo':if(arg!==undefined)throw new Error('La operación no acepta parámetros.');return;

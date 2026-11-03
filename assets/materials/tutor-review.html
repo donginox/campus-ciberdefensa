@@ -1,0 +1,89 @@
+<!doctype html>
+<html lang="es-AR">
+<head>
+ <meta charset="utf-8">
+ <meta name="viewport" content="width=device-width,initial-scale=1">
+ <meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'unsafe-inline'; style-src 'unsafe-inline'; connect-src 'none'; img-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'">
+ <title>Revisión local de informes · Campus</title>
+ <style>
+  *{box-sizing:border-box}body{margin:0;background:#f2f5f9;color:#172a40;font:17px/1.6 system-ui,sans-serif}main{max-width:1000px;margin:0 auto;padding:1.5rem}section,form{background:white;border:1px solid #b7c7d5;border-radius:12px;padding:1.4rem;margin:1.2rem 0}h1,h2,h3{line-height:1.25}h1{font-size:2rem}label{display:block;font-weight:700;margin-top:1rem}input,textarea,select,button{font:inherit;max-width:100%;border:1px solid #667b94;border-radius:6px;padding:.65rem}input[type=text],textarea,select{width:100%;color:inherit;background:white}textarea{resize:vertical}button,.download{display:inline-block;min-height:44px;background:#173d7d;color:white;text-decoration:none;padding:.65rem 1rem;margin:.6rem 0;cursor:pointer}input[type=file]{background:white;width:100%}:focus-visible{outline:3px solid #2369db;outline-offset:3px}#tool-error{border:2px solid #ad2031;padding:1rem;background:#fff3f4}#original-report p{white-space:pre-wrap;overflow-wrap:anywhere}.hash{font-family:monospace;overflow-wrap:anywhere;font-size:.85rem}.rubric-row{border-top:1px solid #d4dfeb;padding-top:.6rem;margin-top:1.2rem}[hidden]{display:none!important}@media(max-width:600px){main{padding:.8rem}section,form{padding:1rem}}
+ </style>
+</head>
+<body><main>
+ <header><p>Campus · Herramienta del tutor</p><h1>Revisar un informe por archivo</h1><p>Funciona en este navegador sin conexión ni envío automático. Abrí un paquete de revisión exportado por Campus y devolvé un JSON al estudiante por el medio que acuerden.</p><p>La huella SHA256 permite vincular la devolución al informe original. Tu nombre es una identidad declarada y sin verificar; esta herramienta no crea una firma criptográfica ni acredita un examen oficial.</p></header>
+ <section aria-labelledby="package-title"><h2 id="package-title">1. Abrir el paquete de revisión</h2><label for="package-file">Archivo JSON exportado por el estudiante</label><input type="file" id="package-file" accept=".json,application/json" aria-describedby="package-help"><p id="package-help">Hasta 48 kB. Se muestran solo las secciones del informe entregado. No incluyas datos privados en la devolución.</p></section>
+ <p id="tool-status" role="status" aria-live="polite">Esperando un paquete de revisión.</p><div id="tool-error" role="alert" tabindex="-1" hidden></div>
+ <section id="original-panel" aria-labelledby="original-title" hidden><h2 id="original-title" tabindex="-1">Informe original verificado</h2><p id="package-origin"></p><p id="package-hash" class="hash"></p><div id="original-report"></div></section>
+ <form id="feedback-form" aria-labelledby="feedback-title" hidden novalidate>
+  <h2 id="feedback-title">2. Preparar la devolución</h2>
+  <label for="reviewer-name">Tu nombre o seudónimo declarado</label><input id="reviewer-name" type="text" maxlength="100" autocomplete="off" required aria-describedby="identity-note"><p id="identity-note">Identidad declarada, sin verificar. No agregues credenciales ni datos personales innecesarios.</p>
+  <h3>Comentarios por sección</h3><p>Comentá al menos una sección. Cada comentario admite hasta 1200 caracteres; el informe original permanece intacto.</p><div id="section-comments"></div>
+  <h3>Rúbrica docente</h3><p>Estos criterios ayudan a orientar el trabajo. No equivalen a una calificación oficial.</p><div id="rubric-fields"></div>
+  <label for="next-practice">Siguiente práctica recomendada</label><textarea id="next-practice" rows="4" maxlength="2000" required></textarea>
+  <button type="submit">Generar archivo de devolución</button>
+ </form>
+ <section id="feedback-output" aria-labelledby="output-title" hidden><h2 id="output-title" tabindex="-1">3. Guardar y devolver el JSON</h2><p>Guardá este archivo y compartilo con el estudiante. En Campus debe elegir «Elegir devolución y ver vista previa» y confirmar el guardado.</p><a id="download-feedback" class="download" download="devolucion-campus.json">Guardar devolución JSON</a><label for="feedback-json">Contenido del archivo generado</label><textarea id="feedback-json" rows="10" readonly></textarea><p>Si el navegador bloquea la descarga, copiá el contenido completo y guardalo como un archivo de texto con extensión .json y codificación UTF-8.</p></section>
+ <noscript><p>Esta herramienta necesita JavaScript local para leer el archivo y verificar su SHA256. Abrila en un navegador moderno; no requiere conexión.</p></noscript>
+</main>
+<script>
+(function(){
+ 'use strict';
+ const $=id=>document.getElementById(id),MAX_PACKAGE=48000,MAX_FEEDBACK=24000;
+ const labels={procedure:'Procedimiento',failedHypotheses:'Hipótesis fallidas',findings:'Hallazgos',reproducibleEvidence:'Evidencia reproducible',impact:'Impacto',remediation:'Remediación',limitations:'Limitaciones',executiveSummary:'Resumen ejecutivo',assistanceLog:'Ayuda recibida',selfReview:'Revisión propia',filters:'Filtros',timeline:'Línea de tiempo',evidence:'Evidencia',interpretation:'Interpretación',alternative:'Hipótesis alternativa'};
+ const criteria=['Evidencia y trazabilidad','Razonamiento y límites','Remediación y validación'];
+ let packet=null,generation=0,downloadUrl=null;
+ const plain=v=>v!==null&&typeof v==='object'&&!Array.isArray(v);
+ function canonical(v){if(v===null||typeof v==='boolean'||typeof v==='string'||typeof v==='number'&&Number.isFinite(v))return JSON.stringify(v);if(Array.isArray(v))return '['+v.map(canonical).join(',')+']';if(!plain(v))throw Error('Formato JSON inválido.');return '{'+Object.keys(v).sort().map(k=>JSON.stringify(k)+':'+canonical(v[k])).join(',')+'}'}
+ function exact(v,keys){if(!plain(v)||Object.keys(v).length!==keys.length||keys.some(k=>!Object.hasOwn(v,k)))throw Error('El paquete contiene campos no permitidos o faltantes.');return v}
+ function checkTree(value){let nodes=0;function visit(v,d){if(d>20||++nodes>10000)throw Error('El archivo supera la complejidad permitida.');if(v===null||typeof v==='boolean'||typeof v==='string'||typeof v==='number'&&Number.isFinite(v))return;if(!plain(v)&&!Array.isArray(v))throw Error('Formato JSON inválido.');for(const k of Object.keys(v)){if(/^(?:__proto__|prototype|constructor|gh_token|github_token|accessToken|refreshToken|password|secret|apiKey|authorization)$/i.test(k))throw Error('El paquete contiene una clave no permitida.');visit(v[k],d+1)}}visit(value,0)}
+ function validDate(v){return typeof v==='string'&&/^20\d\d-\d\d-\d\dT\d\d:\d\d:\d\d\.\d{3}Z$/.test(v)&&Number.isFinite(Date.parse(v))&&new Date(v).toISOString()===v}
+ function validate(raw){
+  checkTree(raw);exact(raw,['app','version','packageId','contentHash','content']);
+  if(raw.app!=='campus-tutor-package'||raw.version!==1)throw Error('Versión de paquete incompatible.');
+  if(!/^[a-f0-9]{64}$/.test(raw.contentHash)||raw.packageId!=='pkg-'+raw.contentHash)throw Error('La huella o el identificador del paquete es inválido.');
+  const c=exact(raw.content,['origin','source','sections']),s=exact(c.source,['id','kind','attemptId','caseId','submittedAt']);
+  if(c.origin!=='Campus Ciberdefensa · informe entregado; declaraciones sin verificar'||!validDate(s.submittedAt)||!['independent-assessment','packet-casework'].includes(s.kind)||typeof s.attemptId!=='string'||!/^[a-z0-9-]{1,100}$/.test(s.attemptId)||typeof s.caseId!=='string'||!/^[a-z0-9-]{1,100}$/.test(s.caseId)||s.id!==s.kind+':'+s.attemptId)throw Error('El origen del informe no es válido.');
+  if(!plain(c.sections)||Object.keys(c.sections).length<1||Object.keys(c.sections).length>20)throw Error('Las secciones del informe no son válidas.');
+  for(const [key,text] of Object.entries(c.sections))if(!Object.hasOwn(labels,key)||typeof text!=='string'||!text.trim()||text.length>2000)throw Error('El informe contiene una sección no permitida o demasiado extensa.');
+  return raw;
+ }
+ function node(tag,text,parent){const n=document.createElement(tag);if(text!==undefined)n.textContent=text;if(parent)parent.append(n);return n}
+ function field(parent,id,label,rows,max){const l=node('label',label,parent);l.htmlFor=id;const t=node('textarea',undefined,parent);t.id=id;t.rows=rows;t.maxLength=max;return t}
+ function invalidateOutput(){if(downloadUrl){URL.revokeObjectURL(downloadUrl);downloadUrl=null}$('feedback-output').hidden=true;$('feedback-json').value='';$('download-feedback').removeAttribute('href')}
+ function reset(){packet=null;invalidateOutput();$('feedback-form').hidden=true;$('original-panel').hidden=true;$('original-report').replaceChildren();$('section-comments').replaceChildren();$('rubric-fields').replaceChildren();$('feedback-form').reset();$('tool-error').hidden=true;$('tool-error').textContent=''}
+ function fail(error){$('tool-error').textContent=String(error.message||error).slice(0,500);$('tool-error').hidden=false;$('tool-error').focus();$('tool-status').textContent='No se generó ningún archivo de devolución.'}
+ function show(raw){
+  packet=raw;$('original-panel').hidden=false;$('feedback-form').hidden=false;$('package-origin').textContent=raw.content.source.kind+' · '+raw.content.source.caseId+' · '+raw.content.source.attemptId+' · Entrega: '+raw.content.source.submittedAt;
+  $('package-hash').textContent='Paquete: '+raw.packageId+' · SHA256: '+raw.contentHash;
+  for(const [key,text] of Object.entries(raw.content.sections)){node('h3',labels[key],$('original-report'));node('p',text,$('original-report'));const input=field($('section-comments'),'comment-'+key,labels[key]+' · comentario opcional',3,1200);input.dataset.sectionComment=key}
+  criteria.forEach((criterion,index)=>{const row=node('div',undefined,$('rubric-fields'));row.className='rubric-row';const label=node('label',criterion+' · valoración',row);label.htmlFor='rating-'+index;const select=node('select',undefined,row);select.id='rating-'+index;[['pending','Pendiente'],['developing','En desarrollo'],['meets','Cumple el criterio'],['strong','Bien fundamentado']].forEach(([value,text])=>{const option=node('option',text,select);option.value=value});field(row,'rubric-comment-'+index,criterion+' · comentario',2,1000)});
+  $('tool-status').textContent='Paquete verificado con SHA256. El informe original se conserva sin cambios.';$('original-title').focus();
+ }
+ $('package-file').addEventListener('change',function(){
+  const token=++generation;reset();const file=this.files&&this.files[0];if(!file){$('tool-status').textContent='Esperando un paquete de revisión.';return}
+  try{
+   if(file.size>MAX_PACKAGE)throw Error('El paquete supera el límite de 48 kB.');if(!globalThis.crypto||!crypto.subtle||typeof TextEncoder==='undefined')throw Error('Este navegador no permite verificar SHA256 en archivos locales. Abrí la herramienta en una versión actual de Chrome, Edge o Firefox.');
+   $('tool-status').textContent='Verificando el paquete local…';const reader=new FileReader();
+   reader.onerror=()=>{if(token===generation)fail(Error('No se pudo leer el archivo. Volvé a elegirlo.'))};
+   reader.onload=async()=>{try{if(token!==generation)return;const text=reader.result;if(typeof text!=='string'||new TextEncoder().encode(text).length>MAX_PACKAGE)throw Error('El paquete supera el tamaño permitido.');let raw;try{raw=JSON.parse(text)}catch{throw Error('El archivo no contiene JSON válido.')}validate(raw);const digest=await crypto.subtle.digest('SHA-256',new TextEncoder().encode(canonical(raw.content)));if(token!==generation)return;const hash=Array.from(new Uint8Array(digest),n=>n.toString(16).padStart(2,'0')).join('');if(hash!==raw.contentHash)throw Error('La huella SHA256 no coincide: el informe o su origen fue modificado. Pedí un paquete exportado nuevamente por Campus.');show(raw)}catch(error){if(token===generation)fail(error)}};
+   reader.readAsText(file,'UTF-8');
+  }catch(error){fail(error)}
+ });
+ $('feedback-form').addEventListener('input',invalidateOutput);
+ $('feedback-form').addEventListener('submit',function(event){
+  event.preventDefault();if(!packet)return;invalidateOutput();$('tool-error').hidden=true;
+  try{
+   const name=$('reviewer-name').value.trim(),nextPractice=$('next-practice').value.trim(),comments=[];
+   if(!name||name.length>100)throw Error('Completá tu nombre o seudónimo declarado, hasta 100 caracteres.');
+   for(const input of document.querySelectorAll('[data-section-comment]')){const comment=input.value.trim();if(comment.length>1200)throw Error('Cada comentario admite hasta 1200 caracteres.');if(comment)comments.push({section:input.dataset.sectionComment,comment})}
+   if(!comments.length)throw Error('Comentá al menos una sección del informe.');if(!nextPractice||nextPractice.length>2000)throw Error('Indicá una siguiente práctica, hasta 2000 caracteres.');
+   const random=new Uint8Array(16);crypto.getRandomValues(random);
+   const feedback={app:'campus-tutor-feedback',version:1,feedbackId:'feedback-'+Array.from(random,n=>n.toString(16).padStart(2,'0')).join(''),packageId:packet.packageId,contentHash:packet.contentHash,sourceId:packet.content.source.id,createdAt:new Date().toISOString(),reviewer:{name,identity:'declared-unverified'},comments,rubric:criteria.map((criterion,index)=>({criterion,rating:$('rating-'+index).value,comment:$('rubric-comment-'+index).value.trim()})),nextPractice};
+   if(feedback.rubric.some(r=>r.comment.length>1000))throw Error('Cada comentario de rúbrica admite hasta 1000 caracteres.');
+   const json=JSON.stringify(feedback,null,2);if(new TextEncoder().encode(json).length>MAX_FEEDBACK)throw Error('La devolución supera 24 kB. Acortá los comentarios antes de generar el archivo.');
+   downloadUrl=URL.createObjectURL(new Blob([json],{type:'application/json;charset=utf-8'}));$('download-feedback').href=downloadUrl;$('download-feedback').download=feedback.feedbackId+'.json';$('feedback-json').value=json;$('feedback-output').hidden=false;$('tool-status').textContent='Devolución generada. Guardá el JSON y compartilo voluntariamente con el estudiante.';$('output-title').focus();
+  }catch(error){fail(error)}
+ });
+})();
+</script>
+</body></html>

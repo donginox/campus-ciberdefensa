@@ -152,8 +152,22 @@ class ProfileStore {
  selectProfile(id){return this.serialize(async()=>{const d=await this.read(),p=this.get(d,id);d.activeProfileId=id;await this.write(d);return clone(p);});}
  renameProfile({id,name}){return this.serialize(async()=>{const d=await this.read(),p=this.get(d,id);p.name=v.name(name);p.updatedAt=new Date().toISOString();p.revision++;await this.write(d);return clone(p);});}
  saveProfile(input){return this.serialize(async()=>{const d=await this.read(),p=this.get(d,input.id);if(input.expectedRevision!==p.revision)throw new Error('REVISION_CONFLICT: El perfil cambió. Volvé a abrirlo antes de guardar.');const nextStudy=study(input.study),nextLabs=labs(input.labs);p.study=nextStudy;p.labs=nextLabs;p.revision++;p.updatedAt=new Date().toISOString();await this.write(d);return clone(p);});}
+ commitMergedProfile(input){return this.serialize(async()=>{
+  const d=await this.read(),p=this.get(d,input.id);
+  if(input.expectedRevision!==p.revision)throw new Error('REVISION_CONFLICT: El perfil cambió. Volvé a preparar la combinación.');
+  const nextStudy=study(input.study),nextLabs=labs(input.labs);
+  p.study=nextStudy;p.labs=nextLabs;p.revision++;p.updatedAt=new Date().toISOString();
+  await this.write(d,{checkpoint:true});return clone(p);
+ });}
+ commitTutorReview(input){return this.serialize(async()=>{
+  const d=await this.read(),p=this.get(d,input.id);
+  if(input.expectedRevision!==p.revision)throw new Error('REVISION_CONFLICT: El perfil cambió. Volvé a inspeccionar la devolución.');
+  const record=v.jsonData(input.record,120000),nextLabs=labs({...p.labs,'tutor-reviews':record});
+  p.labs=nextLabs;p.revision++;p.updatedAt=new Date().toISOString();
+  await this.write(d,{checkpoint:true});return clone(p);
+ });}
  exportBackup(id){return this.serialize(async()=>{const p=this.get(await this.read(),id);return JSON.stringify({app:'campus-ciberdefensa-desktop',version:1,savedAt:new Date().toISOString(),profile:{name:p.name,study:p.study,labs:p.labs}},null,2);});}
  importBackup(id,text){return this.serialize(async()=>{const backup=parseBackup(text);
   const d=await this.read(),p=this.get(d,id);p.study=backup.study;p.labs=backup.labs;p.revision++;p.updatedAt=new Date().toISOString();await this.write(d,{checkpoint:true});return clone(p);});}
 }
-module.exports={ProfileStore};
+module.exports={ProfileStore,parseBackup};
