@@ -55,7 +55,9 @@ try {
     if (-not $ready.Wait(15000) -or $ready.Result -ne 'CAMPUS_READY') { throw 'El proceso de prueba no confirmó su marcador.' }
     $dumpStream = [IO.File]::Open($dumpFile, [IO.FileMode]::CreateNew, [IO.FileAccess]::Write, [IO.FileShare]::None)
     try {
-        if (-not [CampusDumpWriter]::MiniDumpWriteDump($trainingProcess.Handle, [uint32]$trainingProcess.Id, $dumpStream.SafeFileHandle.DangerousGetHandle(), 2, [IntPtr]::Zero, [IntPtr]::Zero, [IntPtr]::Zero)) {
+        # Private read/write regions retain the owned byte array without copying
+        # every mapped CLR image (a full-process dump exceeded the fixture budget).
+        if (-not [CampusDumpWriter]::MiniDumpWriteDump($trainingProcess.Handle, [uint32]$trainingProcess.Id, $dumpStream.SafeFileHandle.DangerousGetHandle(), 512, [IntPtr]::Zero, [IntPtr]::Zero, [IntPtr]::Zero)) {
             throw ('Falló MiniDumpWriteDump: ' + [Runtime.InteropServices.Marshal]::GetLastWin32Error())
         }
     } finally { $dumpStream.Dispose() }
@@ -64,7 +66,8 @@ try {
     $trainingProcess.Dispose()
 }
 $dumpBytes = [IO.File]::ReadAllBytes($dumpFile)
-if ($dumpBytes.Length -gt 32MB -or [Text.Encoding]::ASCII.GetString($dumpBytes,0,4) -ne 'MDMP') { throw 'Volcado inválido o fuera de presupuesto.' }
+$dumpSignature = [Text.Encoding]::ASCII.GetString($dumpBytes,0,4)
+if ($dumpBytes.Length -gt 32MB -or $dumpSignature -ne 'MDMP') { throw ('Volcado invalido o fuera de presupuesto: bytes=' + $dumpBytes.Length + '; signature=' + $dumpSignature) }
 if (-not [Text.Encoding]::ASCII.GetString($dumpBytes).Contains('CAMPUS_TEST_MEMORY_CASE_2026')) { throw 'No se recuperó la evidencia ficticia del volcado.' }
 
 # Emit only controlled, fictitious records. Export this provider, never all logs.
@@ -97,8 +100,8 @@ $readme = @'
 CASO ALAMEDA — EVIDENCIA NATIVA PROPIA, SIN MALWARE
 
 campus-owned-process.dmp: captura real de un proceso C# creado exclusivamente
-en un runner efímero Windows de CI. Es un minidump de proceso con sus regiones
-de memoria, no una imagen de RAM del sistema. Usar WinDbg o un lector minidump;
+en un runner efímero Windows de CI. Es un minidump de proceso con regiones
+privadas de lectura/escritura, no una imagen de RAM del sistema. Usar WinDbg o un lector minidump;
 Volatility no debe suponerse compatible con este formato. Buscar el marcador
 CAMPUS_TEST_MEMORY_CASE_2026 y justificar qué puede y qué no puede inferirse.
 
