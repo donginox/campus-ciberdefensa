@@ -64,9 +64,10 @@ def build():
     (OUT / 'manifest.json').write_text(json.dumps(manifest, indent=2) + '\n', encoding='utf8', newline='\n')
     (OUT / 'SHA256SUMS.txt').write_text(''.join(f"{f['sha256']}  {f['file']}\n" for f in manifest['files']), encoding='ascii', newline='\n')
     with zipfile.ZipFile(ROOT / 'forensic-alameda.zip', 'w', compression=zipfile.ZIP_DEFLATED, compresslevel=9) as bundle:
-        for p in sorted(OUT.iterdir()):
+        for p in sorted(OUT.iterdir(), key=lambda p: p.name.casefold()):
             if p.is_file():
                 info = zipfile.ZipInfo('forensic-alameda/' + p.name, (2026, 6, 1, 10, 0, 0))
+                info.create_system = 3
                 info.compress_type = zipfile.ZIP_DEFLATED
                 info.external_attr = 0o100644 << 16
                 bundle.writestr(info, p.read_bytes())
