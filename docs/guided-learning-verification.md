@@ -20,6 +20,14 @@ En la fuente `9f75a01`, con huella `a0c08cfb668e95c979a9831392fc92f172cb48d31700
 
 El primer pase nativo detectó contraste insuficiente en las pestañas activas del tema oscuro. El pase anterior se conserva como evidencia de fallo; las correcciones usan los colores sólidos del sistema visual y el pase descrito arriba no registra ese problema.
 
+## Revisión final y comprobación posterior
+
+La revisión de toda la rama encontró dos interacciones adicionales: dos respuestas de recuperación podían compartir y reemplazar un borrador pendiente; una sesión pausada podía retomar sin mostrar su editor si las preferencias cambiaban mientras tanto. La corrección consolidada `ab05167` protege propietario y ejercicio del borrador, permite descartes explícitos separados para el texto válido y rechazado y hace visible el editor guardado antes de restaurar el punto de trabajo. Se simplificaron etiquetas y fechas, conservando referencias y metadatos exactos en desplegables.
+
+Quince regresiones adicionales elevaron el pase completo a **647/647 pruebas aprobadas**. La revisión independiente de esa corrección fue aceptada sin hallazgos materiales pendientes. El pase nativo posterior aprobó **156/156 controles de interfaz**, **21/21 de persistencia** y **99 auditorías axe sin infracciones detectadas**, con las mismas tres ventanas y variantes de apariencia. Los casos nuevos de borradores y reanudación se comprobaron también en Chromium.
+
+Los cuatro procesos mantuvieron la fuente con huella `73254c7c1e5a753ea8b96b4ff8ccde2fc295155b09e8acf3f370ec3aea621564`; cero errores de renderer, operaciones bloqueadas y procesos huérfanos del arnés. Las capturas de la guía provienen de perfiles adicionales creados después de las aserciones, con ejemplos breves y sin datos del alumno. Los límites de cobertura descritos abajo siguen aplicando. Los números de la matriz anterior corresponden a su fuente anterior y se conservan como parte del registro de validación.
+
 ## Alcance y límites
 
 Las ventanas usan el protocolo `campus://app`, preload, IPC y almacén reales con perfiles temporales. Se adaptan en memoria únicamente las opciones de ventana para tamaño, zoom y ejecución oculta; el teclado se envía por Chromium. Las copias e importaciones usan selectores deterministas que sólo aceptan archivos dentro del directorio nuevo de QA. Ningún perfil real ni archivo del alumno fue seleccionado.

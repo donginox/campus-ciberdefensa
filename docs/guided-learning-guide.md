@@ -2,6 +2,10 @@
 
 El taller conecta el aula, las dudas, la práctica y la revisión de evidencias. Funciona con tu perfil local y usa los mismos apuntes e informes que el resto del campus.
 
+![Lectura y apuntes de la misma clase en dos paneles](ui-preview/taller-aula-paneles.png)
+
+Capturas de la aplicación con un perfil de prueba. También podés ver las [sesiones guiadas](ui-preview/taller-sesiones.png) y la [preparación por objetivo y versión](ui-preview/taller-preparacion.png).
+
 ## Estudiar con dos paneles
 
 Abrí una clase y elegí la vista dividida. Podés tener la teoría o consigna junto a tus apuntes o la respuesta de práctica. El control de proporción también se ajusta con el teclado. Ampliá un panel cuando necesites concentrarte; en ventanas estrechas, los paneles se apilan.
