@@ -1,0 +1,32 @@
+{
+  "version": 1,
+  "caseId": "alameda",
+  "provenance": "owned-fictional-deterministic-builder",
+  "files": [
+    {
+      "file": "alameda-fat16.img",
+      "bytes": 4194304,
+      "sha256": "08f42cd2a319af3be43359c4a73894cc0f4475d78fe30f6207b805997404bff3"
+    },
+    {
+      "file": "alameda.jsonl",
+      "bytes": 1881,
+      "sha256": "16f1f9b6db6f37ae6a46fbd1d8ce1a0c52da0d6d13210aa6021ebd0060e7db2d"
+    },
+    {
+      "file": "transfer.jsonl",
+      "bytes": 1899,
+      "sha256": "c7d14c7c1d30f5693034da463cbb3434e6d57bd9b93c29dba68c917f0c9bffad"
+    },
+    {
+      "file": "network.csv",
+      "bytes": 92,
+      "sha256": "919561c577044d75807b025115225ab41507e3d447c2b7c92810d9560fff26a2"
+    },
+    {
+      "file": "LEEME.txt",
+      "bytes": 646,
+      "sha256": "4475dd7d1ca427b0a8d5ce25479d4b20ded5d9bfed2f22ff807c8743cb091a2b"
+    }
+  ]
+}

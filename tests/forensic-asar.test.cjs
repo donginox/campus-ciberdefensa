@@ -1,0 +1,21 @@
+'use strict';
+const test=require('node:test'),assert=require('node:assert/strict'),fs=require('node:fs/promises'),path=require('node:path'),os=require('node:os'),{spawnSync}=require('node:child_process');
+const root=path.join(__dirname,'..');
+test('real Electron loads forensic engine from ASAR and reads both bundled datasets and every artifact from physical packaged fixtures',async t=>{
+ const dir=await fs.mkdtemp(path.join(os.tmpdir(),'campus-forensic-asar-test-'));t.after(()=>fs.rm(dir,{recursive:true,force:true}));
+ const stage=path.join(dir,'contents'),archive=path.join(dir,'app.asar');await fs.mkdir(stage);
+ await fs.cp(path.join(root,'desktop'),path.join(stage,'desktop'),{recursive:true});
+ await fs.cp(path.join(root,'assets/materials/forensic-alameda'),path.join(stage,'assets/materials/forensic-alameda'),{recursive:true});
+ await fs.cp(path.join(root,'node_modules/sql.js'),path.join(dir,'node_modules/sql.js'),{recursive:true});
+ const config=require('js-yaml').load(await fs.readFile(path.join(root,'electron-builder.yml'),'utf8'));
+ await require('@electron/asar').createPackageWithOptions(stage,archive,{unpackDir:path.normalize((config.asarUnpack.find(p=>p.startsWith('assets/materials/'))||'__no_fixture_unpack__').replace(/\/\*\*$/,''))});
+ const runner=path.join(dir,'probe.cjs'),output=path.join(dir,'result.json');
+ await fs.writeFile(runner,`const {app}=require('electron');const fs=require('node:fs');const path=require('node:path');app.disableHardwareAcceleration();app.whenReady().then(async()=>{try{const archive=${JSON.stringify(archive)};const {ForensicLab}=require(path.join(archive,'desktop/forensic-lab.cjs'));const lab=new ForensicLab({dataDir:${JSON.stringify(path.join(dir,'index'))},wasmPath:${JSON.stringify(require.resolve('sql.js/dist/sql-wasm.wasm'))}});const alameda=await lab.ingest('alameda',{datasetId:'alameda'}),transfer=await lab.ingest('transfer',{datasetId:'transfer'}),verified=await lab.verifyArtifacts();fs.writeFileSync(${JSON.stringify(output)},JSON.stringify({alameda,transfer,verified,materialsDir:lab.materialsDir}));app.exit(0);}catch(e){fs.writeFileSync(${JSON.stringify(output)},JSON.stringify({error:e.message}));app.exit(1);}});`);
+ const electron=require('electron'),args=['--no-sandbox',runner],useXvfb=process.platform==='linux'&&!process.env.DISPLAY;
+ const env={...process.env};delete env.ELECTRON_RUN_AS_NODE;
+ const run=spawnSync(useXvfb?'xvfb-run':electron,useXvfb?['-a',electron,...args]:args,{env,windowsHide:true,encoding:'utf8',timeout:45000});
+ const result=JSON.parse(await fs.readFile(output,'utf8').catch(()=>JSON.stringify({error:run.error?.message||run.stderr||'No result'})));
+ assert.equal(run.status,0,JSON.stringify(result));assert.equal(result.alameda.eventCount,9);assert.equal(result.alameda.detectionCount,2);assert.equal(result.transfer.eventCount,9);assert.equal(result.verified.ok,true);assert.equal(result.verified.artifacts.length,5);
+ assert.equal(result.materialsDir,path.join(archive+'.unpacked','assets/materials/forensic-alameda'));
+ assert.equal((await fs.lstat(path.join(result.materialsDir,'alameda.jsonl'))).isFile(),true);
+});

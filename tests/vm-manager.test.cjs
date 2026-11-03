@@ -113,7 +113,7 @@ Recording screens:           1
 Configured memory balloon:   0MB
 
 `;}
-async function setup(t){
+async function setup(t,managerOptions={}){
  assert.equal(typeof VirtualMachineManager,'function');const dir=await fs.mkdtemp(path.join(os.tmpdir(),'campus-vm-'));t.after(()=>fs.rm(dir,{recursive:true,force:true}));const iso=path.join(dir,'install.iso');await fs.writeFile(iso,'fixture');
  const engine={calls:[],vm:null,extra:{},fail:null,snap:null};
  engine.runner=async(exe,a,options)=>{engine.calls.push(a);assert.equal(options.shell,false);assert.equal(options.windowsHide,true);if(engine.fail===a[0])throw Error('secret stderr');const v=engine.vm;const arg=n=>a[a.indexOf(n)+1];
@@ -122,18 +122,18 @@ async function setup(t){
   if(a[0]==='createvm'){const name=arg('--name'),folder=path.join(arg('--basefolder'),name);await fs.mkdir(folder);await fs.writeFile(path.join(folder,name+'.vbox'),'fixture');engine.vm={UUID:arg('--uuid'),name,CfgFile:path.join(folder,name+'.vbox'),SnapFldr:path.join(folder,'Snapshots'),VMState:'poweroff',memory:0,cpus:1,clipboard:'disabled',clipboardfiletransfers:'disabled',draganddrop:'disabled',usb:'off',ehci:'off',xhci:'off',vrde:'off',nic1:'intnet',nicpromisc1:'deny',uart1:'off',uart2:'off',uart3:'off',uart4:'off',lpt1:'off',lpt2:'off',teleporter:'off',recording:'off',storagecontrollername0:'SATA'};for(let n=2;n<=8;n++)engine.vm['nic'+n]='none';return{stdout:''};}
   if(a[0]==='setextradata'){engine.extra[a[2]]=a[3];return{stdout:''};}
   if(a[0]==='getextradata')return{stdout:'Value: '+engine.extra[a[2]]};
-  if(a[0]==='modifyvm'){v.firmware=a.includes('--firmware')?'EFI':'BIOS';v.memory=+arg('--memory');v.cpus=+arg('--cpus');v.intnet1=arg('--intnet1');v.audio='none';v.audio_in='off';v.audio_out='off';return{stdout:''};}
+  if(a[0]==='modifyvm'){v.firmware=a.includes('--firmware')?'EFI':'BIOS';v.memory=+arg('--memory');v.cpus=+arg('--cpus');v.intnet1=arg('--intnet1');for(let n=1;n<=8;n++){for(const key of ['nic','intnet','macaddress'])if(a.includes('--'+key+n))v[key+n]=arg('--'+key+n);}v.audio='none';v.audio_in='off';v.audio_out='off';return{stdout:''};}
   if(a[0]==='createmedium'){engine.disk={id:crypto.randomUUID(),file:arg('--filename'),capacity:+arg('--size')};await fs.writeFile(engine.disk.file,'disk');return{stdout:''};}
   if(a[0]==='storagectl')return{stdout:''};
   if(a[0]==='storageattach'){v['SATA-'+arg('--port')+'-0']=arg('--medium');return{stdout:''};}
-  if(a[0]==='showvminfo'&&a.includes('--details'))return{stdout:`NIC 1: MAC: 080027001122, Attachment: Internal Network '${v.intnet1}', Cable connected: on, Trace: off (file: none), Promisc Policy: ${v.nicpromisc1||'deny'}\nUSB Device Filters: <none>\nShared folders: <none>`};
+  if(a[0]==='showvminfo'&&a.includes('--details'))return{stdout:[1,2].filter(n=>v['nic'+n]==='intnet').map(n=>`NIC ${n}: MAC: ${v['macaddress'+n]||'080027001122'}, Attachment: Internal Network '${v['intnet'+n]}', Cable connected: on, Trace: ${v['nictrace'+n]==='on'?'on':'off'} (file: none), Promisc Policy: ${v['nicpromisc'+n]||'deny'}`).join('\n')+'\nUSB Device Filters: <none>\nShared folders: <none>'};
   if(a[0]==='showvminfo')return{stdout:encode(v)};
   if(a[0]==='showmediuminfo'){const child=engine.child&&(a[2]===engine.child.file||a[2]===engine.child.id);const medium=child?engine.child:engine.disk;return{stdout:`UUID: ${medium.id}\nParent UUID: ${child?medium.parent:'base'}\nState: created\nType: ${child?medium.type:engine.type||'normal (base)'}\nLocation: ${medium.file}\nStorage format: VDI\nFormat variant: ${child?medium.variant:engine.variant||'dynamic default'}\nCapacity: ${engine.capacity||engine.disk.capacity} MBytes`};}
   if(a[0]==='startvm'){v.VMState='running';return{stdout:''};}
   if(a[0]==='controlvm'){assert.equal(a[2],'acpipowerbutton');return{stdout:''};}
   if(a[0]==='snapshot'){if(a[2]==='take'){engine.snap=crypto.randomUUID();engine.savedVM={...v};engine.snapshotDescription=arg('--description');const id=crypto.randomUUID();engine.child={id,parent:engine.disk.id,file:path.join(v.SnapFldr,`{${id}}.vdi`),type:'normal (differencing)',variant:'differencing default'};await fs.mkdir(v.SnapFldr,{recursive:true});if(v.SecureBoot){engine.savedVM.NvramFile=path.join(v.SnapFldr,'2026-11-02T20-50-40-116000000Z.nvram');await fs.copyFile(v.NvramFile,engine.savedVM.NvramFile);}else delete engine.savedVM.NvramFile;await fs.writeFile(engine.child.file,'difference');v['SATA-0-0']=engine.child.file;return{stdout:''};}if(a[2]==='list')return{stdout:engine.snap?encode({SnapshotName:'Campus-base',SnapshotUUID:engine.snap,SnapshotDescription:engine.snapshotDescription,CurrentSnapshotName:'Campus-base',CurrentSnapshotUUID:engine.snap,CurrentSnapshotNode:'SnapshotName'}):''};if(a[2]==='showvminfo'){assert.equal(a[3],engine.snap);return{stdout:engine.editSnapshot?engine.editSnapshot(snapshotDetails(engine)):snapshotDetails(engine)};}if(a[2]==='restore'){assert.equal(a[3],engine.snap);return{stdout:''};}}
   throw Error('Unhandled '+a.join(' '));
- };const manager=new VirtualMachineManager({dataDir:dir,runner:engine.runner,platform:'win32',executable:path.join(dir,'VBoxManage.exe')});return{dir,iso,engine,manager};
+ };const manager=new VirtualMachineManager({dataDir:dir,runner:engine.runner,platform:'win32',executable:path.join(dir,'VBoxManage.exe'),...managerOptions});return{dir,iso,engine,manager};
 }
 const mutations=e=>e.calls.filter(a=>!['--version','list','showvminfo','getextradata','showmediuminfo'].includes(a[0])&&!(a[0]==='snapshot'&&['list','showvminfo'].includes(a[2])));
 // Initialized EFI fixture follows Oracle's NvramStore/SnapshotImpl behavior:
@@ -337,4 +337,26 @@ test('EFI NVRAM path and Secure Boot changes cannot restore or rewrite the regis
   else{delete engine.savedVM.NvramFile;delete engine.savedVM.SecureBoot;}
   assert.equal((await manager.restore(PROFILE,'windows')).state,'unsafe',change);assert.equal(mutations(engine).length,count);assert.equal(await fs.readFile(file,'utf8'),before);
  }
+});
+
+test('topology templates require the private closed family and validate both isolated NICs',async t=>{
+ const old=await setup(t);await assert.rejects(()=>old.manager.create(PROFILE,'topology-router',{isoPath:old.iso}));assert.equal(old.engine.calls.length,0);
+ const {manager,engine,iso}=await setup(t,{templateFamily:'topology-v1'});
+ assert.equal((await manager.create(PROFILE,'topology-router',{isoPath:iso})).state,'configured');
+ assert.equal(engine.vm.memory,2048);assert.equal(engine.vm.nic1,'intnet');assert.equal(engine.vm.nic2,'intnet');assert.match(engine.vm.intnet1,/-users$/);assert.match(engine.vm.intnet2,/-servers$/);assert.notEqual(engine.vm.intnet1,engine.vm.intnet2);
+ const clean={...engine.vm};for(const mutate of [v=>v.nic2='nat',v=>v.intnet2=v.intnet1,v=>v.nicpromisc2='allow-all',v=>v.nictrace2='on',v=>v.macaddress2='080027000000',v=>v.nic3='intnet']){engine.vm={...clean};mutate(engine.vm);const before=mutations(engine).length;assert.equal((await manager.start(PROFILE,'topology-router')).state,'unsafe');assert.equal(mutations(engine).length,before);}
+ await assert.rejects(()=>manager.status(PROFILE,'windows'));
+});
+
+test('topology snapshot verifies router NIC2 before registering and on restore',async t=>{
+ const {manager,engine,iso}=await setup(t,{templateFamily:'topology-v1'});assert.equal((await manager.create(PROFILE,'topology-router',{isoPath:iso})).state,'configured');
+ const nic=()=>`NIC 2:                       MAC: ${engine.savedVM.macaddress2}, Attachment: Internal Network '${engine.savedVM.intnet2}', Cable connected: on, Trace: off (file: none), Type: 82540EM, Reported speed: 0 Mbps, Boot priority: 0, Promisc Policy: deny, Bandwidth group: none`;
+ engine.editSnapshot=s=>s.replace('MAC: 080027198C19',`MAC: ${engine.savedVM.macaddress1}`).replace('NIC 2:                       disabled',nic());
+ assert.equal((await manager.snapshot(PROFILE,'topology-router')).canRestore,true);
+ const good=engine.editSnapshot;for(const edit of [s=>s.replace(nic(),nic().replace('Internal Network','NAT Network')),s=>s.replace(nic(),nic().replace('Promisc Policy: deny','Promisc Policy: allow-all')),s=>s.replace(nic(),nic().replace('Trace: off','Trace: on')),s=>s.replace(nic(),nic().replace(engine.savedVM.intnet2,engine.savedVM.intnet1))]){engine.editSnapshot=s=>edit(good(s));const count=mutations(engine).length;assert.equal((await manager.restore(PROFILE,'topology-router')).state,'unsafe');assert.equal(mutations(engine).length,count);}
+});
+
+test('topology workstation keeps EFI and foreign registries cannot cross template families',async t=>{
+ const c=await setup(t,{templateFamily:'topology-v1'});assert.equal((await c.manager.create(PROFILE,'topology-windows',{isoPath:c.iso})).state,'configured');const before=mutations(c.engine).length;c.engine.vm.firmware='BIOS';assert.equal((await c.manager.start(PROFILE,'topology-windows')).state,'unsafe');assert.equal(mutations(c.engine).length,before);
+ const foreign=new VirtualMachineManager({dataDir:c.dir,runner:c.engine.runner,executable:path.join(c.dir,'VBoxManage.exe')});assert.equal((await foreign.status(PROFILE,'windows')).state,'unsafe');assert.equal(mutations(c.engine).length,before);
 });

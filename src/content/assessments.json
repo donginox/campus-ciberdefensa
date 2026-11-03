@@ -1,5 +1,5 @@
 {
-  "version": 1,
+  "version": 2,
   "origin": "Casos originales de Campus, creados el 2026-11-02. No son preguntas oficiales ni material de una plataforma de terceros.",
   "scopeNote": "Informes de práctica con ejecución y revisión declaradas por el alumno. Abrir una sala no inicia ni demuestra una prueba. Ninguna entrega acredita preparación ni aprobación oficial.",
   "cases": [
@@ -11,7 +11,13 @@
       "baseline": "Anotá fecha y zona horaria, instancia propia publicada por el perfil, estado inicial de sesión y datos ficticios de prueba. Si no está disponible, dejá ejecución pendiente y describí el impedimento. No reutilices la línea de base de otro intento.",
       "authorizedScope": "Solo la instancia de Juice Shop de tu perfil y la dirección loopback que muestre su sala. Acciones HTTP manuales de navegación, autenticación y acceso con datos ficticios propios. Excluye terceros, escaneo de otros servicios, fuerza bruta, automatización masiva, datos reales y cambios del host. Detenete ante un destino fuera de ese objetivo.",
       "deliverable": "Documentá la comparación elegida, una hipótesis alternativa y sus resultados, solicitud/respuesta mínima sin secretos, conclusión, impacto comprobado frente a supuesto, control propuesto y prueba de regresión. Una respuesta distinta o un botón oculto no bastan para afirmar una vulnerabilidad.",
-      "rubric": ["Alcance y línea de base permiten repetir la comparación sin ampliar autorización.", "Los pasos distinguen observación, hipótesis, intento fallido y conclusión.", "La evidencia mínima identifica condiciones y resultados contrastados sin tokens.", "Impacto y remediación corresponden al control observado y contienen una validación.", "El resumen comunica incertidumbre y no presenta una app local como explotación de hosts."],
+      "rubric": [
+        "Alcance y línea de base permiten repetir la comparación sin ampliar autorización.",
+        "Los pasos distinguen observación, hipótesis, intento fallido y conclusión.",
+        "La evidencia mínima identifica condiciones y resultados contrastados sin tokens.",
+        "Impacto y remediación corresponden al control observado y contienen una validación.",
+        "El resumen comunica incertidumbre y no presenta una app local como explotación de hosts."
+      ],
       "guidance": "Para revisar tu entrega: verificá si comparaste condiciones equivalentes cambiando una sola variable; separá identidad, recurso y permiso. Una respuesta HTTP solo prueba esa solicitud. Buscá qué observación refutaría tu conclusión y agregala a un intento nuevo. Esto orienta la revisión; no determina si tu hallazgo existe."
     },
     {
@@ -22,13 +28,232 @@
       "baseline": "Registrá fecha y zona, caseId actual, estado inicial de contención, ventana observada y si ya había eventos. Volver a generar tráfico puede añadir eventos: explicá cómo evitaste confundir muestras acumuladas. Si restablecés el caso desde la sala, preservá antes tus notas y registrá el cambio.",
       "authorizedScope": "Solo el servicio soc-response de tu perfil y su dirección loopback validada. Usá los controles existentes de la sala para consultar eventos, repetir tráfico y, si lo justificás, contener al actor ficticio en esa aplicación. No bloquear IP del equipo, cambiar firewall o servicios, investigar cuentas reales ni acceder a otra red.",
       "deliverable": "Entregá cronología mínima con IDs del caso, distinción actor ficticio/peer HTTP, hipótesis descartada, decisión proporcional, evidencia antes/después o razón de no ejecutar, impacto y recuperación propuesta. Indicá qué dato cambiaría tu decisión. El caso HTTP no demuestra una intrusión real ni un SIEM.",
-      "rubric": ["La línea de base nueva registra caseId, ventana y estado previo sin copiar valores de otra muestra.", "La correlación cita eventos propios y diferencia actor ficticio de peer HTTP.", "La hipótesis alternativa tiene criterio de descarte y reconoce evidencia faltante.", "La decisión y su validación se limitan a la aplicación; recuperación y escalada tienen motivo.", "El informe distingue eventos HTTP reales, datos ficticios y lo pendiente de investigación."],
+      "rubric": [
+        "La línea de base nueva registra caseId, ventana y estado previo sin copiar valores de otra muestra.",
+        "La correlación cita eventos propios y diferencia actor ficticio de peer HTTP.",
+        "La hipótesis alternativa tiene criterio de descarte y reconoce evidencia faltante.",
+        "La decisión y su validación se limitan a la aplicación; recuperación y escalada tienen motivo.",
+        "El informe distingue eventos HTTP reales, datos ficticios y lo pendiente de investigación."
+      ],
       "guidance": "Para revisar tu entrega: separá muestras acumuladas de solicitudes nuevas y vinculá cada afirmación a un identificador. El peer HTTP puede ser una pasarela y no identifica a la persona. Una contención útil necesita un resultado esperado y una comparación posterior; si decidiste no contener, explicá el umbral que faltó. No existe una atribución automática a partir del conteo."
+    },
+    {
+      "id": "windows-share-audit",
+      "title": "Caso C · Acceso heredado en una carpeta Windows",
+      "category": "Windows",
+      "viewId": "topology",
+      "objectiveRefs": [
+        "cc:3.2",
+        "ccst-course:3.3",
+        "btl1:4.4"
+      ],
+      "brief": "El área ficticia Archivo necesita que Analistas lean informes y que Editores los modifiquen. Una cuenta de Contratistas conserva acceso por una regla heredada. Diseñá y probá una corrección en el nodo Windows propio, sin convertir a nadie en administrador. Los artefactos son una línea de base docente para reconstruir; no describen tu guest hasta que lo verifiques.",
+      "baseline": "Registrá versión de Windows guest, recurso compartido de laboratorio, cuenta y grupos ficticios, permisos NTFS/compartido efectivos y snapshot propio. Si falta el guest o el servicio de archivos, documentá el requisito pendiente; no marques ejecución por leer la tabla.",
+      "authorizedScope": "Solo carpetas y cuentas ficticias del nodo Windows propio de la topología. No modificar ACL del host, cuentas reales, carpetas de sistema ni otras VMs. Crear la carpeta de prueba y su recurso requiere una sesión administrativa dentro del guest autorizado.",
+      "deliverable": "Matriz de identidad/grupo/operación/resultado antes y después para lectura y escritura; copia textual de permisos efectivos; hipótesis sobre la herencia y alternativa comprobada; cambio mínimo, recuperación y prueba de que el permiso legítimo sigue vigente. Identificá variante, cuenta y snapshot. Una tabla leída sin ejecución se entrega como análisis documental pendiente de prueba.",
+      "rubric": [
+        "Distingue permisos de recurso compartido y NTFS y verifica identidad efectiva.",
+        "Cita seis pruebas de acceso como mínimo, con permitidos y denegados antes/después.",
+        "La corrección elimina acceso sobrante sin quitar lectura de Analistas ni escritura de Editores.",
+        "Registra herencia, token de sesión, recuperación y límites de la prueba."
+      ],
+      "guidance": "Revisá la combinación de permisos y la regla heredada: no alcanza con editar la fila visible del recurso compartido. Repetí bajo un token nuevo si cambiaste grupos. Una corrección defendible conserva lectura de Analistas y edición de Editores y deniega el acceso de Contratistas; comprobalo con archivos ficticios distintos. No se deduce que tu guest ya tenga estos permisos.",
+      "artifacts": [
+        {
+          "name": "baseline-acl.csv",
+          "format": "CSV docente sintético",
+          "text": "variant,path,layer,principal,right,origin\nA,ArchivoLab,share,Analistas,Read,explicit\nA,ArchivoLab,share,Editores,Change,explicit\nA,ArchivoLab,share,Contratistas,Read,explicit\nA,ArchivoLab,ntfs,Analistas,Read,explicit\nA,ArchivoLab,ntfs,Editores,Modify,explicit\nA,ArchivoLab,ntfs,Contratistas,Read,inherited\nB,ArchivoLab,share,Contratistas,Read,explicit\nB,ArchivoLab,ntfs,Contratistas,Modify,inherited"
+        },
+        {
+          "name": "identities.json",
+          "format": "JSON docente sintético",
+          "text": "{\"ana\":[\"Analistas\"],\"bruno\":[\"Editores\"],\"carla\":[\"Contratistas\"],\"variants\":{\"A\":\"Carla no debe leer ni escribir\",\"B\":\"Carla pasa a Editores; conservar edición pero retirar dependencia del grupo anterior\"}}"
+        }
+      ],
+      "materialId": "assessment-windows-share-audit.html",
+      "variantNote": "Elegí A o B antes de empezar y registralo. Repetir otra variante del mismo caso se conserva como caso repetido; no se presenta como una muestra independiente nueva."
+    },
+    {
+      "id": "linux-service-recovery",
+      "title": "Caso D · Servicio Linux y reversión de permisos",
+      "category": "Linux",
+      "viewId": "topology",
+      "objectiveRefs": [
+        "ccst-course:3.1",
+        "btl1:4.5",
+        "security-plus-701:1.3"
+      ],
+      "brief": "Un servicio ficticio de informes dejó de leer su entrada tras un cambio de permisos. Debés localizar la dependencia de recorrido sin resolverlo con root o permisos globales. Reproducí la variante elegida con archivos inocuos en el servidor Linux propio y compará una corrección mínima con la reversión.",
+      "baseline": "Registrá distribución guest, usuario efectivo del servicio, permisos de cada directorio, hash del archivo ficticio y estado previo. El ejemplo es texto sintético para reconstruir manualmente; una VM sin Linux instalado no permite verificarlo.",
+      "authorizedScope": "Solo la carpeta /srv/campus-report de tu guest Linux propio y una unidad de laboratorio creada para este caso. No cambiar /etc ni servicios ajenos, ejecutar contenido del alumno en el host ni aplicar chmod recursivo global.",
+      "deliverable": "Árbol de permisos y propietario antes/después, identidad efectiva, error reproducible, prueba de lectura mínima y verificación de que otro usuario ficticio sigue excluido; hashes del archivo antes/después, registro del cambio y procedimiento probado de recuperación. Explicá si el fallo es de recorrido, lectura u otro control y qué evidencia lo refutaría.",
+      "rubric": [
+        "Identifica el permiso requerido en cada componente de la ruta.",
+        "Contrasta error y resultado con la misma cuenta efectiva del servicio.",
+        "No propone root ni 777 como solución; conserva denegación al usuario de control.",
+        "Valida recuperación y contenido sin confundir arranque exitoso con integridad."
+      ],
+      "guidance": "En A, el directorio padre cambió de grupo y carece de recorrido para campus-svc. Que el archivo sea 644 no habilita atravesar el padre. En B el recorrido existe y la lectura del archivo es el control a investigar. Una solución mínima puede cambiar grupo/permiso del componente necesario, pero solo las pruebas de tu guest acreditan el resultado.",
+      "artifacts": [
+        {
+          "name": "permissions.csv",
+          "format": "CSV docente sintético",
+          "text": "variant,path,owner,group,mode\nA,/srv/campus-report,root,archive,750\nA,/srv/campus-report/input.txt,root,campus-svc,644\nB,/srv/campus-report,root,campus-svc,750\nB,/srv/campus-report/input.txt,root,archive,640"
+        },
+        {
+          "name": "service-observation.json",
+          "format": "JSON docente sintético",
+          "text": "{\"user\":\"campus-svc\",\"supplementaryGroups\":[],\"request\":\"read /srv/campus-report/input.txt\",\"observed\":\"Permission denied\",\"previousChange\":\"reorganización de grupos\",\"controlUser\":\"campus-visitor\",\"content\":\"Informe ficticio de pruebas, sin secretos\"}"
+        }
+      ],
+      "materialId": "assessment-linux-service-recovery.html",
+      "variantNote": "Elegí A o B antes de empezar y registralo. Repetir otra variante del mismo caso se conserva como caso repetido; no se presenta como una muestra independiente nueva."
+    },
+    {
+      "id": "network-segment-policy",
+      "title": "Caso E · Ruta entre segmentos y política verificable",
+      "category": "Redes",
+      "viewId": "topology",
+      "objectiveRefs": [
+        "cc:4.2",
+        "ccst-course:2.3",
+        "ejpt:3.3"
+      ],
+      "brief": "La estación Windows debe consultar HTTPS en el servidor Linux pasando por el salto Linux. Otro puerto debe quedar bloqueado y el servidor no debe iniciar conexiones nuevas a la estación. Prepará la topología propia y verificá conectividad y reglas sin abrir una ruta al host o a Internet. Este caso cubre ruta/reenvío; no acredita port forwarding por abrir un salto.",
+      "baseline": "Registrá las dos redes internas que el gestor asigna a tu perfil, IP guest de cada interfaz, tablas de ruta, reenvío y reglas iniciales. Sustituí las IP de ejemplo por las verificadas dentro de tus VMs; anotá diferencias y snapshots. Los guests deben estar instalados y configurados por vos.",
+      "authorizedScope": "Solo los tres nodos propios y sus dos segmentos internos privados. Sin NAT, puente, host-only, puertos publicados, escaneo masivo ni reglas en el host. Las pruebas son conexiones acotadas a servicios ficticios preparados dentro de los guests.",
+      "deliverable": "Diagrama con interfaces, ruta y política; tabla de cuatro flujos de prueba con origen/destino/protocolo/puerto/estado y marcas temporales; observación desde ambos extremos y regla que explica cada resultado. Incluí una falla provocada y su reversión, recuperación del baseline y límites: una sesión al salto no demuestra llegada al servidor ni un túnel de aplicación.",
+      "rubric": [
+        "Documenta dos segmentos y demuestra recorrido completo sin interfaces externas.",
+        "Comprueba al menos un flujo permitido y tres denegados/nuevos sentidos según política.",
+        "Distingue retorno stateful de una conexión nueva inversa.",
+        "Conserva pruebas antes/después y reconoce qué parte de pivoting no fue ejecutada."
+      ],
+      "guidance": "A requiere la ruta desde la estación y reenvío en el salto, además de permitir TCP/443; el puerto 8080 debe permanecer denegado. En B se permite 8080 y se deniega 443. La respuesta de una conexión iniciada por estación no acredita que servidor pueda iniciar una nueva. Contrastá la configuración real del guest y el servicio que escucha.",
+      "artifacts": [
+        {
+          "name": "policy.json",
+          "format": "JSON docente sintético",
+          "text": "{\"exampleOnly\":true,\"station\":\"10.77.10.10\",\"jump\":[\"10.77.10.1\",\"10.77.20.1\"],\"server\":\"10.77.20.20\",\"segments\":[\"10.77.10.0/24\",\"10.77.20.0/24\"],\"variantA\":{\"stationToServerTcp\":443},\"variantB\":{\"stationToServerTcp\":8080},\"newServerToStation\":\"deny\",\"externalInterfaces\":\"forbidden\"}"
+        },
+        {
+          "name": "test-plan.csv",
+          "format": "CSV de pruebas a completar",
+          "text": "flow,origin,destination,protocol,port,observed\n1,station,server,TCP,443,PENDING\n2,station,server,TCP,8080,PENDING\n3,server,station,TCP,443,PENDING\n4,station,server,TCP,22,PENDING"
+        }
+      ],
+      "materialId": "assessment-network-segment-policy.html",
+      "variantNote": "Elegí A o B antes de empezar y registralo. Repetir otra variante del mismo caso se conserva como caso repetido; no se presenta como una muestra independiente nueva."
+    },
+    {
+      "id": "web-session-isolation",
+      "title": "Caso F · Respuestas privadas bajo dos sesiones",
+      "category": "Web",
+      "missionId": "web-investigation",
+      "objectiveRefs": [
+        "ejpt:4.1",
+        "cc:3.2",
+        "security-plus-701:2.3"
+      ],
+      "brief": "Dos usuarios ficticios ven contenidos parecidos tras alternar sesiones. Debés decidir si hay contenido público compartido, una caché que mezcla identidades o un control de acceso insuficiente. Analizá el paquete y diseñá una comparación acotada en tu app local autorizada. Este escenario es nuevo: el objetivo es aislar sesión, recurso y caché, sin exigir que Juice Shop tenga el mismo defecto.",
+      "baseline": "Anotá instancia loopback del perfil, dos cuentas ficticias propias, recurso elegido y estado de sesión/caché. Los request IDs del paquete son sintéticos y no son tráfico capturado de tu ejecución. Separá análisis documental de pruebas nuevas.",
+      "authorizedScope": "Solo tu instancia propia de la sala web y cuentas ficticias. Navegación manual y solicitudes mínimas al recurso permitido. No reutilizar tokens, credenciales reales, sitios externos, fuerza bruta ni datos de otro alumno.",
+      "deliverable": "Tabla de condiciones con identidad, recurso, estado de caché y resultado; separación de datos públicos/privados; una prueba que refute la hipótesis de fuga y una que descarte confusión de sesión. Mostrá solicitudes anonimizadas sin cookies o tokens, conclusión limitada, control servidor/caché propuesto y prueba de regresión. No confundas el análisis del paquete con una vulnerabilidad demostrada en tu app.",
+      "rubric": [
+        "Cambia una variable por comparación e identifica sesión y recurso.",
+        "Distingue campos públicos de un identificador privado del usuario.",
+        "No atribuye una falla a la app local solo por el paquete sintético.",
+        "Remediación y regresión cubren caché y autorización con un control negativo."
+      ],
+      "guidance": "El título público compartido no prueba fuga. En A, privateOwner=A bajo la sesión B es el indicio que requiere reproducir y separar caché de autorización. En B privateOwner=B y solo el título coincide, por lo que ese paquete no muestra fuga. Una cabecera cache HIT no identifica por sí sola la causa raíz.",
+      "artifacts": [
+        {
+          "name": "responses.json",
+          "format": "JSON docente sintético, sin tokens",
+          "text": "{\"variantA\":[{\"requestId\":\"r1\",\"session\":\"A\",\"resource\":\"/profile/self\",\"status\":200,\"cache\":\"MISS\",\"body\":{\"title\":\"Portal Campus\",\"privateOwner\":\"A\"}},{\"requestId\":\"r2\",\"session\":\"B\",\"resource\":\"/profile/self\",\"status\":200,\"cache\":\"HIT\",\"body\":{\"title\":\"Portal Campus\",\"privateOwner\":\"A\"}}],\"variantB\":[{\"requestId\":\"r3\",\"session\":\"B\",\"resource\":\"/profile/self\",\"status\":200,\"cache\":\"HIT\",\"body\":{\"title\":\"Portal Campus\",\"privateOwner\":\"B\"}}]}"
+        }
+      ],
+      "materialId": "assessment-web-session-isolation.html",
+      "variantNote": "Elegí A o B antes de empezar y registralo. Repetir otra variante del mismo caso se conserva como caso repetido; no se presenta como una muestra independiente nueva."
+    },
+    {
+      "id": "forensic-evidence-triad",
+      "title": "Caso G · Custodia y correlación de tres formatos",
+      "category": "Forense",
+      "viewId": "forensics",
+      "objectiveRefs": [
+        "btl1:4.2",
+        "btl1:4.7",
+        "btl1:5.3",
+        "security-plus-701:4.9"
+      ],
+      "brief": "Un equipo ficticio debe establecer qué puede sostener una correlación entre un archivo de disco, el proceso de laboratorio y eventos Windows. Abrí el paquete forense real del módulo Forense y SIEM: imagen FAT, minidump del proceso de laboratorio y EVTX con procedencia. Elegí una hipótesis y otra alternativa, sin convertir coincidencias temporales en autoría. Los textos adjuntos son la consigna; los binarios y manifiesto se consultan en ese módulo.",
+      "baseline": "Registrá ID y manifiesto del paquete real, hashes verificados, herramientas y versiones compatibles, ventana y estado del índice SIEM antes de consultar. No uses dumps del equipo del alumno. La memoria es un minidump de un proceso, no RAM completa; si falta una herramienta dejá ese análisis pendiente.",
+      "authorizedScope": "Solo copias del paquete propio de Campus y su índice didáctico local. La imagen original se mantiene inalterada. No montar con escritura, capturar memoria del host, analizar cuentas reales ni enviar evidencia a servicios externos.",
+      "deliverable": "Planilla de custodia y SHA256 de cada archivo; tabla que vincule un artefacto de FAT, una observación compatible del minidump y dos eventos EVTX/índice con sus IDs y horas originales/normalizadas. Guardá consulta estructurada, resultado y una observación que no encaje. Incluí qué no pudo determinarse, compatibilidad de herramientas y evidencia que permitiría refutar la hipótesis. Un nombre o string no prueba ejecución por una persona.",
+      "rubric": [
+        "Verifica hashes contra manifiesto y conserva el original intacto.",
+        "Distingue FAT, minidump de proceso y EVTX y usa herramientas compatibles.",
+        "Cita IDs, rutas, consulta y horas con límites de reloj y fuente.",
+        "Separa correlación de causalidad y documenta una alternativa y ausencia relevante."
+      ],
+      "guidance": "La conclusión depende de los bytes y resultados que verificaste. Contrastá el manifiesto y la procedencia del paquete con las herramientas del módulo: Autopsy/FTK según soporte FAT, herramientas compatibles con minidump y lector EVTX. No declares un análisis Volatility de RAM física a partir del minidump. Dos artefactos cercanos en el tiempo no acreditan autoría ni que uno causó al otro; una ausencia en ese dump solo limita esa captura.",
+      "artifacts": [
+        {
+          "name": "evidence-worksheet.csv",
+          "format": "CSV de custodia a completar",
+          "text": "source,sha256,tool,observation,id_or_path,original_time,normalized_time,limitation\nFAT,PENDING,PENDING,PENDING,PENDING,PENDING,PENDING,PENDING\nPROCESS_MINIDUMP,PENDING,PENDING,PENDING,PENDING,PENDING,PENDING,PENDING\nEVTX,PENDING,PENDING,PENDING,PENDING,PENDING,PENDING,PENDING"
+        },
+        {
+          "name": "variants.json",
+          "format": "JSON de hipótesis docentes",
+          "text": "{\"A\":{\"hypothesis\":\"un archivo y un proceso del paquete comparten contenido relevante\",\"alternative\":\"contenido de demostración presente sin vínculo causal\"},\"B\":{\"hypothesis\":\"dos eventos son compatibles con actividad del mismo contexto\",\"alternative\":\"relojes o identidades diferentes producen coincidencia aparente\"},\"required\":\"citar evidencia contraria y cobertura ausente\"}"
+        }
+      ],
+      "materialId": "assessment-forensic-evidence-triad.html",
+      "variantNote": "Elegí A o B antes de empezar y registralo. Repetir otra variante del mismo caso se conserva como caso repetido; no se presenta como una muestra independiente nueva."
+    },
+    {
+      "id": "ir-mail-containment",
+      "title": "Caso H · Correo, alcance y contención proporcional",
+      "category": "Respuesta",
+      "viewId": "forensics",
+      "objectiveRefs": [
+        "btl1:2.4",
+        "btl1:2.7",
+        "btl1:6.5",
+        "cc:5.3"
+      ],
+      "brief": "El buzón ficticio recibió un pedido urgente de revisar una factura. Debés analizar el EML sin abrir enlaces y decidir qué evidencia justificaría revocar una sesión, poner el correo en cuarentena o escalar sin bloquear. Contrastá la variante de eventos y registrá una contención simulada y cómo revertirla. Ninguna acción debe aplicarse a correo, usuarios o firewall reales.",
+      "baseline": "Registrá variante A o B, hashes de los textos de trabajo, ventana de tiempo, relojes y origen sintético. Si usás SIEM, anotá dataset y consulta sin afirmar que estos CSV ya fueron ingeridos. El análisis documental cuenta como tal, no como una contención técnica ejecutada.",
+      "authorizedScope": "Solo el EML y CSV ficticios de esta consigna, y eventos del paquete didáctico propio para practicar consultas. No visitar dominios del mensaje, resolverlos, descargar adjuntos, enviar correos, bloquear IP del host ni modificar cuentas reales.",
+      "deliverable": "Extracción de Message-ID, Received, From/Reply-To y resultado de autenticación con distinción de cabeceras confiables; cronología de eventos citada por ID; dos hipótesis, umbral de decisión y dato faltante. Incluí tabla de acción simulada/responsable/impacto/recuperación y aviso ejecutivo breve, sin atribuir identidad por IP compartida. Compará cómo cambiaría la decisión entre A y B.",
+      "rubric": [
+        "No interactúa con enlaces ni ejecuta adjuntos; identifica datos sintéticos.",
+        "La evaluación de remitente contrasta autenticación y cadena de recepción, sin confiar solo en From.",
+        "Diferencia login fallido, éxito y acción posterior por IDs y sesión.",
+        "La contención es proporcional, autorizada, reversible y declara incertidumbre."
+      ],
+      "guidance": "Reply-To y autenticación fallida justifican investigación, no prueban que se usó una cuenta. A contiene éxito y regla nueva vinculados a la sesión s-91, lo que exige revisar legitimidad y alcance; B solo muestra fallos y no acredita acceso exitoso. Una cuarentena del mensaje y la revocación de sesión son acciones distintas con impacto diferente. La IP compartida no identifica una persona.",
+      "artifacts": [
+        {
+          "name": "invoice-review.eml",
+          "format": "EML docente sintético, dominios reservados .invalid",
+          "text": "Received: from mx.training.invalid by mailbox.training.invalid; Mon, 02 Nov 2026 09:01:00 -0300\nAuthentication-Results: mailbox.training.invalid; spf=fail; dkim=none; dmarc=fail\nFrom: Archivo Campus <archivo@campus.invalid>\nReply-To: revision@billing.invalid\nTo: analista@campus.invalid\nDate: Mon, 02 Nov 2026 09:00:00 -0300\nMessage-ID: <case-h-01@training.invalid>\nSubject: Factura ficticia para revision urgente\nContent-Type: text/plain; charset=utf-8\n\nCaso ficticio. Se pide revisar una factura en hxxps://billing[.]invalid/review. No navegar ni resolver el dominio. Sin adjuntos ejecutables."
+        },
+        {
+          "name": "mail-events.csv",
+          "format": "CSV docente sintético, reloj UTC",
+          "text": "variant,event_id,time,account,action,result,session,source\nA,m1,2026-11-02T12:03:00Z,analista,login,failed,,shared-egress\nA,m2,2026-11-02T12:04:00Z,analista,login,success,s-91,shared-egress\nA,m3,2026-11-02T12:05:00Z,analista,new_forward_rule,success,s-91,shared-egress\nB,m4,2026-11-02T12:03:00Z,analista,login,failed,,shared-egress\nB,m5,2026-11-02T12:04:00Z,analista,login,failed,,shared-egress"
+        }
+      ],
+      "materialId": "assessment-ir-mail-containment.html",
+      "variantNote": "Elegí A o B antes de empezar y registralo. Repetir otra variante del mismo caso se conserva como caso repetido; no se presenta como una muestra independiente nueva."
     }
   ],
   "externalPractice": {
     "title": "Práctica externa pendiente · Windows, Linux y pivoting",
-    "text": "Estos casos loopback no demuestran explotación Windows/Linux ni pivoting entre hosts. Para esas capacidades usá manualmente un entorno propio o de formación expresamente autorizado con hosts Windows y Linux y al menos dos segmentos aislados. Antes de actuar registrá propietario, activos/direcciones exactas, técnicas permitidas, exclusiones, ventana, punto de partida, snapshots y criterio de parada. Campus no crea ni modifica ese entorno desde esta evaluación.",
+    "text": "Los nuevos casos Windows/Linux/red requieren guests propios instalados y configuración verificada en Topologías. La consigna y sus tablas sintéticas no prueban ejecución. La ruta entre segmentos no acredita por sí sola explotación ni port forwarding. Para una práctica externa registrá autorización, activos, técnicas, exclusiones, snapshots y criterio de parada.",
     "evidence": "En una práctica externa autorizada conservá un diagrama de origen, salto y destino, versiones y línea de base; hipótesis y pruebas de acceso por host; evidencia mínima de ejecución con marcas de tiempo; ruta o reenvío realmente verificado, límites de privilegios, limpieza y validación posterior. Registrá aquí una síntesis anonimizada y declarala como externa. No adjuntes secretos, no uses un tercero como objetivo y no marques pivoting demostrado por abrir una sala local.",
     "review": "Contrastá el reporte y la evidencia con un revisor competente. La revisión propia de este módulo es una declaración tuya y su feedback solo comprueba estructura; no concede una nota ni un apto oficial."
   }

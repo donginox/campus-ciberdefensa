@@ -3,6 +3,7 @@ productName: Campus Ciberdefensa
 electronVersion: 45.2.1
 asar: true
 asarUnpack:
+  - assets/materials/forensic-alameda/**
   - src/labs/**
   - node_modules/sql.js/**
 directories:
@@ -16,6 +17,11 @@ files:
   - '!**/*.test.*'
   - '!**/*.map'
 extraResources:
+  - from: .local/forensic-native
+    to: forensic-native
+    filter:
+      - forensic-native.zip
+      - bundle-manifest.json
   - from: node_modules/sql.js/dist/sql-wasm.wasm
     to: sql-wasm.wasm
   - from: .local/lab-runtime

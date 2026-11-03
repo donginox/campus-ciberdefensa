@@ -1,9 +1,16 @@
 'use strict';
 const path=require('node:path');const v=require('./validation.cjs');const materialList=require('../src/content/materials-manifest.json');const materials=new Set(materialList);
+const objectiveAnchors=new Set(require('../src/content/objectives.json').certifications.flatMap(c=>c.domains.flatMap(d=>d.objectives.filter(o=>o.materialId==='objective-bridges.html').map(o=>o.materialAnchor))));
 const TRUSTED_URL='campus://app/src/renderer/index.html';
 function trustedMainUrl(raw){try{const url=new URL(raw);url.hash='';return url.href===TRUSTED_URL;}catch{return false;}}
 function assertTrustedSender(event,contents){if(!contents||event.sender!==contents||event.senderFrame!==contents.mainFrame||!trustedMainUrl(event.senderFrame?.url))throw new Error('Remitente IPC no autorizado.');}
 function material(relative){if(typeof relative!=='string'||!materials.has(relative))throw new Error('Material no permitido.');return relative;}
+function materialReference(target){
+ if(typeof target==='string')return {file:material(target),anchor:''};
+ keys(target,['file','anchor']);
+ if(target.file!=='objective-bridges.html'||typeof target.anchor!=='string'||!/^[a-z0-9-]+$/.test(target.anchor)||!objectiveAnchors.has(target.anchor))throw new Error('Sección de material no permitida.');
+ return {file:material(target.file),anchor:target.anchor};
+}
 function trustedMaterialUrl(raw){
  if(typeof raw!=='string'||/%2e|%2f|%5c|\\/i.test(raw))return false;
  try{const url=new URL(raw),prefix='/assets/materials/';return url.protocol==='campus:'&&url.host==='app'&&!url.username&&!url.password&&!url.search&&url.pathname.startsWith(prefix)&&materials.has(decodeURIComponent(url.pathname.slice(prefix.length)));}catch{return false;}
@@ -19,6 +26,19 @@ function keys(arg,allowed){if(!v.plain(arg)||Object.keys(arg).some(k=>!allowed.i
 function labInput(arg,extra=[]){keys(arg,['profileId','labId',...extra]);v.id(arg.profileId);if(!['juice-shop','soc-response','database-fundamentals'].includes(arg.labId))throw new Error('Receta de laboratorio no permitida.');return arg;}
 function actor(value){if(typeof value!=='string'||!value.trim()||value.length>100||/[\u0000-\u001f\u007f]/.test(value))throw new Error('Actor del caso inválido.');return value.trim();}
 function validateCall(method,arg){switch(method){
+ case 'forensicStatus':case 'forensicImport':case 'forensicReset':case 'forensicVerify':case 'forensicExportNative':keys(arg,['profileId']);v.id(arg.profileId);return arg;
+ case 'forensicIngest':keys(arg,['profileId','datasetId']);v.id(arg.profileId);if(!['alameda','transfer'].includes(arg.datasetId))throw Error('Fuente de laboratorio no permitida.');return arg;
+ case 'forensicQuery':{
+  const allowed=['profileId','kind','actor','sourceIp','limit'];if(!v.plain(arg)||!Object.hasOwn(arg,'profileId')||Object.keys(arg).some(k=>!allowed.includes(k)))throw Error('Filtro de laboratorio inválido.');v.id(arg.profileId);
+  if(arg.kind!==undefined&&!['auth.failure','auth.success','service.access','network.connect','file.read'].includes(arg.kind)||arg.actor!==undefined&&(typeof arg.actor!=='string'||arg.actor.length>80||/[\u0000-\u001f\u007f]/.test(arg.actor))||arg.sourceIp!==undefined&&(typeof arg.sourceIp!=='string'||arg.sourceIp.length>45||!require('node:net').isIP(arg.sourceIp))||arg.limit!==undefined&&(!Number.isInteger(arg.limit)||arg.limit<1||arg.limit>200))throw Error('Filtro de laboratorio inválido.');return arg;
+ }
+ case 'topologyDoctor':if(arg!==undefined)throw Error('La operación no acepta parámetros.');return;
+ case 'topologyStatus':case 'topologyExportKit':keys(arg,['profileId']);v.id(arg.profileId);return arg;
+ case 'topologyCreate':case 'topologyStart':case 'topologyStop':case 'topologySnapshot':case 'topologyRestore':keys(arg,['profileId','nodeId']);v.id(arg.profileId);if(!['workstation','router','server'].includes(arg.nodeId))throw Error('Nodo de laboratorio no permitido.');return arg;
+ case 'mergePreview':case 'tutorPreview':keys(arg,['profileId']);v.id(arg.profileId);return arg;
+ case 'mergeCancel':case 'tutorCommit':keys(arg,['profileId','previewId']);v.id(arg.profileId);v.id(arg.previewId);return arg;
+ case 'mergeCommit':keys(arg,['profileId','previewId','decisions']);v.id(arg.profileId);v.id(arg.previewId);v.jsonData(arg.decisions,65536);if(!v.plain(arg.decisions)||Object.keys(arg.decisions).length>500||Object.entries(arg.decisions).some(([key,value])=>key.length>100||!['local','incoming','both'].includes(value)))throw new Error('Selección de conflictos inválida.');return arg;
+ case 'tutorExport':keys(arg,['profileId','attemptId']);v.id(arg.profileId);if(typeof arg.attemptId!=='string'||arg.attemptId.length>200||!/^(?:independent-assessment:[a-zA-Z0-9-]+|packet-casework:(?:guiado|transferencia))$/.test(arg.attemptId))throw new Error('Informe no permitido.');return arg;
  case 'recoveryStatus':case 'recoverFromBackup':case 'openRecoveryFolder':if(arg!==undefined)throw new Error('La operación no acepta parámetros.');return;
  case 'recoverStore':return v.id(arg);
  case 'vmDoctor':case 'systemPracticeInfo':if(arg!==undefined)throw new Error('La operación no acepta parámetros.');return;
@@ -34,8 +54,9 @@ function validateCall(method,arg){switch(method){
  case 'selectProfile':case 'exportBackup':case 'importBackup':case 'realLabStatus':case 'startRealLab':case 'stopRealLab':case 'resetRealLab':case 'openRealLab':return v.id(arg);
  case 'renameProfile':keys(arg,['id','name']);return {id:v.id(arg.id),name:v.name(arg.name)};
  case 'saveProfile':keys(arg,['id','expectedRevision','study','labs']);v.id(arg.id);if(!Number.isSafeInteger(arg.expectedRevision)||arg.expectedRevision<1)throw new Error('Revisión inválida.');v.jsonData(arg.study,5*1024*1024);if(!v.plain(arg.labs))throw new Error('Laboratorios inválidos.');v.jsonData(arg.labs,1024*1024);return arg;
- case 'openMaterial':case 'exportMaterial':return material(arg);
+ case 'openMaterial':return typeof arg==='string'?material(arg):materialReference(arg);
+ case 'exportMaterial':return material(arg);
  case 'runSqlLab':keys(arg,['query','taskId']);if(typeof arg.query!=='string'||!arg.query.trim()||Buffer.byteLength(arg.query)>8000||!['sql-investigation','failed-logins'].includes(arg.taskId))throw new Error('Consulta SQL inválida.');return arg;
  default:throw new Error('Operación desconocida.');
 }}
-module.exports={TRUSTED_URL,trustedMainUrl,trustedMaterialUrl,assertTrustedSender,resourcePath,validateCall,material,externalUrl};
+module.exports={TRUSTED_URL,trustedMainUrl,trustedMaterialUrl,assertTrustedSender,resourcePath,validateCall,material,materialReference,externalUrl};

@@ -10,6 +10,12 @@ const UUID=/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 const OWNER='campus-ciberdefensa';
 const PREFIX='ar.campus.vm.';
 const TEMPLATES=Object.freeze({windows:{memory:4096,disk:81920,os:'Windows11_64'},linux:{memory:2048,disk:30720,os:'Debian_64'}});
+const TOPOLOGY_TEMPLATES=Object.freeze({'topology-windows':Object.freeze({memory:4096,disk:81920,os:'Windows11_64'}),'topology-router':Object.freeze({memory:2048,disk:20480,os:'Debian_64'}),'topology-server':Object.freeze({memory:2048,disk:30720,os:'Debian_64'})});
+const ALL_TEMPLATES=Object.freeze({...TEMPLATES,...TOPOLOGY_TEMPLATES});
+const topology=id=>Object.hasOwn(TOPOLOGY_TEMPLATES,id);
+const windows=id=>id==='windows'||id==='topology-windows';
+function networks(id,base){return id==='topology-router'?[base+'-users',base+'-servers']:topology(id)?[base+(id==='topology-server'?'-servers':'-users')]:[base];}
+function mac(record,n){return '080027'+digest(record.uuid+':'+n).slice(0,6).toUpperCase();}
 const digest=value=>createHash('sha256').update(value).digest('hex');
 const isObject=value=>value!==null&&typeof value==='object'&&!Array.isArray(value)&&[Object.prototype,null].includes(Object.getPrototypeOf(value));
 const isUUID=value=>typeof value==='string'&&UUID.test(value);
@@ -65,9 +71,9 @@ async function noLinks(file,{missing=false}={}){
 }
 function result(templateId,state,code,message,extra={}){return{templateId,state,code,message,osInstalled:false,canCreate:false,canStart:false,canStop:false,canSnapshot:false,canRestore:false,...extra};}
 class VirtualMachineManager{
- constructor({dataDir,runner=runFile,platform=process.platform,executable,onDiagnostic=()=>{}}={}){
+ constructor({dataDir,runner=runFile,platform=process.platform,executable,onDiagnostic=()=>{},templateFamily}={}){
   if(!dataDir||!path.isAbsolute(dataDir))throw Error('dataDir must be absolute');
-  this.dataDir=path.resolve(dataDir);this.root=path.join(this.dataDir,'vm-labs');this.registryFile=path.join(this.root,'registry.json');this.runner=runner;this.platform=platform;this.executable=executable||(platform==='win32'?'C:\\Program Files\\Oracle\\VirtualBox\\VBoxManage.exe':null);this.onDiagnostic=onDiagnostic;this.queue=Promise.resolve();
+  if(templateFamily!==undefined&&templateFamily!=='topology-v1')throw Error('Invalid template family');this.templates=templateFamily==='topology-v1'?TOPOLOGY_TEMPLATES:TEMPLATES;this.dataDir=path.resolve(dataDir);this.root=path.join(this.dataDir,'vm-labs');this.registryFile=path.join(this.root,'registry.json');this.runner=runner;this.platform=platform;this.executable=executable||(platform==='win32'?'C:\\Program Files\\Oracle\\VirtualBox\\VBoxManage.exe':null);this.onDiagnostic=onDiagnostic;this.queue=Promise.resolve();
  }
  async executablePath(){
   if(this.executable){if(!path.isAbsolute(this.executable))fail('executable_unavailable');return this.executable;}
@@ -84,14 +90,14 @@ class VirtualMachineManager{
    return{ready:hardware&&totalMemoryMiB>=6144,code:hardware?'available':'virtualization_unconfirmed',version,totalMemoryMiB,availableMemoryMiB,message:hardware?'VirtualBox 7.2 disponible. El inicio del invitado todavía debe comprobarse.':'VirtualBox no pudo confirmar virtualización. La presencia de Hyper-V puede ocultar indicadores del firmware; Campus no cambia esa configuración.',limitations:['La definición de una VM no confirma que su sistema operativo esté instalado.','El rendimiento con el hipervisor de Windows activo depende del equipo.'],setupUrl:'https://www.virtualbox.org/manual/'};
   }catch(error){return{ready:false,code:error.code==='ENOENT'||error.safeCode==='executable_unavailable'?'virtualbox_missing':'engine_unavailable',message:'No se pudo comprobar VirtualBox. Revisá su instalación y volvé a intentar.',setupUrl:'https://www.virtualbox.org/manual/'};}
  }
- validate(profileId,templateId){if(!isUUID(profileId)||typeof templateId!=='string'||!Object.hasOwn(TEMPLATES,templateId))throw Error('Invalid VM request');}
+ validate(profileId,templateId){if(!isUUID(profileId)||typeof templateId!=='string'||!Object.hasOwn(this.templates,templateId))throw Error('Invalid VM request');}
  validateRegistry(data){
   if(!isObject(data)||!['version','instance','records'].every(key=>Object.hasOwn(data,key))||Object.keys(data).some(key=>!['version','instance','records'].includes(key))||data.version!==1||!isUUID(data.instance)||!isObject(data.records))fail();
   const required=['uuid','name','folder','cfg','disk','profileId','templateId','isoPath','network','phase'];
   const optional=['diskId','snapshotId','snapshotHash','snapshotPending'];
   for(const [key,record]of Object.entries(data.records)){
    if(!isObject(record)||!required.every(field=>Object.hasOwn(record,field)&&typeof record[field]==='string')||Object.keys(record).some(field=>!required.includes(field)&&!optional.includes(field)))fail();
-   if(!isUUID(record.uuid)||!isUUID(record.profileId)||record.profileId!==record.profileId.toLowerCase()||!Object.hasOwn(TEMPLATES,record.templateId)||key!==this.key(record.profileId,record.templateId)||!['creating','configured'].includes(record.phase)||record.name!==`Campus-${record.templateId}-${record.uuid}`)fail();
+   if(!isUUID(record.uuid)||!isUUID(record.profileId)||record.profileId!==record.profileId.toLowerCase()||!Object.hasOwn(this.templates,record.templateId)||key!==this.key(record.profileId,record.templateId)||!['creating','configured'].includes(record.phase)||record.name!==`Campus-${record.templateId}-${record.uuid}`)fail();
    const folder=path.join(this.root,record.name);if(record.folder!==folder||record.cfg!==path.join(folder,record.name+'.vbox')||record.disk!==path.join(folder,'system.vdi')||record.network!==`campus-${data.instance}-${record.profileId}`||!path.isAbsolute(record.isoPath)||path.extname(record.isoPath).toLowerCase()!=='.iso')fail();
    // A completed VM must keep the disk identity established during creation.
    // The only phase allowed to learn its base UUID is a verified creating VM.
@@ -129,7 +135,7 @@ class VirtualMachineManager{
    if(!isUUID(id)||visited.has(id)||!path.isAbsolute(location)||!inside(record.folder,path.resolve(location)))fail();
    if(isUUID(current)?id!==current:path.resolve(location)!==path.resolve(current))fail();
    visited.add(id);await noLinks(location);
-   if(field('Storage format')!=='VDI'||field('Capacity')!==`${TEMPLATES[record.templateId].disk} MBytes`)fail();
+   if(field('Storage format')!=='VDI'||field('Capacity')!==`${ALL_TEMPLATES[record.templateId].disk} MBytes`)fail();
    if(parent==='base'){
     if(field('Type')!=='normal (base)'||!/^dynamic(?: default)?$/.test(field('Format variant'))||path.resolve(location)!==record.disk||(record.phase==='configured'&&!isUUID(record.diskId))||(Object.hasOwn(record,'diskId')&&id!==record.diskId))fail();
     return id;
@@ -146,16 +152,16 @@ class VirtualMachineManager{
   if(info.UUID!==record.uuid||info.CfgFile!==record.cfg||info.name!==record.name)fail();await noLinks(record.cfg);
   if(Object.hasOwn(info,'NvramFile'))await this.validateNvram(info.NvramFile,record);
   for(const [key,value]of Object.entries({owner:OWNER,instance:registry.instance,profile:record.profileId,template:templateId})){const out=(await this.cli(['getextradata',record.uuid,PREFIX+key])).trim();if(out!=='Value: '+value)fail();}
-  const required={memory:String(TEMPLATES[templateId].memory),cpus:'2',nic1:'intnet',intnet1:record.network,clipboard:'disabled',draganddrop:'disabled',usb:'off',ehci:'off',xhci:'off',vrde:'off',audio:'none',audio_in:'off',audio_out:'off'};for(let n=2;n<=8;n++)required['nic'+n]='none';
+  if(templateId==='topology-windows'&&info.firmware!=='EFI')fail();const nets=networks(templateId,record.network);const required={memory:String(ALL_TEMPLATES[templateId].memory),cpus:'2',clipboard:'disabled',draganddrop:'disabled',usb:'off',ehci:'off',xhci:'off',vrde:'off',audio:'none',audio_in:'off',audio_out:'off'};for(let n=1;n<=8;n++){required['nic'+n]=n<=nets.length?'intnet':'none';if(n<=nets.length){required['intnet'+n]=nets[n-1];if(topology(templateId))required['macaddress'+n]=mac(record,n);}}
   for(const [key,value]of Object.entries(required))if(info[key]!==value)fail();
   for(const keys of [['clipboard_file_transfers','clipboardfiletransfers'],['teleporterenabled','teleporter'],['recording_enabled','recording']]){const values=keys.filter(key=>Object.hasOwn(info,key)).map(key=>info[key]);if(!values.length||values.some(value=>!['off','disabled'].includes(value)))fail();}
   // 7.2.22 omits NIC promiscuous/trace policy from machine-readable output.
   // Read the fixed, English detail fields as a second independent boundary.
-  const details=await this.cli(['showvminfo',record.uuid,'--details']);const nicLines=details.split(/\r?\n/).filter(line=>/^NIC 1:\s/.test(line));if(nicLines.length!==1||!/, Trace: off \(file: none\),/.test(nicLines[0])||!/, Promisc Policy: deny(?:,|$)/.test(nicLines[0])||!/^USB Device Filters:\s+<none>\s*$/m.test(details)||!/^Shared folders:\s+<none>\s*$/m.test(details))fail();
+  const details=await this.cli(['showvminfo',record.uuid,'--details']);for(let n=1;n<=nets.length;n++){const nicLines=details.split(/\r?\n/).filter(line=>line.startsWith('NIC '+n+':'));if(nicLines.length!==1||!/, Trace: off \(file: none\),/.test(nicLines[0])||!/, Promisc Policy: deny(?:,|$)/.test(nicLines[0]))fail();}if(!/^USB Device Filters:\s+<none>\s*$/m.test(details)||!/^Shared folders:\s+<none>\s*$/m.test(details))fail();
   // Absence is accepted only for optional disabled features not emitted by all
   // 7.2 builds. Their enabled forms and any unknown host attachment are denied.
   for(const [key,value]of Object.entries(info)){
-   if(/^nic\d+$/.test(key)&&key!=='nic1'&&value!=='none')fail();
+   if(/^nic\d+$/.test(key)&&Number(key.slice(3))>nets.length&&value!=='none')fail();
    if(/^(SharedFolder|Forwarding|USBFilter|HostPCI)/i.test(key))fail();
    if(/^(uart[1-4]|lpt[12]|teleporter|recording|nictrace\d+|tracing-enabled|tracing-allow-vm-access|autostart-enabled)$/.test(key)&&!['off','disabled','none'].includes(value))fail();
    if(key==='clipboardfiletransfers'&&!['off','disabled'].includes(value))fail();
@@ -176,9 +182,9 @@ class VirtualMachineManager{
   const uuid=randomUUID(),name=`Campus-${templateId}-${uuid}`,folder=path.join(this.root,name);await noLinks(folder,{missing:true});try{await fs.lstat(folder);fail();}catch(error){if(error.code!=='ENOENT')throw error;}
   const record={uuid,name,folder,cfg:path.join(folder,name+'.vbox'),disk:path.join(folder,'system.vdi'),profileId:profileId.toLowerCase(),templateId,isoPath,network:`campus-${registry.instance}-${profileId.toLowerCase()}`,phase:'creating'};
   registry.records[this.key(profileId,templateId)]=record;await this.save(registry);
-  const template=TEMPLATES[templateId];await this.cli(['createvm','--name',name,'--uuid',uuid,'--basefolder',this.root,'--platform-architecture','x86','--ostype',template.os,'--register']);
+  const template=ALL_TEMPLATES[templateId];await this.cli(['createvm','--name',name,'--uuid',uuid,'--basefolder',this.root,'--platform-architecture','x86','--ostype',template.os,'--register']);
   for(const [key,value]of Object.entries({owner:OWNER,instance:registry.instance,profile:record.profileId,template:templateId}))await this.cli(['setextradata',uuid,PREFIX+key,value]);
-  const config=['modifyvm',uuid,'--memory',String(template.memory),'--cpus','2','--acpi','on','--ioapic','on','--boot1','dvd','--boot2','disk','--boot3','none','--boot4','none','--nic1','intnet','--intnet1',record.network,'--nic-promisc1','deny','--clipboard-mode','disabled','--clipboard-file-transfers','disabled','--drag-and-drop','disabled','--usb-ohci','off','--usb-ehci','off','--usb-xhci','off','--vrde','off','--audio-enabled','off','--audio-in','off','--audio-out','off','--teleporter','off','--recording','off','--graphicscontroller',templateId==='windows'?'vboxsvga':'vmsvga','--vram','64'];for(let n=2;n<=8;n++)config.push('--nic'+n,'none');if(templateId==='windows')config.push('--firmware','efi','--tpm-type','2.0');await this.cli(config);
+  const config=['modifyvm',uuid,'--memory',String(template.memory),'--cpus','2','--acpi','on','--ioapic','on','--boot1','dvd','--boot2','disk','--boot3','none','--boot4','none','--clipboard-mode','disabled','--clipboard-file-transfers','disabled','--drag-and-drop','disabled','--usb-ohci','off','--usb-ehci','off','--usb-xhci','off','--vrde','off','--audio-enabled','off','--audio-in','off','--audio-out','off','--teleporter','off','--recording','off','--graphicscontroller',windows(templateId)?'vboxsvga':'vmsvga','--vram','64'];const nets=networks(templateId,record.network);for(let n=1;n<=8;n++){config.push('--nic'+n,n<=nets.length?'intnet':'none');if(n<=nets.length){config.push('--intnet'+n,nets[n-1],'--nic-promisc'+n,'deny');if(topology(templateId))config.push('--macaddress'+n,mac(record,n),'--nic-trace'+n,'off');}}if(windows(templateId))config.push('--firmware','efi','--tpm-type','2.0');await this.cli(config);
   await this.cli(['createmedium','disk','--filename',record.disk,'--size',String(template.disk),'--format','VDI','--variant','Standard'],120000);
   await this.cli(['storagectl',uuid,'--name','SATA','--add','sata','--controller','IntelAhci','--portcount','2','--bootable','on']);
   await this.cli(['storageattach',uuid,'--storagectl','SATA','--port','0','--device','0','--type','hdd','--medium',record.disk]);
@@ -194,13 +200,13 @@ class VirtualMachineManager{
   const current=allowed.slice(3);if(current.some(key=>Object.hasOwn(snapshots,key))&&(snapshots.CurrentSnapshotName!=='Campus-base'||snapshots.CurrentSnapshotUUID!==snapshots.SnapshotUUID||snapshots.CurrentSnapshotNode!=='SnapshotName'))fail();
   const config=parseSnapshotDetails(await this.cli(['snapshot',record.uuid,'showvminfo',snapshots.SnapshotUUID])),{fields,storage,screens,tree}=config;
   if(tree.id!==snapshots.SnapshotUUID||tree.name!=='Campus-base'||tree.description!==description)fail();
-  const required={Name:record.name,UUID:record.uuid,'Hardware UUID':record.uuid,'Config file':record.cfg,'Snapshot folder':path.join(record.folder,'Snapshots'),'Log folder':path.join(record.folder,'Logs'),'Memory size':`${TEMPLATES[record.templateId].memory}MB`,'Number of CPUs':'2','Platform Architecture':'x86',Encryption:'disabled','Storage Controllers':'','USB Device Filters':'<none>','Shared folders':'<none>','Bandwidth groups':'<none>','Recording enabled':'no','Recording status':'stopped','Recording screens':'1'};
-  for(const key of ['Teleporter Enabled','Tracing Enabled','Allow Tracing to Access VM','Autostart Enabled','Audio','Audio playback','Audio capture','Clipboard Mode','Clipboard file transfers','Drag and drop Mode','VRDE','OHCI USB','EHCI USB','xHCI USB',...Array.from({length:4},(_,n)=>`UART ${n+1}`),...Array.from({length:2},(_,n)=>`LPT ${n+1}`),...Array.from({length:7},(_,n)=>`NIC ${n+2}`)])required[key]='disabled';
-  for(const [key,value]of Object.entries(required))if(fields[key]!==value)fail();
+  const required={Name:record.name,UUID:record.uuid,'Hardware UUID':record.uuid,'Config file':record.cfg,'Snapshot folder':path.join(record.folder,'Snapshots'),'Log folder':path.join(record.folder,'Logs'),'Memory size':`${ALL_TEMPLATES[record.templateId].memory}MB`,'Number of CPUs':'2','Platform Architecture':'x86',Encryption:'disabled','Storage Controllers':'','USB Device Filters':'<none>','Shared folders':'<none>','Bandwidth groups':'<none>','Recording enabled':'no','Recording status':'stopped','Recording screens':'1'};
+  for(const key of ['Teleporter Enabled','Tracing Enabled','Allow Tracing to Access VM','Autostart Enabled','Audio','Audio playback','Audio capture','Clipboard Mode','Clipboard file transfers','Drag and drop Mode','VRDE','OHCI USB','EHCI USB','xHCI USB',...Array.from({length:4},(_,n)=>`UART ${n+1}`),...Array.from({length:2},(_,n)=>`LPT ${n+1}`),...Array.from({length:8-networks(record.templateId,record.network).length},(_,n)=>`NIC ${n+1+networks(record.templateId,record.network).length}`)])required[key]='disabled';
+  for(const [key,value]of Object.entries(required))if(fields[key]!==value)fail();if(record.templateId==='topology-windows'&&fields.Firmware!=='EFI')fail();
   const hasNvram=Object.hasOwn(fields,'BIOS NVRAM File'),hasSecureBoot=Object.hasOwn(fields,'UEFI Secure Boot');
   if(hasNvram){if(!['EFI','EFI32','EFI64','EFIDUAL'].includes(fields.Firmware))fail();await this.validateNvram(fields['BIOS NVRAM File'],record,{snapshot:true});}
   if(hasSecureBoot&&(!hasNvram||!['enabled','disabled'].includes(fields['UEFI Secure Boot'])))fail();
-  const nic=fields['NIC 1']?.match(/^MAC: [0-9A-F]{12}, Attachment: Internal Network '([^']+)', Cable connected: (?:on|off), Trace: off \(file: none\), Type: [A-Za-z0-9]+, Reported speed: \d+ Mbps, Boot priority: \d+, Promisc Policy: deny, Bandwidth group: none$/i);if(!nic||nic[1]!==record.network)fail();
+  for(const [index,network]of networks(record.templateId,record.network).entries()){const nic=fields['NIC '+(index+1)]?.match(/^MAC: [0-9A-F]{12}, Attachment: Internal Network '([^']+)', Cable connected: (?:on|off), Trace: off \(file: none\), Type: [A-Za-z0-9]+, Reported speed: \d+ Mbps, Boot priority: \d+, Promisc Policy: deny, Bandwidth group: none$/i);if(!nic||nic[1]!==network||topology(record.templateId)&&!fields['NIC '+(index+1)].startsWith('MAC: '+mac(record,index+1)+','))fail();}
   if(storage.length!==1)fail();const controller=storage[0];if(controller.index!=='0'||controller.name!=='SATA'||controller.type!=='IntelAhci'||controller.instance!=='0'||controller.ports!=='2'||controller.maxPorts!=='30'||controller.bootable!=='Bootable'||controller.devices.some(d=>d.unit!=='0'||!['0','1'].includes(d.port)))fail();
   const disk=controller.devices.find(d=>d.port==='0'),dvd=controller.devices.find(d=>d.port==='1');
   if(!disk||disk.id!==record.diskId||disk.location!==record.disk||dvd&&dvd.id&&dvd.location!==record.isoPath||dvd&&!dvd.id&&Object.hasOwn(dvd,'location'))fail();
