@@ -12,6 +12,23 @@ concurrency:
   group: desktop-${{ github.ref }}
   cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 jobs:
+  forensic-native:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+      - name: Capture only owned training process and events on ephemeral runner
+        shell: powershell
+        run: ./scripts/build-forensic-native.ps1
+      - name: Preserve native evidence for both installers
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9
+        with:
+          name: forensic-native
+          include-hidden-files: true
+          if-no-files-found: error
+          retention-days: 14
+          path: |
+            .local/forensic-native/forensic-native.zip
+            .local/forensic-native/bundle-manifest.json
   lab-runtime:
     runs-on: ubuntu-24.04
     steps:
@@ -43,7 +60,7 @@ jobs:
             .local/lab-runtime/manifest.json
             .local/lab-runtime/runtime.tar.gz
   build:
-    needs: lab-runtime
+    needs: [lab-runtime, forensic-native]
     strategy:
       fail-fast: false
       matrix:
@@ -60,6 +77,11 @@ jobs:
           node-version: 22.23.4
           cache: npm
       - run: npm ci
+      - name: Retrieve native forensic evidence generated in isolated CI
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh run download "$GITHUB_RUN_ID" --repo "$GITHUB_REPOSITORY" --name forensic-native --dir .local/forensic-native
       - run: npm test
       - name: Exercise read-only Windows or Linux host observations
         run: node scripts/smoke-system-observer.cjs

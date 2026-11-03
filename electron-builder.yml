@@ -16,6 +16,11 @@ files:
   - '!**/*.test.*'
   - '!**/*.map'
 extraResources:
+  - from: .local/forensic-native
+    to: forensic-native
+    filter:
+      - forensic-native.zip
+      - bundle-manifest.json
   - from: node_modules/sql.js/dist/sql-wasm.wasm
     to: sql-wasm.wasm
   - from: .local/lab-runtime
