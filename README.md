@@ -10,6 +10,7 @@ La primera versión se construye sin certificado de firma de Windows. El reposit
 
 ## Estudiar y practicar
 
+- Interfaz universitaria azul y bordó, navegación por áreas, portada con continuidad real del estudio y aula con índice de clases. Consultá la [guía de la interfaz](docs/university-ui-guide.md).
 - Guía de inicio reanudable: prioridad, fecha, disponibilidad flexible y entornos viables.
 - Diagnóstico de 24 preguntas, plan personal, agenda y repaso espaciado. Cinco simulacros docentes seleccionan preguntas de un banco propio de 128; repetirlas no mide preparación oficial.
 - 24 clases con teoría, prácticas, 72 preguntas y 48 tarjetas.
