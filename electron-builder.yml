@@ -3,6 +3,7 @@ productName: Campus Ciberdefensa
 electronVersion: 45.2.1
 asar: true
 asarUnpack:
+  - assets/materials/forensic-alameda/**
   - src/labs/**
   - node_modules/sql.js/**
 directories:
