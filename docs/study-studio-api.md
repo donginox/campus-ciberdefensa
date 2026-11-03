@@ -48,6 +48,10 @@ Issue fields (defaults supplied by add/draft, unknown keys throw): `{kind:'error
 
 `chooseFollowup` selects a catalog exercise for the linked node/lesson, rejecting the triggering exercise/question and an exercise that lists that source in its `sourceQuestionIds`. Catalog `distinctFrom` means an authored different exercise for those triggers and permits selection. It stores the authored exercise ID/version. `submitFollowup` requires a chosen exercise, nonblank response, explicit result `pending|correct-declared|incorrect-declared|uncertain`, assistance `none-declared|guided|assisted|undeclared`, and nullable explicit confidenceAfter 1–5; saves `{id,exerciseId,exerciseVersion,submittedAt,response,result,assistance,confidenceAfter}`. Maximum response 1000. It clears the matching followup draft, preserves previous submissions and issue state; no automatic evaluation or resolution. Exercise ID/version remain frozen on submitted followups.
 
+There is one pending `followupDraft`. `setFollowupDraft(nonnull)` rejects replacement by a different `issueId`, preserving the existing record; same-owner updates remain allowed. `setFollowupDraft(null)` is the explicit valid-draft discard. While an issue owns that draft, `chooseFollowup` rejects changing its chosen exercise ID or version; reselecting the same ID/version is allowed. `submitFollowup` for another issue preserves the pending owner's draft. Removing an issue clears only that issue's recovery draft; removing a session preserves notebook/recovery drafts. These guards do not introduce a new schema or collection.
+
+The renderer immediately guards other recovery forms and exercise selectors without rebuilding the active editor. Rejected raw text remains separate from the valid draft and is available for correction or copying, including after tab redraw. Valid-draft discard targets its owner only; rejected-response discard targets its overlay only. Rejected evidence blocks confirmation, import, profile replacement and normal close until corrected or explicitly discarded. Raw overlays are transient and are never silently substituted for the valid profile record. A schema-valid imported draft without a chosen exercise remains inspectable and explicitly discardable from the pending-recovery disclosure.
+
 ## Sessions
 
 ```js
@@ -61,6 +65,10 @@ removeSession(raw, sessionId, context?)
 ```
 
 Minutes 30/60/90. Creates running session `{id,createdAt,updatedAt,endedAt:null,minutes,status:'running',stepId:'retrieve',cursor:null,reflection:'',steps}` and makes it active. Existing running session must first be paused/completed. Three frozen steps: `{id:'retrieve',kind:'retrieve',ref:{type:'lesson',id:lessonId},minutes:minutes/3,state:'pending'}`, then `practice` and `reflect` with the same shape and lesson. Step minutes sum exactly to budget. No plan regeneration on normalize/resume, no automatic time advancement. A valid imported plan may use any existing typed reference; IDs/kinds are retrieve/practice/reflect in that order, positive integer minutes summing to budget. Completed blocks explicitly become `done`; finishing requires all three done, records endedAt, clears activeSessionId. Resume merely selects the saved session/cursor. Reflection max 1000. Only running sessions accept checkpoints/block completion. Pausing clears activeSessionId; terminal completed sessions cannot resume. Removal is explicit.
+
+Explicit lesson resume reconciles a saved notes/answer cursor in theory/practice with workspace preferences before rendering: split mode, the saved editor/source, and no expanded pane hiding it. This preference update uses the existing profile epoch and save queue. Canonical lesson text is unchanged; focus, selection, editor scroll and independent page scroll are restored afterward. Resume never executes a lab.
+
+Renderer labels use class titles, duration and declared state; dates/times are formatted in Spanish using the device timezone, which is identified on screen. Calendar-only dates preserve their calendar day. Native Details disclosures retain exact IDs, stored dates/UTC timestamps and authored catalog/source versions. Formatting does not change stored metadata or certification selection; Security+ 701/801 remain separate and CCST remains provisional.
 
 ## Read-only projections
 
