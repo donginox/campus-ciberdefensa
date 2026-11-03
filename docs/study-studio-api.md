@@ -16,6 +16,8 @@ Pure immutable UMD: `window.StudyStudioCore` / CommonJS. All mutations return a 
 
 `normalize(raw, context?)`: only null/undefined means absent → empty; invalid existing records throw. `validateRecord(raw, context?)` returns a detached validated copy. Unknown keys and versions, unsafe/non-JSON values, duplicate/dangling IDs, invalid real dates and overcapacity are rejected. Maximum serialized UTF-8 size is **180000 bytes**, notebook 24, sessions 12, followups per entry 4, session steps 3. No clipping or history pruning. `sequence` is a nonnegative safe integer shared by `issue-N`, `session-N`, and `followup-N`; removals never decrement it.
 
+An optional top-level `notebookDraftFor` identifies an existing issue being edited. When present it must be that issue's existing ID and `notebookDraft` must be nonnull; dangling/null bindings are rejected. Omission retains creation/legacy semantics. `emptyRecord()` omits this field, and normalization never invents it.
+
 Typed reference: `{type:'lesson'|'node'|'objective'|'case'|'exercise'|'question', id:string}`. IDs must exist in the corresponding catalog (question = ProfessionalCore learning question or curriculum quiz question). Null is allowed only where documented.
 
 Cursor: `{ref, step, field, scrollTop, selectionStart, selectionEnd, pageScrollTop?}`. `scrollTop` retains its existing focused-editor scroll semantics when an editor is focused; optional `pageScrollTop` independently retains the page scroll position. `pageScrollTop`, when supplied, is a nonnegative integer ≤1000000; legacy omission is preserved exactly, without inventing a page position. `step` is `theory|practice|quiz|summary|overview|report|reflection`; `field` is `none|notes|answer|reflection|report`; positions are nonnegative integers ≤1000000, selection end ≥start. Lesson supports theory/practice/quiz/summary; case report/overview; node/exercise/question overview/reflection; objective overview; session steps reference their canonical target. No selectors, routes, paths, or text snapshots.
@@ -31,6 +33,7 @@ updateWorkspace(raw, patch, context?)
 rememberLocation(raw, cursorOrNull, context?)
 updateSettings(raw, {certificationId}, context?) // null or exact objective catalog ID
 setNotebookDraft(raw, issueFieldsOrNull, context?)
+beginIssueDraft(raw, issueId, context?)
 addIssue(raw, issueFields, now, context?)
 updateIssue(raw, issueId, patch, now, context?)
 removeIssue(raw, issueId, context?)
@@ -40,6 +43,8 @@ submitFollowup(raw, issueId, answerFields, now, context?)
 ```
 
 Issue fields (defaults supplied by add/draft, unknown keys throw): `{kind:'error'|'doubt', sourceRef:null, lessonId:null, nodeId:null, objectiveId:null, prompt:'', explanation:'', cause:'', confidence:null, state:'open', nextReviewDate:null}`. Confidence null or explicit integer 1–5; state `open|review|resolved-declared`. All text fields max 1000 UTF-16 code units, no minimum for drafts; adding requires nonblank prompt and explanation. Cause is the learner's text, never inferred. Created issue adds `{id,createdAt,updatedAt,exerciseId:null,exerciseVersion:null,followups:[]}`. `updateIssue` accepts only issue fields; sourceRef cannot change after creation.
+
+`beginIssueDraft` snapshots the selected issue's issue fields and persists its `notebookDraftFor` binding. Reopening that same bound draft retains its latest text. A different pending draft (including an unbound creation draft) must be saved or explicitly discarded before switching. `setNotebookDraft(nonnull)` retains the current binding; `setNotebookDraft(null)` clears the draft and removes the optional binding. `updateIssue` preserves drafts, allowing the caller to save the matching edit then explicitly clear its draft. Removing an issue clears only its own bound draft and preserves drafts for other issues or creation. Creating a new issue while a draft is bound to an existing issue is rejected. These operations do not silently replace another pending draft.
 
 `chooseFollowup` selects a catalog exercise for the linked node/lesson, rejecting the triggering exercise/question and an exercise that lists that source in its `sourceQuestionIds`. Catalog `distinctFrom` means an authored different exercise for those triggers and permits selection. It stores the authored exercise ID/version. `submitFollowup` requires a chosen exercise, nonblank response, explicit result `pending|correct-declared|incorrect-declared|uncertain`, assistance `none-declared|guided|assisted|undeclared`, and nullable explicit confidenceAfter 1–5; saves `{id,exerciseId,exerciseVersion,submittedAt,response,result,assistance,confidenceAfter}`. Maximum response 1000. It clears the matching followup draft, preserves previous submissions and issue state; no automatic evaluation or resolution. Exercise ID/version remain frozen on submitted followups.
 
