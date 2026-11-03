@@ -18,7 +18,7 @@ Pure immutable UMD: `window.StudyStudioCore` / CommonJS. All mutations return a 
 
 Typed reference: `{type:'lesson'|'node'|'objective'|'case'|'exercise'|'question', id:string}`. IDs must exist in the corresponding catalog (question = ProfessionalCore learning question or curriculum quiz question). Null is allowed only where documented.
 
-Cursor: `{ref, step, field, scrollTop, selectionStart, selectionEnd}`. `step` is `theory|practice|quiz|summary|overview|report|reflection`; `field` is `none|notes|answer|reflection|report`; positions are nonnegative integers ≤1000000, selection end ≥start. Lesson supports theory/practice/quiz/summary; case report/overview; node/exercise/question overview/reflection; objective overview; session steps reference their canonical target. No selectors, routes, paths, or text snapshots.
+Cursor: `{ref, step, field, scrollTop, selectionStart, selectionEnd, pageScrollTop?}`. `scrollTop` retains its existing focused-editor scroll semantics when an editor is focused; optional `pageScrollTop` independently retains the page scroll position. `pageScrollTop`, when supplied, is a nonnegative integer ≤1000000; legacy omission is preserved exactly, without inventing a page position. `step` is `theory|practice|quiz|summary|overview|report|reflection`; `field` is `none|notes|answer|reflection|report`; positions are nonnegative integers ≤1000000, selection end ≥start. Lesson supports theory/practice/quiz/summary; case report/overview; node/exercise/question overview/reflection; objective overview; session steps reference their canonical target. No selectors, routes, paths, or text snapshots.
 
 Workspace mode `normal|split`, ratio integer 30–70, source `theory|practice`, editor `notes|answer`, expanded `none|source|editor`.
 
