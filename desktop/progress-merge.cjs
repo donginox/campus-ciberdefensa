@@ -1,6 +1,9 @@
 'use strict';
 const {createHash,randomUUID}=require('node:crypto');
 const v=require('./validation.cjs');
+const Assessment=require('../src/shared/assessment-core.js');
+const Tutor=require('../src/shared/tutor-core.js');
+const {TutorExchange}=require('./tutor-exchange.cjs');
 const MAX_SOURCE=7*1024*1024;
 const own=(o,k)=>Object.hasOwn(o,k);
 const clone=x=>JSON.parse(JSON.stringify(x));
@@ -11,26 +14,37 @@ const same=(a,b)=>hash(a)===hash(b);
 const schemas={
  'professional-learning':{arrays:{history:20,sessions:100},maps:['reviews']},
  'preparation-ledger':{arrays:{entries:30},maps:[]},
- 'independent-assessment':{arrays:{attempts:6},maps:['setupDrafts']},
+ 'independent-assessment':{arrays:{attempts:Assessment.MAX_ATTEMPTS},maps:['setupDrafts'],bytes:Assessment.MAX_RECORD_BYTES},
+ 'tutor-reviews':{arrays:{reviews:Tutor.MAX_REVIEWS},maps:[],identity:item=>item.feedback.feedbackId,bytes:Tutor.MAX_RECORD_BYTES},
  'packet-casework':{arrays:{},maps:['cases']},
  'merge-conflicts':{arrays:{records:200},maps:[]}
 };
-function arrayEntries(items){
- const out=new Map();for(const item of items){const id=v.plain(item)&&typeof item.id==='string'&&item.id?'id:'+item.id:'hash:'+hash(item);if(out.has(id))throw Error('La colección contiene identificadores repetidos. No se combinó.');out.set(id,item)}return out;
+function arrayEntries(items,identity){
+ const out=new Map();for(const item of items){const id=identity?'id:'+identity(item):v.plain(item)&&typeof item.id==='string'&&item.id?'id:'+item.id:'hash:'+hash(item);if(out.has(id))throw Error('La colección contiene identificadores repetidos. No se combinó.');out.set(id,item)}return out;
 }
+// Normalizers may add defaults, but merging must never discard or rewrite source evidence.
+function assertPreserved(raw,normalized,path=['study']){
+ if(v.plain(raw)&&v.plain(normalized)){for(const [key,value]of Object.entries(raw)){if(!own(normalized,key))incompatible([...path,key]);assertPreserved(value,normalized[key],[...path,key])}return}
+ if(!same(raw,normalized))incompatible(path);
+}
+function incompatible(path){throw Error('Compatibilidad del respaldo: '+path.join(' / ')+' cambiaría o se perdería al leerlo. No se combinó. Conservá el archivo original y abrilo con una versión de Campus compatible antes de volver a exportar.');}
+function validTutor(labs){if(own(labs,'tutor-reviews'))new TutorExchange().record({labs});}
 function validArchive(labs){
  const value=labs['merge-conflicts'];if(value===undefined)return [];
  if(!v.plain(value)||value.version!==1||!Array.isArray(value.records))throw Error('El archivo de conflictos no tiene un formato compatible.');
- for(const r of value.records)if(!v.plain(r)||typeof r.id!=='string'||!Array.isArray(r.path)||!r.path.every(p=>typeof p==='string')||typeof r.localHash!=='string'||typeof r.incomingHash!=='string'||!own(r,'incoming')||hash(r.incoming)!==r.incomingHash)throw Error('El archivo de conflictos contiene una alternativa inválida.');
+ for(const r of value.records)if(!v.plain(r)||typeof r.id!=='string'||!Array.isArray(r.path)||!r.path.every(p=>typeof p==='string')||!/^[a-f0-9]{64}$/.test(r.localHash)||!/^[a-f0-9]{64}$/.test(r.incomingHash)||!own(r,'incoming')||hash(r.incoming)!==r.incomingHash||r.id!==hash({path:r.path,localHash:r.localHash,incomingHash:r.incomingHash}))throw Error('El archivo de conflictos contiene una alternativa inválida o una identidad que no coincide con su huella.');
  arrayEntries(value.records);return value.records;
 }
 class ProgressMerge{
  constructor({parseBackup,maxPending=8,ttlMs=15*60*1000,now=()=>Date.now(),maxConflictRecords=200}={}){this.parseBackup=parseBackup||require('./store.cjs').parseBackup;this.pending=new Map();this.maxPending=maxPending;this.ttlMs=ttlMs;this.now=now;this.maxConflictRecords=maxConflictRecords}
  preview(profile,text){
   if(typeof text!=='string'||Buffer.byteLength(text)>MAX_SOURCE)throw Error('El respaldo supera el límite de 7 MB.');
-  v.jsonData(JSON.parse(text),MAX_SOURCE);profile=v.jsonData(profile,MAX_SOURCE);
+  const raw=v.jsonData(JSON.parse(text),MAX_SOURCE);profile=v.jsonData(profile,MAX_SOURCE);
   if(typeof profile.id!=='string'||!Number.isSafeInteger(profile.revision))throw Error('Perfil inválido.');
   const incoming=v.jsonData(this.parseBackup(text),MAX_SOURCE);if(!v.plain(incoming.study)||!v.plain(incoming.labs)||!v.plain(profile.study)||!v.plain(profile.labs))throw Error('El respaldo no contiene estudio y laboratorios válidos.');
+  const rawStudy=raw.app==='campus-ciberdefensa-desktop'?raw.profile.study:raw.app==='academia-ciberdefensa'?raw.state:raw.study;
+  if(rawStudy!==undefined)assertPreserved(rawStudy,incoming.study);
+  validTutor(profile.labs);validTutor(incoming.labs);
   const source={name:v.name(incoming.name),savedAt:incoming.savedAt,hash:sourceHash(text)},counts={new:0,equal:0,conflict:0},conflicts=[],prior=validArchive(profile.labs);validArchive(incoming.labs);
   const atomic=(local,other,path,kind,hasLocal=true)=>{
    if(!hasLocal){counts.new++;return {type:'value',value:other}}
@@ -44,22 +58,22 @@ class ProgressMerge{
    const fields=Object.fromEntries(Object.entries(local).map(([k,value])=>[k,{type:'value',value}]));
    for(const [k,value]of Object.entries(other))fields[k]=child(local[k],value,[...path,k],own(local,k));return {type:'object',fields};
   };
-  const array=(local,other,path,kind)=>{
+  const array=(local,other,path,kind,identity)=>{
    if(!Array.isArray(local)||!Array.isArray(other))return atomic(local,other,path,kind);
-   const left=arrayEntries(local),right=arrayEntries(other),items=[];
+   const left=arrayEntries(local,identity),right=arrayEntries(other,identity),items=[];
    for(const [id,item]of left)items.push(right.has(id)?atomic(item,right.get(id),[...path,id],kind):{type:'value',value:item});
    for(const [id,item]of right)if(!left.has(id))items.push(atomic(undefined,item,[...path,id],kind,false));return {type:'array',items};
   };
   const lab=(local,other,path,has)=>{
    const schema=schemas[path[1]];
    if(!schema||!has||!v.plain(local)||!v.plain(other)){
-    if(schema&&v.plain(other))for(const field of Object.keys(schema.arrays))if(Array.isArray(other[field]))arrayEntries(other[field]);
+    if(schema&&v.plain(other))for(const field of Object.keys(schema.arrays))if(Array.isArray(other[field]))arrayEntries(other[field],schema.identity);
     return atomic(local,other,path,'laboratorio',has);
    }
    // A different record version is an indivisible conflict; no mixed schemas.
    if(local.version!==other.version)return atomic(local,other,path,'laboratorio');
    return map(local,other,path,(a,b,p,exists)=>{
-    const key=p.at(-1);if(own(schema.arrays,key)&&Array.isArray(b))return exists?array(a,b,p,key==='attempts'?'intento':'historial'):array([],b,p,'historial');
+    const key=p.at(-1);if(own(schema.arrays,key)&&Array.isArray(b))return array(exists?a:[],b,p,key==='attempts'?'intento':'historial',schema.identity);
     if(schema.maps.includes(key)&&exists)return map(a,b,p,(x,y,q,e)=>atomic(x,y,q,key==='reviews'?'repaso':'borrador',e));
     return atomic(a,b,p,/draft|activeAttempt/i.test(key)?'borrador':'laboratorio',exists);
    });
@@ -92,15 +106,17 @@ class ProgressMerge{
    const choice=decisions[node.id];if(choice==='incoming')return node.other;
    if(choice==='both')additions.push({id:hash({path:node.path,localHash:node.localHash,incomingHash:node.incomingHash}),path:node.path,kind:node.kind,localHash:node.localHash,incomingHash:node.incomingHash,incoming:node.other,source:p.source,retained:'local',savedAt:new Date(p.created).toISOString()});return node.local;
   }
-  const study=clone(resolve(p.study)),labs=clone(resolve(p.labs)),archive=validArchive(labs),seen=new Set(archive.map(r=>r.id));
-  for(const r of additions)if(!seen.has(r.id)){archive.push(r);seen.add(r.id)}
+  const study=clone(resolve(p.study)),labs=clone(resolve(p.labs)),archive=validArchive(labs),seen=new Map(archive.map(r=>[r.id,r]));
+  for(const r of additions){const existing=seen.get(r.id);if(existing&&!same(existing,r))throw Error('Colisión en el archivo de conflictos: un identificador tiene otro contenido u origen. No se descartó la alternativa; revisá las copias antes de combinar.');if(!existing){archive.push(r);seen.set(r.id,r)}}
   if(archive.length>this.maxConflictRecords)throw Error('El archivo de conflictos alcanzó el límite de capacidad. Exportá y resolvé alternativas antes de combinar.');
   if(additions.length)labs['merge-conflicts']={version:1,records:archive};
   for(const [key,schema]of Object.entries(schemas)){
    const value=labs[key];if(!v.plain(value)||same(value,profile.labs[key]??null))continue;
    for(const [field,limit]of Object.entries(schema.arrays))if(Array.isArray(value[field])&&value[field].length>limit)throw Error(`El registro ${key} supera el límite de ${limit} ${field}. No se descartó ningún dato.`);
+   if(schema.bytes&&Buffer.byteLength(JSON.stringify(value))>schema.bytes)throw Error(`El registro ${key} supera el límite de ${schema.bytes} bytes. No se descartó ningún dato.`);
    if(key==='packet-casework'&&Buffer.byteLength(JSON.stringify(value))>40000)throw Error('El registro de paquetes supera el límite de capacidad. No se descartó ningún dato.');
   }
+  validTutor(labs);
   v.jsonData(study,5*1024*1024);v.jsonData(labs,1024*1024);
   // The caller consumes the token with cancel only after its atomic write succeeds.
   return clone({study,labs,expectedRevision:p.revision});

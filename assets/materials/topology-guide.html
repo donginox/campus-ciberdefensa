@@ -1,0 +1,75 @@
+<!doctype html><html lang="es"><meta charset="utf-8"><title>Topología local Campus</title><style>body{max-width:850px;margin:3rem auto;padding:0 1rem;font:18px/1.6 system-ui;color:#17212d}code,pre{background:#eef2f6;overflow-wrap:anywhere}pre{padding:1rem;white-space:pre-wrap}table{border-collapse:collapse}th,td{border:1px solid #687686;padding:.6rem}</style><h1>Tres VMs propias, dos redes internas</h1>
+<p>Este paquete se aplica manualmente dentro de las VMs creadas por Campus. Los scripts rechazan el host y otras VMs mediante DMI VirtualBox, UUID y MAC del manifiesto exportado. La exportación no instala ni comprueba sistemas invitados. Guardá una base de cada nodo apagado antes de preparar sus cuentas y servicios.</p>
+<table><caption>Plan cerrado, sin DHCP, DNS ni gateway</caption><tr><th>Nodo</th><th>Segmento/IP</th><th>Función</th></tr><tr><td>Windows</td><td>Usuarios 10.78.10.10/24</td><td>Cliente SSH y navegador</td></tr><tr><td>Salto Linux</td><td>Usuarios 10.78.10.1/24 + Servidores 10.78.20.1/24</td><td>OpenSSH, forwarding IP desactivado</td></tr><tr><td>Servidor Linux</td><td>Servidores 10.78.20.20/24</td><td>HTTP ficticio en 8080</td></tr></table>
+<h2 id="extraer">Extraer Campus-red-kit.json antes de transferirlo</h2>
+<p>La exportación es un sobre JSON con un manifiesto y cuatro archivos de texto; no es un ZIP ni el <code>manifest.json</code> que reciben los scripts. Esta guía también se abre desde Campus con «Leer guía de preparación», antes de extraer el paquete.</p>
+<p>En una carpeta de trabajo vacía, guardá la exportación con el nombre exacto <code>Campus-red-kit.json</code>. Abrí una terminal en esa carpeta. Elegí uno de los procedimientos completos siguientes: solo escriben los cuatro archivos permitidos dentro de una carpeta nueva <code>Campus-red-kit</code>, con UTF-8 sin BOM y saltos LF. No ejecutan el contenido del paquete. Si ya existe esa carpeta, usá otra carpeta de trabajo vacía para conservar los archivos anteriores. Si falla una extracción parcial, conservá el error y repetí en otra carpeta vacía.</p>
+<h3>Windows · PowerShell 5.1 o posterior</h3>
+<p>Pegá este bloque completo en PowerShell desde la carpeta que contiene la exportación. No hace falta abrir la terminal como administrador.</p>
+<pre id="extract-powershell">$ErrorActionPreference = &#x27;Stop&#x27;
+$source = Join-Path (Get-Location).Path &#x27;Campus-red-kit.json&#x27;
+$destination = Join-Path (Get-Location).Path &#x27;Campus-red-kit&#x27;
+$utf8 = New-Object System.Text.UTF8Encoding($false, $true)
+if ((Get-Item -LiteralPath $source).Length -gt 7340032) { throw &#x27;Paquete demasiado grande.&#x27; }
+$kit = [IO.File]::ReadAllText($source, $utf8) | ConvertFrom-Json
+$names = @(&#x27;manifest.json&#x27;, &#x27;topology-guide.html&#x27;, &#x27;topology-linux.sh&#x27;, &#x27;topology-windows.ps1&#x27;)
+if ($kit.manifest.format -cne &#x27;campus-topology-guest-kit&#x27; -or $kit.manifest.version -ne 1 -or $kit.files -isnot [array] -or $kit.files.Count -ne 4) { throw &#x27;Formato de paquete incompatible.&#x27; }
+$contents = @{}
+foreach ($item in $kit.files) {
+    if ($item.name -isnot [string] -or $names -cnotcontains $item.name -or $contents.ContainsKey($item.name) -or $item.content -isnot [string]) { throw &#x27;Nombre, contenido o archivo repetido no permitido.&#x27; }
+    $contents.Add($item.name, ($item.content -replace &quot;`r`n?&quot;, &quot;`n&quot;))
+}
+$manifest = $contents[&#x27;manifest.json&#x27;] | ConvertFrom-Json
+if (($manifest | ConvertTo-Json -Depth 32 -Compress) -cne ($kit.manifest | ConvertTo-Json -Depth 32 -Compress)) { throw &#x27;Los manifiestos no coinciden.&#x27; }
+if (Test-Path -LiteralPath $destination) { throw &#x27;Campus-red-kit ya existe. Conserva esa carpeta; usa otra carpeta de trabajo vacia.&#x27; }
+New-Item -ItemType Directory -Path $destination -ErrorAction Stop | Out-Null
+foreach ($name in $names) {
+    $bytes = $utf8.GetBytes($contents[$name])
+    $stream = [IO.File]::Open((Join-Path $destination $name), [IO.FileMode]::CreateNew, [IO.FileAccess]::Write, [IO.FileShare]::None)
+    try { $stream.Write($bytes, 0, $bytes.Length) } finally { $stream.Dispose() }
+}
+Write-Output &#x27;Archivos extraidos en Campus-red-kit. No se ejecuto ningun script del invitado.&#x27;
+</pre>
+<h3>Linux · Python 3</h3>
+<p>Guardá este bloque como <code>extraer-campus.py</code> junto a la exportación y ejecutá <code>python3 extraer-campus.py</code>. La extracción tampoco requiere <code>sudo</code>.</p>
+<pre id="extract-python">import json
+from pathlib import Path
+
+source = Path(&quot;Campus-red-kit.json&quot;)
+destination = Path(&quot;Campus-red-kit&quot;)
+names = (&quot;manifest.json&quot;, &quot;topology-guide.html&quot;, &quot;topology-linux.sh&quot;, &quot;topology-windows.ps1&quot;)
+if source.stat().st_size &gt; 7340032:
+    raise SystemExit(&quot;Paquete demasiado grande.&quot;)
+kit = json.loads(source.read_text(encoding=&quot;utf-8-sig&quot;))
+if not isinstance(kit, dict) or not isinstance(kit.get(&quot;manifest&quot;), dict):
+    raise SystemExit(&quot;Formato de paquete incompatible.&quot;)
+if kit[&quot;manifest&quot;].get(&quot;format&quot;) != &quot;campus-topology-guest-kit&quot; or kit[&quot;manifest&quot;].get(&quot;version&quot;) != 1:
+    raise SystemExit(&quot;Version de paquete incompatible.&quot;)
+files = kit.get(&quot;files&quot;)
+if not isinstance(files, list) or len(files) != 4:
+    raise SystemExit(&quot;Se requieren exactamente cuatro archivos.&quot;)
+contents = {}
+for item in files:
+    if not isinstance(item, dict) or not isinstance(item.get(&quot;name&quot;), str):
+        raise SystemExit(&quot;Archivo invalido.&quot;)
+    name = item[&quot;name&quot;]
+    if name not in names or name in contents or not isinstance(item.get(&quot;content&quot;), str):
+        raise SystemExit(&quot;Nombre, contenido o archivo repetido no permitido.&quot;)
+    contents[name] = item[&quot;content&quot;].replace(&quot;\r\n&quot;, &quot;\n&quot;).replace(&quot;\r&quot;, &quot;\n&quot;)
+if json.loads(contents[&quot;manifest.json&quot;]) != kit[&quot;manifest&quot;]:
+    raise SystemExit(&quot;Los manifiestos no coinciden.&quot;)
+# mkdir fails if a directory, file or link already exists; never overwrite.
+destination.mkdir()
+for name in names:
+    with (destination / name).open(&quot;xb&quot;) as output:
+        output.write(contents[name].encode(&quot;utf-8&quot;))
+print(&quot;Archivos extraidos en Campus-red-kit. No se ejecuto ningun script del invitado.&quot;)
+</pre>
+<p>Comprobá que <code>Campus-red-kit</code> contiene <code>manifest.json</code>, <code>topology-guide.html</code>, <code>topology-linux.sh</code> y <code>topology-windows.ps1</code>. Transferí esos cuatro archivos al invitado siguiendo los pasos siguientes. Leé sus scripts y compará UUID y MAC antes de ejecutarlos dentro de cada VM. La extracción puede hacerse en el host; los scripts de preparación se ejecutan únicamente en los invitados propios.</p>
+<h2>Preparación manual y dependencias</h2><ol><li>Obtené ISO de Windows y de Debian/Ubuntu/Kali desde fuentes oficiales y revisá licencias y requisitos offline. Campus no descarga ni instala nada. Cada nodo se crea, enciende, apaga y restaura por separado; si uno falla los demás conservan su estado. La topología usa hasta 8 GiB y reserva otros 8 GiB para el host.</li><li>Instalá el sistema dentro de cada ventana VirtualBox. Linux necesita Python 3, iproute2, nftables, systemd, shadow-utils y, para el salto, OpenSSH Server. Windows necesita PowerShell con módulos NetTCPIP/LocalAccounts y OpenSSH Client para la campaña. Si faltan, prepará medios oficiales offline; los scripts no ejecutan apt ni descargan paquetes.</li><li>Exportá el paquete una vez creados los tres nodos y extraelo con el procedimiento anterior. Transferí los archivos mediante un medio extraíble de tu control, por ejemplo un ISO de datos creado manualmente y montado como DVD dentro de VirtualBox. No habilites carpetas compartidas, portapapeles, NAT, puente ni host-only. Reponé el DVD original o dejalo vacío antes de usar controles de Campus, porque se verifican sus rutas. Compará <code>manifest.json</code> con UUID DMI y MAC dentro del guest. No edites el manifiesto para saltar la guardia: recreá y volvé a exportar si cambió la identidad.</li><li>En Linux verificá <code>cat /sys/class/dmi/id/product_uuid</code>, <code>cat /sys/class/dmi/id/product_name</code> y <code>ip -br link</code>. Ejecutá <code>sudo bash topology-linux.sh manifest.json router</code> o <code>server</code> según rol. En Windows comprobá <code>Get-CimInstance Win32_ComputerSystemProduct</code> y <code>Get-NetAdapter -Physical</code>; leé el script y ejecutalo desde PowerShell administrador con <code>.\topology-windows.ps1 -ManifestPath .\manifest.json</code>. Respetá la política de ejecución de tu VM; no cambies la del host.</li><li>Los scripts hacen cambios por pasos y pueden fallar parcialmente. Conservá el error, revisá dentro del guest o restaurá la base propia de ese nodo y repetí. No hay rollback de grupo. La configuración Linux de IP es temporal: tras reiniciar, configurá manualmente esas mismas IPs por MAC con el gestor de red de tu distribución, sin gateway. La tabla nft es temporal: guardá/reaplicá solo <code>inet campus_lab</code> dentro del guest, conservando las otras tablas. No vacíes el ruleset global. Otras reglas existentes pueden bloquear el servicio: diagnosticá primero.</li></ol>
+<h2>SSH y servicio</h2><p>En salto asigná una contraseña propia con <code>sudo passwd campus-jump</code>. El script crea un fragmento para <code>sshd_config.d</code>, exige su Include, valida sintaxis y deja el reinicio del servicio para vos. Antes de reiniciar, verificá que <code>sudo sshd -T -C user=campus-jump,host=campus,addr=10.78.10.10</code> muestra <code>allowtcpforwarding local</code> y <code>permitopen 10.78.20.20:8080</code>. Si hay Match/Include anteriores que cambian el resultado, corregilos solo dentro de esta VM. Reiniciá <code>ssh.service</code> o <code>sshd.service</code> según tu distribución y verificá su escucha en 22.</p><p>Servidor ejecuta <code>campus-web.service</code> como campus-web, sin login, con archivos ficticios root:campus-lectores y permisos 750/640. Solo el salto puede acceder a 8080. Agregá manualmente una cuenta ficticia al grupo campus-lectores para probar lectura; comprobá que no puede escribir. En Windows compará <code>Get-LocalUser</code> e <code>icacls C:\CampusLab</code> usando campus-alumno y una cuenta administradora.</p>
+<pre>Windows: ping 10.78.10.1
+Salto: ping 10.78.20.20; curl http://10.78.20.20:8080
+Windows: ssh -N -L 127.0.0.1:18080:10.78.20.20:8080 campus-jump@10.78.10.1
+Windows: abrir http://127.0.0.1:18080</pre><p>El puerto 18080 se abre en loopback dentro de la VM Windows por acción manual del alumno, no en el host. Sin túnel no debe responder. Probá un destino/puerto alternativo de estos mismos nodos para comprobar el rechazo de PermitOpen; cerrá SSH y repetí la prueba. El router no enruta IP entre segmentos: el salto autorizado es el túnel SSH.</p>
+<h2>Evidencia y límites</h2><p>Registrá fecha, IP, identidad, comando, resultado esperado, salida observada y diferencia. No guardes contraseñas. VM en ejecución no significa SO instalado, servicios listos ni campaña aprobada. Campus no observa las pruebas del invitado. Una PC física con Kali no puede unirse a estas redes internas VirtualBox: usá una VM Linux propia en este mismo host. Las redes internas aíslan perfiles pero no son una garantía para ejecutar malware; trabajá solo con datos ficticios y sistemas propios.</p><p>Referencias: <a href="https://www.virtualbox.org/manual/ch06.html">redes VirtualBox</a>, <a href="https://man.openbsd.org/sshd_config">sshd_config</a>, <a href="https://wiki.nftables.org/wiki-nftables/index.php/Configuring_chains">cadenas nftables</a>, <a href="https://learn.microsoft.com/en-us/windows-server/administration/openssh/openssh_overview">OpenSSH en Windows</a>.</p></html>
