@@ -19,6 +19,15 @@ function keys(arg,allowed){if(!v.plain(arg)||Object.keys(arg).some(k=>!allowed.i
 function labInput(arg,extra=[]){keys(arg,['profileId','labId',...extra]);v.id(arg.profileId);if(!['juice-shop','soc-response','database-fundamentals'].includes(arg.labId))throw new Error('Receta de laboratorio no permitida.');return arg;}
 function actor(value){if(typeof value!=='string'||!value.trim()||value.length>100||/[\u0000-\u001f\u007f]/.test(value))throw new Error('Actor del caso inválido.');return value.trim();}
 function validateCall(method,arg){switch(method){
+ case 'forensicStatus':case 'forensicImport':case 'forensicReset':case 'forensicVerify':case 'forensicExportNative':keys(arg,['profileId']);v.id(arg.profileId);return arg;
+ case 'forensicIngest':keys(arg,['profileId','datasetId']);v.id(arg.profileId);if(!['alameda','transfer'].includes(arg.datasetId))throw Error('Fuente de laboratorio no permitida.');return arg;
+ case 'forensicQuery':{
+  const allowed=['profileId','kind','actor','sourceIp','limit'];if(!v.plain(arg)||!Object.hasOwn(arg,'profileId')||Object.keys(arg).some(k=>!allowed.includes(k)))throw Error('Filtro de laboratorio inválido.');v.id(arg.profileId);
+  if(arg.kind!==undefined&&!['auth.failure','auth.success','service.access','network.connect','file.read'].includes(arg.kind)||arg.actor!==undefined&&(typeof arg.actor!=='string'||arg.actor.length>80||/[\u0000-\u001f\u007f]/.test(arg.actor))||arg.sourceIp!==undefined&&(typeof arg.sourceIp!=='string'||arg.sourceIp.length>45||!require('node:net').isIP(arg.sourceIp))||arg.limit!==undefined&&(!Number.isInteger(arg.limit)||arg.limit<1||arg.limit>200))throw Error('Filtro de laboratorio inválido.');return arg;
+ }
+ case 'topologyDoctor':if(arg!==undefined)throw Error('La operación no acepta parámetros.');return;
+ case 'topologyStatus':case 'topologyExportKit':keys(arg,['profileId']);v.id(arg.profileId);return arg;
+ case 'topologyCreate':case 'topologyStart':case 'topologyStop':case 'topologySnapshot':case 'topologyRestore':keys(arg,['profileId','nodeId']);v.id(arg.profileId);if(!['workstation','router','server'].includes(arg.nodeId))throw Error('Nodo de laboratorio no permitido.');return arg;
  case 'mergePreview':case 'tutorPreview':keys(arg,['profileId']);v.id(arg.profileId);return arg;
  case 'mergeCancel':case 'tutorCommit':keys(arg,['profileId','previewId']);v.id(arg.profileId);v.id(arg.previewId);return arg;
  case 'mergeCommit':keys(arg,['profileId','previewId','decisions']);v.id(arg.profileId);v.id(arg.previewId);v.jsonData(arg.decisions,65536);if(!v.plain(arg.decisions)||Object.keys(arg.decisions).length>500||Object.entries(arg.decisions).some(([key,value])=>key.length>100||!['local','incoming','both'].includes(value)))throw new Error('Selección de conflictos inválida.');return arg;

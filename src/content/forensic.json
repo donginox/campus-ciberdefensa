@@ -1,0 +1,46 @@
+{
+  "version": 1,
+  "caseId": "alameda",
+  "title": "ALAMEDA: evidencia y correlación",
+  "scope": "Caso propio, ficticio y benigno. Imagen FAT16 real; JSONL y CSV sintéticos propios. El paquete nativo separado contiene un minidump real de un proceso propio y cinco eventos EVTX propios de Windows, generados en CI efímero.",
+  "cases": [
+    {
+      "id": "alameda",
+      "title": "ALAMEDA · triada de evidencia",
+      "task": "Investigá qué se puede afirmar de un acceso al archivo: reconstruí disco, minidump, eventos y red. Recuperá una entrada borrada desde una copia de la imagen. Separá observación, hipótesis y conclusión; un marcador en memoria o HTTP 200 no demuestra por sí solo robo de datos."
+    },
+    {
+      "id": "transfer",
+      "title": "Transferencia · otra fuente de eventos",
+      "task": "Cargá el conjunto Transferencia y consultá un actor diferente. Compará eventos que disparan y que no disparan las reglas. El disco y el minidump pertenecen a ALAMEDA: citarlos como evidencia independiente de Transferencia sería incorrecto. Declaralos como contexto o evidencia no disponible; este ejercicio no cuenta como un segundo caso completo de triada."
+    }
+  ],
+  "theory": [
+    {
+      "title": "Custodia reproducible",
+      "text": "Un hash identifica bytes, no prueba quién creó el contenido ni autoriza su adquisición. Anotá recepción, archivo/tamaño/SHA256, herramienta y versión, copia de trabajo y horas UTC. Conservá la imagen original sin escritura. Compará hashes al recibir y al terminar; una transformación como XML tiene su propio hash y se vincula con su fuente."
+    },
+    {
+      "title": "Archivos borrados y contexto",
+      "text": "En FAT una entrada borrada puede conservar nombre parcial, cluster inicial y tamaño, mientras la FAT marca espacio libre. Si no se sobrescribió, una herramienta puede recuperar contenido. Recuperado no equivale a ejecutado ni transferido. Contrastá offsets, cronología y otra fuente; las marcas FAT no almacenan zona horaria."
+    },
+    {
+      "title": "Memoria con alcance explícito",
+      "text": "El archivo .dmp es un minidump Windows del proceso de entrenamiento propio, con regiones privadas de lectura/escritura. No es RAM completa del sistema. WinDbg y un visor de cadenas pueden inspeccionarlo; Volatility requiere imágenes y capas de memoria compatibles, y este minidump no se presenta como compatible. Las cadenas son indicios, no autenticación del comportamiento."
+    },
+    {
+      "title": "Eventos y SIEM didáctico",
+      "text": "El índice SQLite local guarda hasta 5000 eventos por perfil, sin monitorear el host. Cada evento tiene id, time UTC, kind, actor, sourceIp, host y detail. Las consultas son igualdad exacta y límite, sin SQL libre. Tres fallas previas y un éxito del mismo actor/IP en cinco minutos producen una detección; un acceso al servidor tras éxito en salto del mismo actor/IP produce otra. Una alerta propone investigar, no demuestra compromiso. En esa detección se citan tres fallas y el éxito para probar el umbral; el total de fallas de la ventana se informa por separado, sin duplicar todos sus IDs."
+    },
+    {
+      "title": "Fuentes distintas no son intercambiables",
+      "text": "El JSONL sintetiza una cronología docente fija. El EVTX Application registra cinco eventos propios generados en Windows durante CI, con hora real de esa ejecución y proveedor de entrenamiento; su XML es derivado. No es el log Security ni eventos 4624/4625. El CSV es una tabla sintética, no PCAP. Registrá las diferencias de actor/IP/hora entre fuentes; no inventes una unión causal entre ellas."
+    }
+  ],
+  "guidance": [
+    "En la imagen FAT16 sin partición (offset 0), compará archivos activos y entrada borrada; documentá el archivo recuperado y su SHA256. El contenido y CASE.LOG comparten una referencia docente, pero la imagen no acredita ejecución ni exfiltración.",
+    "En ALAMEDA el actor lara tiene tres auth.failure y luego auth.success en salto desde 10.78.10.10; después aparece service.access en servidor desde la misma IP. Son reglas fijas de cinco minutos. El actor operador tiene solo una falla y un éxito: no debería disparar la primera regla.",
+    "En el minidump propio buscá el marcador CAMPUS_TEST_MEMORY_CASE_2026 y distinguí alcance de proceso de memoria de sistema. El proveedor del EVTX usa alumno-ficticio y una cronología generada en CI: no lo atribuyas automáticamente a lara ni al reloj fijo del JSONL.",
+    "Tu conclusión debe decir qué fuente respalda cada afirmación y qué queda sin verificar. Ausencia de un evento o presencia de una cadena no prueba ausencia/presencia de intrusión real. Transferencia cambia actor y dirección; el disco sigue siendo el mismo, así que no es una prueba nueva independiente."
+  ]
+}

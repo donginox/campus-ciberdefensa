@@ -1,0 +1,9 @@
+{"id":"transfer-001","time":"2026-06-01T10:00:00.000Z","kind":"network.connect","actor":"nora","sourceIp":"10.78.10.31","host":"salto","detail":"Caso ficticio transfer: Actividad generada propia de laboratorio"}
+{"id":"transfer-002","time":"2026-06-01T10:00:01.000Z","kind":"auth.failure","actor":"nora","sourceIp":"10.78.10.31","host":"salto","detail":"Caso ficticio transfer: Actividad generada propia de laboratorio"}
+{"id":"transfer-003","time":"2026-06-01T10:00:02.000Z","kind":"auth.failure","actor":"nora","sourceIp":"10.78.10.31","host":"salto","detail":"Caso ficticio transfer: Actividad generada propia de laboratorio"}
+{"id":"transfer-004","time":"2026-06-01T10:00:03.000Z","kind":"auth.failure","actor":"nora","sourceIp":"10.78.10.31","host":"salto","detail":"Caso ficticio transfer: Actividad generada propia de laboratorio"}
+{"id":"transfer-005","time":"2026-06-01T10:00:04.000Z","kind":"auth.success","actor":"nora","sourceIp":"10.78.10.31","host":"salto","detail":"Caso ficticio transfer: Actividad generada propia de laboratorio"}
+{"id":"transfer-006","time":"2026-06-01T10:00:05.000Z","kind":"service.access","actor":"nora","sourceIp":"10.78.10.31","host":"servidor","detail":"Caso ficticio transfer: GET /archivo/acta.txt; HTTP 200; 184 bytes"}
+{"id":"transfer-007","time":"2026-06-01T10:00:06.000Z","kind":"file.read","actor":"nora","sourceIp":"10.78.10.31","host":"servidor","detail":"Caso ficticio transfer: Actividad generada propia de laboratorio"}
+{"id":"transfer-008","time":"2026-06-01T10:00:07.000Z","kind":"auth.failure","actor":"operador","sourceIp":"10.78.10.50","host":"salto","detail":"Caso ficticio transfer: Actividad generada propia de laboratorio"}
+{"id":"transfer-009","time":"2026-06-01T10:00:08.000Z","kind":"auth.success","actor":"operador","sourceIp":"10.78.10.50","host":"salto","detail":"Caso ficticio transfer: Actividad generada propia de laboratorio"}

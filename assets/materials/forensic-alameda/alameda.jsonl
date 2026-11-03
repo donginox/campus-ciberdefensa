@@ -1,0 +1,9 @@
+{"id":"alameda-001","time":"2026-06-01T10:00:00.000Z","kind":"network.connect","actor":"lara","sourceIp":"10.78.10.10","host":"salto","detail":"Caso ficticio alameda: Actividad generada propia de laboratorio"}
+{"id":"alameda-002","time":"2026-06-01T10:00:01.000Z","kind":"auth.failure","actor":"lara","sourceIp":"10.78.10.10","host":"salto","detail":"Caso ficticio alameda: Actividad generada propia de laboratorio"}
+{"id":"alameda-003","time":"2026-06-01T10:00:02.000Z","kind":"auth.failure","actor":"lara","sourceIp":"10.78.10.10","host":"salto","detail":"Caso ficticio alameda: Actividad generada propia de laboratorio"}
+{"id":"alameda-004","time":"2026-06-01T10:00:03.000Z","kind":"auth.failure","actor":"lara","sourceIp":"10.78.10.10","host":"salto","detail":"Caso ficticio alameda: Actividad generada propia de laboratorio"}
+{"id":"alameda-005","time":"2026-06-01T10:00:04.000Z","kind":"auth.success","actor":"lara","sourceIp":"10.78.10.10","host":"salto","detail":"Caso ficticio alameda: Actividad generada propia de laboratorio"}
+{"id":"alameda-006","time":"2026-06-01T10:00:05.000Z","kind":"service.access","actor":"lara","sourceIp":"10.78.10.10","host":"servidor","detail":"Caso ficticio alameda: GET /archivo/acta.txt; HTTP 200; 184 bytes"}
+{"id":"alameda-007","time":"2026-06-01T10:00:06.000Z","kind":"file.read","actor":"lara","sourceIp":"10.78.10.10","host":"servidor","detail":"Caso ficticio alameda: Actividad generada propia de laboratorio"}
+{"id":"alameda-008","time":"2026-06-01T10:00:07.000Z","kind":"auth.failure","actor":"operador","sourceIp":"10.78.10.50","host":"salto","detail":"Caso ficticio alameda: Actividad generada propia de laboratorio"}
+{"id":"alameda-009","time":"2026-06-01T10:00:08.000Z","kind":"auth.success","actor":"operador","sourceIp":"10.78.10.50","host":"salto","detail":"Caso ficticio alameda: Actividad generada propia de laboratorio"}

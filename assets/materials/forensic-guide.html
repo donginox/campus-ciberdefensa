@@ -1,0 +1,56 @@
+<!doctype html>
+<html lang="es-AR">
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Guía de laboratorio forense ALAMEDA</title>
+<style>body{font:17px/1.6 system-ui,sans-serif;color:#172033;background:#f8fafc;max-width:900px;margin:2rem auto;padding:1rem}h1,h2,h3{line-height:1.2}section{margin:2rem 0}code,pre{font-family:ui-monospace,monospace}pre{white-space:pre-wrap;overflow-wrap:anywhere;background:#e2e8f0;padding:1rem;border-radius:8px}a{color:#1748a0}a:focus-visible{outline:3px solid #1748a0;outline-offset:3px}table{border-collapse:collapse;width:100%}th,td{border:1px solid #94a3b8;padding:.6rem;text-align:left;vertical-align:top}caption{text-align:left;font-weight:bold;margin-bottom:.5rem}.table{overflow:auto}li{margin:.5rem 0}</style></head>
+<body><main>
+<h1>ALAMEDA: recibir, analizar y documentar evidencia propia</h1>
+<p>Material ficticio y benigno de Campus. Trabajá en una carpeta de práctica sobre copias de los archivos exportados. Campus no adquiere evidencia de tu equipo ni instala herramientas. Registrá cualquier fuente o herramienta que no puedas analizar; ese límite forma parte del informe.</p>
+<section aria-labelledby="formatos"><h2 id="formatos">Qué recibís y qué permite afirmar</h2>
+<div class="table"><table><caption>Procedencia y formato de cada fuente</caption><thead><tr><th scope="col">Archivo</th><th scope="col">Procedencia y alcance</th></tr></thead><tbody>
+<tr><td><code>alameda-fat16.img</code></td><td>Imagen raw de 4 MiB, FAT16 real sin tabla de particiones; sistema de archivos en offset 0. Bytes construidos de forma reproducible, con archivos activos y una entrada borrada recuperable. Su contenido docente no acredita ejecución.</td></tr>
+<tr><td><code>alameda.jsonl</code>, <code>transfer.jsonl</code></td><td>Eventos sintéticos de cronología fija. Son la entrada del SIEM didáctico; no son un registro Windows ni una captura de actividad real.</td></tr>
+<tr><td><code>network.csv</code></td><td>Tabla sintética de red. No es PCAP; no permite reconstruir paquetes, sesiones TCP ni contenido transferido.</td></tr>
+<tr><td><code>campus-owned-process.dmp</code></td><td>Minidump real de un proceso de entrenamiento propio, capturado en un runner Windows efímero. Incluye regiones privadas de lectura/escritura; no es RAM completa del sistema. Se entrega en el ZIP nativo separado cuando está disponible.</td></tr>
+<tr><td><code>campus-training.evtx</code> y <code>campus-training.xml</code></td><td>Cinco eventos reales de Application, emitidos por el proveedor propio CampusCiberdefensaTraining en CI. Las acciones son ficticias. XML es una exportación derivada. Las horas pertenecen a la captura, no al reloj fijo del JSONL; los eventos no son Security 4624/4625.</td></tr>
+</tbody></table></div>
+<p>El entorno efímero aporta metadatos de captura (equipo de runner, identificadores de proceso y cuenta técnica). No corresponden al alumno ni son indicadores de un incidente. Conservá la procedencia al citar esos campos.</p></section>
+<section aria-labelledby="custodia"><h2 id="custodia">1. Registrar recepción y hashes</h2>
+<ol><li>Exportá el ZIP de disco desde Campus. Si la distribución lo ofrece, exportá también el ZIP nativo. Anotá fecha UTC, versión de Campus, origen, nombre y tamaño de cada paquete.</li><li>Conservá una copia original y extraé una copia de trabajo en otra carpeta. Dentro del ZIP de disco, compará las huellas con <code>SHA256SUMS.txt</code> y <code>manifest.json</code>. El ZIP nativo tiene su propio <code>manifest.json</code>.</li><li>Calculá hashes antes y después del análisis. Un hash consistente prueba igualdad de bytes; por sí solo no autentica autoría ni veracidad.</li></ol>
+<h3>Windows · PowerShell, dentro de tu carpeta de copia</h3>
+<pre>Get-FileHash -LiteralPath .\alameda-fat16.img -Algorithm SHA256
+Get-FileHash -LiteralPath .\campus-owned-process.dmp -Algorithm SHA256
+Get-FileHash -LiteralPath .\campus-training.evtx -Algorithm SHA256</pre>
+<h3>Linux · dentro de tu carpeta de copia</h3>
+<pre>sha256sum -c SHA256SUMS.txt
+sha256sum campus-owned-process.dmp campus-training.evtx</pre>
+<p>Los archivos nativos solo están en el paquete separado. Si no los recibiste, documentá esa ausencia. Para esos archivos compará cada salida con su manifiesto nativo, no con SHA256SUMS del disco.</p></section>
+<section aria-labelledby="disco"><h2 id="disco">2. Analizar el sistema de archivos y recuperar una entrada</h2>
+<h3>Windows · Autopsy o FTK Imager</h3>
+<p>Creá un caso nuevo en una carpeta de trabajo. Agregá la copia de <code>alameda-fat16.img</code> como imagen de disco/raw; no como disco físico. Elegí offset 0 si la herramienta lo solicita. En una versión que reconozca FAT16, revisá entradas activas y borradas y exportá la entrada borrada a otro archivo. Registrá herramienta/versión, nombre parcial, tamaño, metadatos y hash del contenido recuperado. Las marcas FAT no guardan zona horaria: UTC es una convención declarada por el generador, no algo probado por el sistema de archivos.</p>
+<h3>Linux · Sleuth Kit instalado por vos</h3>
+<pre>fls -V
+fls -f fat -o 0 -r alameda-fat16.img
+fls -f fat -o 0 -d alameda-fat16.img</pre>
+<p>Tomá el identificador de metadatos de la entrada borrada que muestra <code>fls</code>. Sustituí <code>IDENTIFICADOR</code> por ese valor en la siguiente plantilla; no es una orden lista para copiar:</p>
+<pre>icat -r -f fat -o 0 alameda-fat16.img IDENTIFICADOR &gt; recuperado.txt
+sha256sum recuperado.txt</pre>
+<p>No montes la imagen con escritura. Compará lo recuperado con otras fuentes sin equiparar presencia de un archivo con lectura, ejecución o exfiltración. Si tu versión no reconoce FAT16, registrá el error y consultá sus formatos compatibles.</p>
+<p>Referencias de método: <a href="https://sleuthkit.org/autopsy/docs/user-docs/4.22.0/quick_start_guide.html">guía de Autopsy</a>, <a href="https://www.sleuthkit.org/sleuthkit/man/fls.html">fls</a> y <a href="https://www.sleuthkit.org/sleuthkit/man/icat.html">icat</a>.</p></section>
+<section aria-labelledby="memoria"><h2 id="memoria">3. Inspeccionar el minidump de proceso</h2>
+<p>En Windows abrí la copia del DMP con WinDbg mediante la opción para abrir un dump (el nombre de menú depende de la versión). Anotá el tipo y alcance que informa el depurador, las regiones disponibles y las limitaciones de símbolos. Buscá cadenas del escenario propio y registrá dirección/offset o procedimiento de búsqueda, junto al contexto observado. No necesitás conectarte a un servidor de símbolos para citar una cadena en los bytes del archivo.</p>
+<p>En Linux un lector de minidump compatible permite inspeccionar sus estructuras. Un visor de cadenas solo permite una observación limitada. Por ejemplo, <code>strings -a campus-owned-process.dmp</code> puede mostrar texto ASCII; conserva también texto de módulos y no prueba que una instrucción se ejecutó. Distinguí archivo completo, región capturada y estado del proceso.</p>
+<p>Volatility necesita un formato de memoria, capas y símbolos compatibles. Este minidump de proceso no se ofrece como imagen de RAM para Volatility. Si tu objetivo es practicar análisis de memoria completa con ese framework, necesitás otra adquisición propia y compatible: esa práctica queda fuera de este paquete.</p>
+<p>Referencia: <a href="https://learn.microsoft.com/en-us/windows-hardware/drivers/debugger/analyzing-a-user-mode-dump-file">análisis de dumps de usuario con WinDbg</a>.</p></section>
+<section aria-labelledby="eventos"><h2 id="eventos">4. Leer eventos nativos y comparar procedencias</h2>
+<p>En Windows abrí el archivo EVTX guardado con Visor de eventos. Revisá proveedor, canal, IDs, hora, mensaje y metadatos de captura. También podés leer únicamente el archivo recibido:</p>
+<pre>wevtutil qe .\campus-training.evtx /lf:true /f:xml</pre>
+<p>En Linux podés usar un lector EVTX que ya tengas y que admita el formato, o analizar el XML distribuido como fuente derivada. Anotá cuál usaste; leer XML no equivale a verificar el binario EVTX con un parser independiente. El proveedor puede no estar instalado y el mensaje descriptivo puede no resolverse; los campos XML siguen disponibles. No importes esos eventos a los registros de tu sistema.</p>
+<p>Compará actor, IP y reloj de EVTX/XML frente a JSONL y CSV. No impongas una relación causal entre capturas de distinta procedencia. Referencia: <a href="https://learn.microsoft.com/en-us/windows-server/administration/windows-commands/wevtutil">wevtutil</a>.</p></section>
+<section aria-labelledby="siem"><h2 id="siem">5. Ingerir y contrastar reglas en Campus</h2>
+<ol><li>Ingerí ALAMEDA. Probá filtros exactos por clase, actor e IP y anotá consulta, IDs y resultado.</li><li>Repetí la ingesta para comprobar que los mismos IDs no se duplican. Reiniciar el índice elimina eventos y detecciones de ese perfil; conservá primero el JSONL original.</li><li>Contrastá cada detección con sus IDs de evidencia. El motor usa dos reglas fijas: tres fallas previas y éxito dentro de cinco minutos del mismo actor/IP; acceso al servidor después de éxito en salto del mismo actor/IP, también dentro de cinco minutos.</li><li>Usá Transferencia para probar la misma lógica con otro actor/IP. Es una variante de eventos; no constituye otra triada independiente de disco/memoria/red.</li></ol>
+<p>Para importar tus eventos de laboratorio, seleccioná un JSONL mediante el diálogo nativo. Cada línea debe ser un objeto con exactamente <code>id, time, kind, actor, sourceIp, host, detail</code>. Hora UTC ISO con milisegundos; IP válida; clases: <code>auth.failure</code>, <code>auth.success</code>, <code>service.access</code>, <code>network.connect</code> o <code>file.read</code>. No se aceptan comandos ni SQL. Los JSONL sintéticos distribuidos cumplen ese esquema; EVTX, XML y CSV requieren una normalización explícita y no se importan directamente.</p>
+<p>Límites: 5000 eventos por perfil, 2 MiB por importación, 16 MiB por índice y 200 filas por consulta. Un ID idéntico es idempotente; el mismo ID con contenido diferente rechaza la ingesta. Copiar o combinar el perfil entre Windows y Kali lleva informes y borradores, pero no el índice SQLite ni los discos de las VMs. Conservá los JSONL y ZIP fuente para reingerir y verificar la evidencia en el otro equipo.</p></section>
+<section aria-labelledby="informe"><h2 id="informe">6. Entregar una conclusión revisable</h2>
+<p>En Campus completá custodia, disco, memoria, eventos, red, conclusión y ayuda recibida. Separá hechos observados de hipótesis, explicá una alternativa y proponé la próxima comprobación. Para cada afirmación indicá archivo y referencia verificable: hash, ID de evento, metadato, offset o consulta. Mencioná las herramientas y fuentes que faltaron.</p>
+<p>La primera entrega queda inmutable. Las revisiones se guardan en un borrador separado. La orientación se habilita después de guardar la entrega y registra ayuda consultada. La corrección es una autoevaluación docente: ni una detección ni un informe completo acreditan preparación automática para una certificación.</p></section>
+</main></body></html>

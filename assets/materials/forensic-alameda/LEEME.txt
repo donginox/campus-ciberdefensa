@@ -1,0 +1,6 @@
+ALAMEDA v1. Evidencia ficticia, benigna y propia.
+Imagen raw FAT16 real de 4 MiB (superfloppy, offset 0); contiene archivo borrado recuperable.
+JSONL y CSV sinteticos propios: no son EVTX ni capturas PCAP. Los nombres/IP no identifican personas reales.
+Verifica SHA256SUMS.txt antes y despues de copiar; trabaja sobre copias, no montes con escritura.
+El paquete nativo separado contiene un minidump real de proceso propio y EVTX Application propio, generado en CI Windows efimero. Puede no estar disponible en esta distribucion.
+No se adquiere memoria ni eventos de tu equipo. Consulta la guia externa y registra herramientas/version/UTC/hashes.
